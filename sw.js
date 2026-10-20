@@ -1,7 +1,7 @@
 importScripts('core.js');
 
-const SHELL_CACHE = 'bangumi-shell-v1';
-const RUNTIME_CACHE = 'bangumi-runtime-v1';
+const SHELL_CACHE = 'bangumi-shell-v3';
+const RUNTIME_CACHE = 'bangumi-runtime-v3';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './core.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/badge-96.png'

@@ -51,8 +51,8 @@ async function gql(query, variables) {
   return j.data;
 }
 
-const MEDIA_FIELDS = `id title{romaji english native} synonyms coverImage{large medium color}
-  episodes duration status format season seasonYear averageScore genres siteUrl
+const MEDIA_FIELDS = `id idMal title{romaji english native} synonyms coverImage{extraLarge large color} bannerImage
+  episodes duration status format season seasonYear averageScore popularity genres siteUrl
   nextAiringEpisode{episode airingAt}`;
 
 const Q_SCHEDULES = `query($ids:[Int],$from:Int,$to:Int,$page:Int){
@@ -72,8 +72,10 @@ async function fetchSchedules(ids, from, to) {
 function itemTitle(item, pref) {
   if (item.customTitle) return item.customTitle;
   const t = item.titles || {};
-  if (pref === 'english') return t.english || t.romaji || t.native || item.title || 'Без названия';
-  return t.romaji || t.english || t.native || item.title || 'Без названия';
+  const fb = t.romaji || t.english || t.native || item.title || 'Без названия';
+  if (pref === 'russian') return t.russian || fb;
+  if (pref === 'english') return t.english || fb;
+  return fb;
 }
 
 function notifiableItems(state) {
