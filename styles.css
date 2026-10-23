@@ -972,3 +972,203 @@ html[data-vt="back"]::view-transition-new(root) { animation: vt-in-l .44s cubic-
   .ripple, .sparks { display: none; }
 }
 main { overflow-x: clip; }
+
+/* ================= Карта (ментальная карта списка) ================= */
+.map-view {
+  position: relative; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none;
+  height: 70vh; min-height: 380px; background: var(--bg); --mf: 1;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.map-bgfx { position: absolute; inset: 0; pointer-events: none; }
+.map-world { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; will-change: transform; }
+.map-world.glide { transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
+.map-edges { position: absolute; left: 0; top: 0; overflow: visible; }
+.map-edges path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.map-nodes { position: absolute; left: 0; top: 0; }
+
+/* Фоны */
+.map-view.bg-plain { background: var(--bg); }
+.map-view.bg-dots { background-color: var(--bg); background-image: radial-gradient(circle, color-mix(in srgb, var(--ink) 18%, transparent) 1.2px, transparent 1.6px); background-size: calc(26px * var(--bgs, 1)) calc(26px * var(--bgs, 1)); background-position: var(--bgx, 0) var(--bgy, 0); }
+.map-view.bg-grid { background-color: var(--bg); background-image: linear-gradient(color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1px); background-size: calc(32px * var(--bgs, 1)) calc(32px * var(--bgs, 1)); background-position: var(--bgx, 0) var(--bgy, 0); }
+.map-view.bg-gradient { background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 16%, var(--bg)), var(--bg) 45%, color-mix(in srgb, var(--hot) 16%, var(--bg))); }
+.map-view.bg-stars { background: radial-gradient(120% 80% at 50% 0%, #1d1a4a, #070712 70%); --ink: #F4F3FA; --muted: #A09FB8; }
+.map-view.bg-stars .map-bgfx {
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 72% 28%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 38% 72%, #ffe9b0, transparent), radial-gradient(1px 1px at 86% 82%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 55% 45%, #cfd8ff, transparent), radial-gradient(1px 1px at 22% 88%, #fff, transparent),
+    radial-gradient(1.3px 1.3px at 92% 12%, #fff, transparent), radial-gradient(1px 1px at 5% 55%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 64% 92%, #ffd1e8, transparent), radial-gradient(1px 1px at 46% 8%, #fff, transparent);
+  background-size: 260px 260px; animation: twinkle 4s ease-in-out infinite alternate;
+}
+.map-view.bg-aurora { background: #0B0B16; --ink: #F4F3FA; --muted: #A9A8C2; }
+.map-view.bg-aurora .map-bgfx { filter: blur(40px); opacity: .75;
+  background: radial-gradient(40% 50% at 20% 30%, #3DDC97, transparent 70%), radial-gradient(45% 55% at 80% 20%, #6E5BFF, transparent 70%), radial-gradient(50% 50% at 60% 90%, #FF4D8D, transparent 70%);
+  background-size: 160% 160%; animation: aurora 14s ease-in-out infinite alternate; }
+.map-view.bg-cover { background: #0A0A12; --ink: #FFFFFF; --muted: rgba(255, 255, 255, .72); }
+.map-view.bg-cover .map-bgfx { background-size: cover; background-position: center; filter: blur(26px) saturate(1.3) brightness(.42); transform: scale(1.15); }
+@keyframes twinkle { from { opacity: .55; } to { opacity: 1; } }
+@keyframes aurora { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+
+/* Узлы */
+.mn { position: absolute; white-space: nowrap; color: var(--ink); cursor: grab; transition: filter .2s; }
+.mn-in { display: inline-flex; align-items: center; gap: 6px; font-size: calc(14px * var(--mf)); line-height: 1.2; }
+.upright .mn-in { transform: rotate(calc(var(--rr, 0) * -1deg)); }
+.map-world { --rr: 0; }
+.mn-root .mn-in { padding: calc(9px * var(--mf)) calc(16px * var(--mf)); border-radius: calc(12px * var(--mf)); background: var(--bc); color: #1E1400; font: 700 calc(16px * var(--mf))/1.15 var(--f-display); box-shadow: 0 10px 26px -8px var(--bc); }
+.mn-group .mn-in { padding: calc(7px * var(--mf)) calc(12px * var(--mf)); border-radius: 999px; font-weight: 700; background: color-mix(in srgb, var(--bc) 20%, var(--surface)); box-shadow: inset 0 0 0 1.5px var(--bc); color: var(--ink); }
+.mn-group b { font: 700 calc(11px * var(--mf))/1 var(--f-mono); padding: 3px 6px; border-radius: 8px; background: var(--bc); color: #14100A; }
+.mn-group.collapsed .mn-in { box-shadow: inset 0 0 0 1.5px var(--bc), 4px 4px 0 -1px color-mix(in srgb, var(--bc) 35%, transparent); }
+.mn-more { font-style: normal; font-weight: 800; color: var(--bc); }
+.mn-title .t { max-width: calc(230px * var(--mf)); overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.mn-title small { font: 600 calc(11px * var(--mf))/1 var(--f-mono); color: var(--muted); }
+.mn-line .mn-in { padding: 0 2px calc(5px * var(--mf)); }
+.mn-line.solo .mn-in { border-bottom: 2px solid var(--bc); }
+.mn-pill .mn-in { padding: calc(7px * var(--mf)) calc(12px * var(--mf)); border-radius: calc(12px * var(--mf)); background: color-mix(in srgb, var(--bc) 14%, var(--surface)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--bc) 70%, transparent); }
+.mn-cover .mn-in { padding: 5px 12px 5px 5px; border-radius: 14px; background: color-mix(in srgb, var(--bc) 12%, var(--surface)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--bc) 65%, transparent), var(--shadow-sm); gap: 9px; }
+.mn-th { width: calc(30px * var(--mf)); aspect-ratio: 2 / 3; border-radius: 7px; overflow: hidden; position: relative; background: var(--c); display: grid; place-items: center; font-weight: 800; color: #fff; flex: 0 0 auto; }
+.mn-th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.mn-tx { display: flex; flex-direction: column; gap: 3px; }
+.mn-new { width: 8px; height: 8px; border-radius: 50%; background: var(--hot); box-shadow: 0 0 0 0 rgba(255, 77, 141, .6); animation: pulse 1.8s infinite; flex: 0 0 auto; }
+.mn.sel .mn-in { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--bc) 70%, transparent)); }
+.mn.sel.mn-line .mn-in, .mn.sel.mn-title .t { color: var(--bc); }
+.mn.sel.mn-root .mn-in, .mn.sel.mn-group .mn-in { transform: scale(1.06); transition: transform .3s var(--spring); }
+.mn.dragging { z-index: 5; cursor: grabbing; }
+.mn.dragging .mn-in { transform: scale(1.08); filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .4)); transition: transform .2s var(--spring); }
+.upright .mn.dragging .mn-in { transform: rotate(calc(var(--rr, 0) * -1deg)) scale(1.08); }
+
+/* Анимации карты */
+.map-view.appear .me { stroke-dasharray: 1; stroke-dashoffset: 1; animation: drawline .75s cubic-bezier(.3, .7, .2, 1) forwards; animation-delay: calc(var(--d) * 160ms + var(--i) * 14ms); }
+.map-view.appear .mn { animation: mnin .55s var(--spring) both; animation-delay: calc(var(--d) * 160ms + var(--i) * 14ms + 120ms); }
+.map-view.appear .mn-root { animation-delay: 0ms; }
+@keyframes drawline { to { stroke-dashoffset: 0; } }
+@keyframes mnin { from { opacity: 0; transform: scale(.6); } }
+.me-flow { stroke: color-mix(in srgb, var(--ink) 75%, transparent); stroke-dasharray: 2 13; opacity: .55; animation: flowdash 1.4s linear infinite; }
+@keyframes flowdash { to { stroke-dashoffset: -30; } }
+.flow-glow .me { animation: breathe 2.8s ease-in-out infinite; animation-delay: calc(var(--i) * -110ms); }
+@keyframes breathe { 50% { opacity: .42; } }
+.map-view.appear.flow-glow .me { animation: drawline .75s cubic-bezier(.3, .7, .2, 1) forwards, breathe 2.8s ease-in-out 1s infinite; }
+
+/* Пузырь и кнопки карты */
+.map-bubble {
+  position: absolute; z-index: 6; transform: translate(-50%, -100%); display: flex; gap: 4px; padding: 5px; border-radius: 16px;
+  background: var(--glass); box-shadow: var(--shadow), inset 0 0 0 1px var(--glass-line); backdrop-filter: blur(16px) saturate(170%); -webkit-backdrop-filter: blur(16px) saturate(170%);
+}
+.map-bubble.pop { animation: bubblein .35s var(--spring) both; }
+@keyframes bubblein { from { opacity: 0; transform: translate(-50%, -80%) scale(.8); } }
+.map-bubble button { white-space: nowrap; border: 0; background: transparent; color: var(--ink); min-height: 38px; padding: 0 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px; font-weight: 650; font-size: 13.5px; }
+.map-bubble button:first-child { background: var(--accent); color: var(--on-accent); }
+.map-bubble button svg { width: 17px; height: 17px; }
+.map-bubble button[data-mact="inc"] svg { fill: currentColor; }
+.map-tools { position: absolute; z-index: 7; display: flex; flex-direction: column; gap: 8px; bottom: 14px; }
+.map-tools-r { right: max(14px, env(safe-area-inset-right, 0px)); }
+.map-tools-l { left: max(14px, env(safe-area-inset-left, 0px)); }
+.map-tool { width: 44px; height: 44px; border-radius: 15px; border: 0; display: grid; place-items: center; color: var(--ink); background: var(--glass); backdrop-filter: blur(14px) saturate(170%); -webkit-backdrop-filter: blur(14px) saturate(170%); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--glass-line); transition: transform .25s var(--spring); }
+.map-tool:active { transform: scale(.88); }
+.map-tool svg { width: 21px; height: 21px; }
+.map-view.live .map-bubble { opacity: .0; pointer-events: none; }
+
+/* Полный экран */
+.map-full .map-view { position: fixed !important; inset: 0; z-index: 58; height: auto !important; margin: 0 !important; border: 0; }
+.map-full .map-tools { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+.map-full .map-view::before { content: ""; position: absolute; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); }
+
+/* Панель оформления */
+.sheet.map-sheet { max-height: 58vh; gap: 18px; }
+.light-scrim .backdrop { background: rgba(0, 0, 0, .12); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.mc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: -10px; z-index: 2; background: var(--bg-2); padding: 6px 0; }
+.mc-head h2 { margin: 0; }
+.mc-sec { display: flex; flex-direction: column; gap: 10px; }
+.mc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.mc-chip { border: 0; min-height: 38px; padding: 0 13px; border-radius: 12px; background: var(--surface); color: var(--muted); font-weight: 650; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px; transition: background .2s, color .2s, transform .25s var(--spring); }
+.mc-chip:active { transform: scale(.93); }
+.mc-chip.on { background: var(--ink); color: var(--bg); }
+.mc-bg { width: 20px; height: 20px; border-radius: 6px; flex: 0 0 auto; box-shadow: inset 0 0 0 1px var(--line); }
+.mc-bg.bg-plain { background: var(--bg); }
+.mc-bg.bg-dots { background: radial-gradient(circle, var(--muted) 1px, transparent 1.4px) 0 0 / 6px 6px, var(--bg); }
+.mc-bg.bg-grid { background: linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 6px 6px, linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 6px 6px, var(--bg); }
+.mc-bg.bg-gradient { background: linear-gradient(135deg, var(--accent), var(--hot)); }
+.mc-bg.bg-stars { background: radial-gradient(1px 1px at 30% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 60%, #fff, transparent), #12103a; }
+.mc-bg.bg-aurora { background: linear-gradient(135deg, #3DDC97, #6E5BFF, #FF4D8D); }
+.mc-bg.bg-cover { background: linear-gradient(135deg, #555, #222); }
+.mc-sw { display: flex; flex-wrap: wrap; gap: 8px; transition: opacity .2s; }
+.mc-sw.dim { opacity: .55; }
+.mc-dot { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--c); box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .15); transition: transform .25s var(--spring); position: relative; padding: 0; }
+.mc-dot.on { transform: scale(1.12); box-shadow: 0 0 0 3px var(--bg-2), 0 0 0 5px var(--c); }
+.mc-dot.custom { background: conic-gradient(#FF4D8D, #FFB81C, #3DDC97, #4CC9F0, #B18CFF, #FF4D8D); overflow: hidden; display: block; }
+.mc-dot.custom input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.mc-range { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.mc-range span { width: 74px; color: var(--muted); }
+.mc-range input { flex: 1; accent-color: var(--accent); min-width: 0; }
+.mc-range b { min-width: 46px; text-align: right; font-size: 13px; }
+.mc-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mc-row .txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mc-row small { color: var(--muted); font-size: 12.5px; }
+.mc-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.mc-actions { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+
+/* ================= Стекло ================= */
+:root { --gl-fill: rgba(255, 255, 255, .075); --gl-top: rgba(255, 255, 255, .16); --gl-hi: rgba(255, 255, 255, .34); --gl-edge: rgba(255, 255, 255, .13); --gl-low: rgba(0, 0, 0, .18); --gl-shadow: 0 8px 22px rgba(0, 0, 0, .28); --gl-glint: rgba(255, 255, 255, .28); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --gl-fill: rgba(255, 255, 255, .55); --gl-top: rgba(255, 255, 255, .7); --gl-hi: rgba(255, 255, 255, .95); --gl-edge: rgba(20, 20, 50, .09); --gl-low: rgba(20, 20, 50, .06); --gl-shadow: 0 6px 18px rgba(30, 30, 70, .12); --gl-glint: rgba(255, 255, 255, .7); } }
+:root[data-theme="light"] { --gl-fill: rgba(255, 255, 255, .55); --gl-top: rgba(255, 255, 255, .7); --gl-hi: rgba(255, 255, 255, .95); --gl-edge: rgba(20, 20, 50, .09); --gl-low: rgba(20, 20, 50, .06); --gl-shadow: 0 6px 18px rgba(30, 30, 70, .12); --gl-glint: rgba(255, 255, 255, .7); }
+
+html.glass body {
+  background:
+    radial-gradient(70% 45% at 0% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+    radial-gradient(55% 40% at 100% 35%, color-mix(in srgb, var(--hot) 11%, transparent), transparent 70%),
+    radial-gradient(70% 45% at 25% 100%, color-mix(in srgb, var(--st-planned) 12%, transparent), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+html.glass :is(.btn:not(.primary):not(.grad):not(.danger):not(.line):not(.glass), .icon-btn:not(.glass), .seg, .tab:not(.on), .sbtn:not(.on), .gchip:not(.on), .q-time:not(.on), .q-day:not(.sel), .map-tool, .mc-chip:not(.on), .stepper button, .weekpick button:not([aria-pressed="true"]), .stars button:not(.on), .appbar.solid .season-pill, .appbar:not(.on-hero) .season-pill, .q-btn) {
+  background:
+    radial-gradient(90px circle at var(--mx, 50%) var(--my, -30%), var(--gl-glint), transparent 70%),
+    linear-gradient(180deg, var(--gl-top), transparent 55%),
+    var(--gl-fill);
+  backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--gl-hi), inset 0 0 0 1px var(--gl-edge), inset 0 -2px 3px var(--gl-low), var(--gl-shadow);
+}
+html.glass .seg button[aria-pressed="true"] { background: linear-gradient(180deg, var(--gl-top), transparent 70%), var(--gl-fill); box-shadow: inset 0 1px 0 var(--gl-hi), inset 0 0 0 1px var(--gl-edge), 0 4px 12px var(--gl-low); }
+html.glass :is(.btn.primary, .plus-btn, .p-plus, .q-row.on .q-btn, .map-bubble button:first-child) {
+  background:
+    radial-gradient(90px circle at var(--mx, 50%) var(--my, -30%), rgba(255, 255, 255, .45), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 55%),
+    color-mix(in srgb, var(--accent) 86%, transparent);
+  backdrop-filter: blur(14px) saturate(180%); -webkit-backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 0 0 1px rgba(255, 255, 255, .25), inset 0 -3px 6px rgba(160, 90, 0, .25), 0 8px 22px rgba(255, 168, 28, .3);
+}
+html.glass .btn.grad, html.glass .tabbar a.fab .ib {
+  background:
+    radial-gradient(90px circle at var(--mx, 50%) var(--my, -30%), rgba(255, 255, 255, .45), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, 0) 50%),
+    var(--grad);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 0 0 1px rgba(255, 255, 255, .22), inset 0 -3px 8px rgba(120, 0, 40, .25), 0 10px 26px rgba(255, 98, 92, .38);
+}
+html.glass .tabbar a.fab .ib { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -3px 8px rgba(120, 0, 40, .25), 0 10px 26px rgba(255, 98, 92, .45); }
+/* Жидкое нажатие: кнопка чуть сплющивается и пружинит обратно */
+html.glass :is(.btn, .icon-btn, .tab, .sbtn, .gchip, .q-time, .map-tool, .mc-chip, .plus-btn, .seg button):active { transform: scale(1.035, .94); transition-duration: .12s; }
+/* Нижняя панель — плавающая стеклянная капсула */
+html.glass .tabbar {
+  left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 0; border: 0; border-radius: 28px;
+  background: linear-gradient(180deg, var(--gl-top), transparent 60%), var(--glass);
+  backdrop-filter: blur(22px) saturate(190%); -webkit-backdrop-filter: blur(22px) saturate(190%);
+  box-shadow: inset 0 1px 0 var(--gl-hi), inset 0 0 0 1px var(--gl-edge), 0 14px 34px rgba(0, 0, 0, .3);
+}
+html.glass .tab-ind { background: linear-gradient(180deg, var(--gl-top), transparent 70%), color-mix(in srgb, var(--accent) 24%, transparent); box-shadow: inset 0 1px 0 var(--gl-hi), inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); }
+html.glass main { padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px) + 56px); }
+html.glass .toast { bottom: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px) + 24px); background: linear-gradient(180deg, var(--gl-top), transparent 60%), var(--glass); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: inset 0 1px 0 var(--gl-hi), inset 0 0 0 1px var(--gl-edge), var(--shadow); }
+html.glass .detail-open .toast, html.glass .sheet-open .toast, html.glass .quick-open .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
+
+/* Стекло поверх тёмных картинок: всегда тёмное, текст белый */
+html.glass :is(.btn.glass, .icon-btn.glass, .appbar.on-hero:not(.solid) .season-pill) {
+  background:
+    radial-gradient(90px circle at var(--mx, 50%) var(--my, -30%), rgba(255, 255, 255, .3), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%),
+    rgba(18, 18, 30, .34);
+  color: #fff;
+  backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), inset 0 0 0 1px rgba(255, 255, 255, .16), inset 0 -2px 4px rgba(0, 0, 0, .2), 0 8px 22px rgba(0, 0, 0, .3);
+}
+.setting:has(.seg) { flex-wrap: wrap; row-gap: 10px; }
+.setting .seg { flex-wrap: nowrap; }

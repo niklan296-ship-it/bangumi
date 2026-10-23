@@ -27,6 +27,8 @@
     const cs = getComputedStyle(host);
     if (cs.position === 'static') host.style.position = 'relative';
     if (cs.overflow === 'visible') host.classList.add('rp-clip');
+    el.style.setProperty('--mx', (e.clientX - el.getBoundingClientRect().left).toFixed(0) + 'px');
+    el.style.setProperty('--my', (e.clientY - el.getBoundingClientRect().top).toFixed(0) + 'px');
     const d = Math.hypot(Math.max(e.clientX - r.left, r.right - e.clientX), Math.max(e.clientY - r.top, r.bottom - e.clientY)) * 2;
     const s = document.createElement('span');
     s.className = 'ripple';
@@ -166,7 +168,7 @@
     ptr.on = false;
     if (ptr.busy || ui.overlays.length || (typeof quick !== 'undefined' && quick.open) || window.scrollY > 2 || e.touches.length !== 1) return;
     const t = e.touches[0];
-    if (t.clientX < 30 || e.target.closest('.tabbar, input, textarea')) return;
+    if (t.clientX < 30 || e.target.closest('.tabbar, input, textarea, .map-view')) return;
     ptr.on = true; ptr.x0 = t.clientX; ptr.y0 = t.clientY;
     ptrEl.classList.remove('anim');
   }, { passive: true });
@@ -295,6 +297,12 @@
     const sh = document.querySelector('#sheetWrap .sheet');
     if (sh) sh.classList.add('peek-sheet');
   }
+  window.openPeek = function (ref) {
+    peek = ref;
+    openSheet(peekHTML());
+    const sh = document.querySelector('#sheetWrap .sheet');
+    if (sh) sh.classList.add('peek-sheet');
+  };
   function peekItem() {
     if (!peek) return null;
     if (peek.itemId && state.items[peek.itemId]) return state.items[peek.itemId];

@@ -63,7 +63,7 @@ const ui = {
 function defaultState() {
   return {
     v: 2, items: {}, airCache: {}, lastSync: 0, planLog: {}, activity: {}, watchLog: {}, gone: {}, ru: {}, trend: null, trendAt: 0,
-    settings: { titleLang: 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true }
+    settings: { titleLang: 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true, glass: true }
   };
 }
 
@@ -88,6 +88,7 @@ const ICON = {
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>',
   grid: '<svg class="ico" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
   rows: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+  map: '<svg class="ico" viewBox="0 0 24 24"><rect x="2.5" y="9.5" width="6" height="5" rx="1.5"/><path d="M8.5 12c3.5 0 3-6.5 6.5-6.5h6M8.5 12h12.5M8.5 12c3.5 0 3 6.5 6.5 6.5h6"/></svg>',
   x: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   bell: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 1 1 12 0v6l1.5 2h-15zM10 21h4"/></svg>',
   trash: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/></svg>'
@@ -183,6 +184,7 @@ async function load() {
 
 /* ================= Тема ================= */
 function applyTheme() {
+  document.documentElement.classList.toggle('glass', state.settings.glass !== false);
   const t = state.settings.theme;
   if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
   else document.documentElement.removeAttribute('data-theme');
@@ -1072,6 +1074,19 @@ function renderList() {
       <a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}Найти аниме</a></div>`;
     return;
   }
+  const viewSeg = `<div class="seg" role="group" aria-label="Вид">
+        <button type="button" data-action="list-view" data-v="grid" aria-pressed="${s.listView === 'grid'}" aria-label="Сетка">${ICON.grid}</button>
+        <button type="button" data-action="list-view" data-v="rows" aria-pressed="${s.listView === 'rows'}" aria-label="Список">${ICON.rows}</button>
+        <button type="button" data-action="list-view" data-v="map" aria-pressed="${s.listView === 'map'}" aria-label="Карта">${ICON.map}</button>
+      </div>`;
+  if (s.listView === 'map') {
+    const hadMap = !!$('#mapView');
+    const animate = !hadMap || el.classList.contains('animate');
+    el.innerHTML = `<div class="title-row"><div><h1 class="page-title" id="pageTitle">Мой список</h1><p class="page-sub">${items.length} ${pl(items.length, 'тайтл', 'тайтла', 'тайтлов')} на карте</p></div>${viewSeg}</div>
+      <div class="map-view bleed" id="mapView"></div>`;
+    MindMap.mount($('#mapView'), { animate });
+    return;
+  }
   const counts = {};
   STATUSES.forEach(x => { counts[x.id] = 0; });
   items.forEach(i => { counts[i.status] = (counts[i.status] || 0) + 1; });
@@ -1106,10 +1121,7 @@ function renderList() {
       <div class="seg" role="group" aria-label="Сортировка">
         ${[['recent', 'Недавние'], ['az', 'А–Я'], ['score', 'Оценка']].map(o => `<button type="button" data-action="list-sort" data-v="${o[0]}" aria-pressed="${s.listSort === o[0]}">${o[1]}</button>`).join('')}
       </div>
-      <div class="seg" role="group" aria-label="Вид">
-        <button type="button" data-action="list-view" data-v="grid" aria-pressed="${s.listView === 'grid'}" aria-label="Сетка">${ICON.grid}</button>
-        <button type="button" data-action="list-view" data-v="rows" aria-pressed="${s.listView === 'rows'}" aria-label="Список">${ICON.rows}</button>
-      </div>
+      ${viewSeg}
     </div>
     ${body}`;
 }
@@ -1184,6 +1196,9 @@ function renderProfile() {
         <div class="setting"><div class="txt"><span>Названия</span></div>${seg('set-lang', st.titleLang, [['russian', 'Рус'], ['romaji', 'Ромадзи'], ['english', 'Eng']])}</div>
         <div class="setting"><div class="txt"><span>Быстрый план</span><small>Два свайпа вправо от левого края экрана открывают окошко «Быстро в расписание»</small></div>
           <label class="switch"><input type="checkbox" id="swEdge" ${st.edgeGesture !== false ? 'checked' : ''} aria-label="Жест быстрого плана"><span></span></label></div>
+        <div class="setting"><div class="txt"><span>Мой список</span><small>Карта — как ментальная карта в Заметках</small></div>${seg('set-listview', st.listView, [['grid', 'Сетка'], ['rows', 'Строки'], ['map', 'Карта']])}</div>
+        <div class="setting"><div class="txt"><span>Стеклянные кнопки</span><small>Полупрозрачные кнопки с размытием и бликом</small></div>
+          <label class="switch"><input type="checkbox" id="swGlass" ${st.glass !== false ? 'checked' : ''} aria-label="Стеклянные кнопки"><span></span></label></div>
         <div class="setting"><div class="txt"><span>Тема</span></div>${seg('set-theme', st.theme, [['system', 'Авто'], ['dark', 'Тёмная'], ['light', 'Светлая']])}</div>
       </div>
     </div>
@@ -1653,7 +1668,7 @@ function edgeGlow(stage) {
 }
 document.addEventListener('touchstart', e => {
   edge.tracking = false;
-  if (state.settings.edgeGesture === false || quick.open || e.touches.length !== 1) return;
+  if (state.settings.edgeGesture === false || quick.open || e.touches.length !== 1 || (e.target.closest && e.target.closest('.map-view'))) return;
   const t = e.touches[0];
   if (t.clientX > 30) return;
   edge.tracking = true; edge.sx = t.clientX; edge.sy = t.clientY;
@@ -1681,6 +1696,7 @@ window.addEventListener('popstate', () => {
   if (k === 'sheet') closeSheetNow();
   else if (k === 'detail') popDetail();
   else if (k === 'quick') closeQuickNow();
+  else if (k === 'map') MindMap.exitFull();
 });
 
 function setAnimate(el) {
@@ -1866,7 +1882,7 @@ document.addEventListener('click', e => {
       ui.overlays.length = 0;
       ui.detailStack.length = 0;
       $('#detailRoot').innerHTML = ''; $('#sheetRoot').innerHTML = ''; $('#quickRoot').innerHTML = ''; quick.open = false;
-      document.body.classList.remove('locked', 'detail-open', 'sheet-open', 'quick-open');
+      document.body.classList.remove('locked', 'detail-open', 'sheet-open', 'quick-open', 'map-full');
       history.go(-n);
       setTimeout(() => go(tab), 60);
     } else go(tab);
@@ -2056,6 +2072,7 @@ document.addEventListener('click', e => {
     }
     case 'time-period': ui.timePeriod = t.dataset.v; ui.timeAll = false; $('#timeCard').innerHTML = timeCardHTML(); setAnimate($('#timeCard')); break;
     case 'time-all': ui.timeAll = !ui.timeAll; $('#timeCard').innerHTML = timeCardHTML(); break;
+    case 'set-listview': state.settings.listView = t.dataset.v; save(); buzz(8); renderProfile(); toast(t.dataset.v === 'map' ? 'Мой список: карта' : t.dataset.v === 'rows' ? 'Мой список: строки' : 'Мой список: сетка'); break;
     case 'set-lang': state.settings.titleLang = t.dataset.v; save(); renderProfile(); break;
     case 'set-theme': state.settings.theme = t.dataset.v; applyTheme(); save(); renderProfile(); break;
     case 'refresh': syncAll(false); break;
@@ -2073,6 +2090,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.matches('#swEp, #swPlan')) { toggleNotify(t.dataset.k, t.checked, t); return; }
+  if (t.id === 'swGlass') { state.settings.glass = t.checked; applyTheme(); save(); buzz(8); return; }
   if (t.id === 'swEdge') { state.settings.edgeGesture = t.checked; save(); buzz(8); toast(t.checked ? 'Жест включён: два свайпа от левого края' : 'Жест выключен'); return; }
   if (t.id === 'qTimeCustom') { quick.time = t.value; renderQuick(); return; }
   if (t.id === 'importFile' && t.files && t.files[0]) { importData(t.files[0]); t.value = ''; return; }
@@ -2123,6 +2141,7 @@ setInterval(() => {
 /* ================= Старт ================= */
 (async function start() {
   await load();
+  if (document.readyState === 'loading') await new Promise(r => document.addEventListener('DOMContentLoaded', r, { once: true }));
   applyTheme();
   const h = (location.hash || '').replace('#', '');
   const wantQuick = new URLSearchParams(location.search).has('quick');
