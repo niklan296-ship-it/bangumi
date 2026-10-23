@@ -4,4 +4,5 @@
     <string name="share_label">Бангуми: отметить серию</string>
     <string name="quick_short">В расписание</string>
     <string name="quick_long">Быстро в расписание</string>
+    <string name="widget_desc">План на сегодня и ближайшая серия</string>
 </resources>

@@ -1,13 +1,13 @@
 package app.bangumi;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.view.View;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
@@ -28,7 +29,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -165,19 +165,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (web != null) web.onResume();
+        if (web != null) {
+            web.onResume();
+            // страница забирает отметки с виджета и обновляет данные
+            web.evaluateJavascript("window.__nativeResume && window.__nativeResume()", null);
+        }
     }
 
     @Override
     protected void onPause() {
         if (web != null) web.onPause();
         super.onPause();
-    }
-
-    private PendingIntent alarmIntent(int id, Intent intent) {
-        if (intent == null) intent = new Intent(this, AlarmReceiver.class);
-        return PendingIntent.getBroadcast(this, id, intent,
-                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     /** То, что страница может попросить у приложения. Методы вызываются из JavaScript. */
@@ -283,31 +281,74 @@ public class MainActivity extends Activity {
          */
         @JavascriptInterface
         public void schedule(String json) {
+            Alarms.apply(MainActivity.this, json);
+        }
+
+        /** Данные для виджета на рабочем столе. */
+        @JavascriptInterface
+        public void widget(String json) {
+            Alarms.prefs(MainActivity.this).edit().putString("widget", json).apply();
+            BangumiWidget.updateAll(MainActivity.this);
+        }
+
+        /** Отметки, сделанные на виджете, пока приложение было закрыто. Забираем и очищаем. */
+        @JavascriptInterface
+        public String takePending() {
+            SharedPreferences sp = Alarms.prefs(MainActivity.this);
+            String p = sp.getString("pending", "[]");
+            sp.edit().putString("pending", "[]").apply();
+            return p;
+        }
+
+        /**
+         * Автокопия: файл bangumi-auto-ГГГГ-ММ-ДД.json в «Загрузки/Bangumi».
+         * Оставляем 4 последние автокопии, ручные копии не трогаем.
+         */
+        @JavascriptInterface
+        public String autoBackup(String name, String content) {
+            String where = saveFile(name, content);
+            if (where.isEmpty() || Build.VERSION.SDK_INT < 29) return where;
             try {
-                AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-                if (am == null) return;
-                SharedPreferences sp = getSharedPreferences("bangumi", MODE_PRIVATE);
-                for (String s : sp.getString("ids", "").split(",")) {
-                    if (s.isEmpty()) continue;
-                    am.cancel(alarmIntent(Integer.parseInt(s), null));
+                Uri col = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+                String[] proj = {MediaStore.MediaColumns._ID};
+                try (Cursor c = getContentResolver().query(col, proj,
+                        MediaStore.MediaColumns.DISPLAY_NAME + " LIKE ?", new String[]{"bangumi-auto-%"},
+                        MediaStore.MediaColumns.DATE_ADDED + " DESC")) {
+                    int n = 0;
+                    while (c != null && c.moveToNext()) {
+                        if (++n <= 4) continue;
+                        getContentResolver().delete(ContentUris.withAppendedId(col, c.getLong(0)), null, null);
+                    }
                 }
-                JSONArray arr = new JSONArray(json);
-                StringBuilder ids = new StringBuilder();
-                long now = System.currentTimeMillis();
-                for (int i = 0; i < arr.length(); i++) {
-                    JSONObject o = arr.getJSONObject(i);
-                    long at = o.getLong("at");
-                    if (at <= now) continue;
-                    int id = o.getInt("id");
-                    Intent it = new Intent(MainActivity.this, AlarmReceiver.class)
-                            .putExtra("id", id)
-                            .putExtra("title", o.optString("title", "Бангуми"))
-                            .putExtra("body", o.optString("body", ""));
-                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, alarmIntent(id, it));
-                    ids.append(id).append(',');
-                }
-                sp.edit().putString("ids", ids.toString()).apply();
             } catch (Exception ignored) {
+            }
+            return where;
+        }
+
+        /** Картинка «Итогов года»: кладём в «Картинки/Bangumi» и открываем меню «Поделиться». */
+        @JavascriptInterface
+        public boolean shareImage(String base64, String name, String text) {
+            try {
+                byte[] png = Base64.decode(base64, Base64.DEFAULT);
+                if (Build.VERSION.SDK_INT < 29) return false;
+                ContentValues v = new ContentValues();
+                v.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+                v.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+                v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Bangumi");
+                Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+                if (uri == null) return false;
+                try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+                    if (os == null) return false;
+                    os.write(png);
+                }
+                Intent send = new Intent(Intent.ACTION_SEND).setType("image/png")
+                        .putExtra(Intent.EXTRA_STREAM, uri)
+                        .putExtra(Intent.EXTRA_TEXT, text)
+                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                runOnUiThread(() -> startActivity(Intent.createChooser(send, null)));
+                return true;
+            } catch (Exception e) {
+                return false;
             }
         }
     }
