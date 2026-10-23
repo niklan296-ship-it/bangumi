@@ -5,30 +5,30 @@
 
 /* ================= Константы ================= */
 const STATUSES = [
-  { id: 'watching', label: 'Смотрю' },
-  { id: 'planned', label: 'В планах' },
-  { id: 'paused', label: 'Отложено' },
-  { id: 'completed', label: 'Просмотрено' },
-  { id: 'dropped', label: 'Брошено' }
+  { id: 'watching', label: T('Смотрю') },
+  { id: 'planned', label: T('В планах') },
+  { id: 'paused', label: T('Отложено') },
+  { id: 'completed', label: T('Просмотрено') },
+  { id: 'dropped', label: T('Брошено') }
 ];
 const ST = Object.fromEntries(STATUSES.map(s => [s.id, s]));
-const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-const DAYS_FULL = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-const DAYS_DAT = ['понедельникам', 'вторникам', 'средам', 'четвергам', 'пятницам', 'субботам', 'воскресеньям'];
-const DAYS_EVERY = ['каждый понедельник', 'каждый вторник', 'каждую среду', 'каждый четверг', 'каждую пятницу', 'каждую субботу', 'каждое воскресенье'];
+const DAYS = [T('Пн'), T('Вт'), T('Ср'), T('Чт'), T('Пт'), T('Сб'), T('Вс')];
+const DAYS_FULL = [T('Понедельник'), T('Вторник'), T('Среда'), T('Четверг'), T('Пятница'), T('Суббота'), T('Воскресенье')];
+const DAYS_DAT = [T('понедельникам'), T('вторникам'), T('средам'), T('четвергам'), T('пятницам'), T('субботам'), T('воскресеньям')];
+const DAYS_EVERY = [T('каждый понедельник'), T('каждый вторник'), T('каждую среду'), T('каждый четверг'), T('каждую пятницу'), T('каждую субботу'), T('каждое воскресенье')];
 const KANJI = ['月', '火', '水', '木', '金', '土', '日'];
-const FORMAT = { TV: 'TV', TV_SHORT: 'TV-короткий', MOVIE: 'Фильм', SPECIAL: 'Спешл', OVA: 'OVA', ONA: 'ONA', MUSIC: 'Клип' };
-const AIR = { RELEASING: 'Выходит', FINISHED: 'Завершён', NOT_YET_RELEASED: 'Анонс', CANCELLED: 'Отменён', HIATUS: 'Перерыв' };
-const SEASON_RU = { WINTER: 'Зима', SPRING: 'Весна', SUMMER: 'Лето', FALL: 'Осень' };
-const SOURCE_RU = { ORIGINAL: 'Оригинал', MANGA: 'Манга', LIGHT_NOVEL: 'Ранобэ', WEB_NOVEL: 'Веб-новелла', NOVEL: 'Роман', VISUAL_NOVEL: 'Визуальная новелла', VIDEO_GAME: 'Игра', GAME: 'Игра', WEB_MANGA: 'Веб-манга', OTHER: 'Другое' };
-const TABS = { home: 'Главная', schedule: 'Расписание', search: 'Поиск', list: 'Мой список', profile: 'Профиль' };
+const FORMAT = { TV: 'TV', TV_SHORT: T('TV-короткий'), MOVIE: T('Фильм'), SPECIAL: T('Спешл'), OVA: 'OVA', ONA: 'ONA', MUSIC: T('Клип') };
+const AIR = { RELEASING: T('Выходит'), FINISHED: T('Завершён'), NOT_YET_RELEASED: T('Анонс'), CANCELLED: T('Отменён'), HIATUS: T('Перерыв') };
+const SEASON_RU = { WINTER: T('Зима'), SPRING: T('Весна'), SUMMER: T('Лето'), FALL: T('Осень') };
+const SOURCE_RU = { ORIGINAL: T('Оригинал'), MANGA: T('Манга'), LIGHT_NOVEL: T('Ранобэ'), WEB_NOVEL: T('Веб-новелла'), NOVEL: T('Роман'), VISUAL_NOVEL: T('Визуальная новелла'), VIDEO_GAME: T('Игра'), GAME: T('Игра'), WEB_MANGA: T('Веб-манга'), OTHER: T('Другое') };
+const TABS = { home: T('Главная'), schedule: T('Расписание'), search: T('Поиск'), list: T('Мой список'), profile: T('Профиль') };
 const GENRES = [
-  ['Action', 'Экшен', '#FF5E5B'], ['Fantasy', 'Фэнтези', '#7C9DFF'], ['Romance', 'Романтика', '#FF6FAE'],
-  ['Comedy', 'Комедия', '#FFC23D'], ['Slice of Life', 'Повседневность', '#9BE15D'], ['Drama', 'Драма', '#B18CFF'],
-  ['Adventure', 'Приключения', '#FF9F43'], ['Supernatural', 'Сверхъестественное', '#8E7CFF'], ['Mystery', 'Детектив', '#5AC8FA'],
-  ['Psychological', 'Психология', '#E056FD'], ['Sci-Fi', 'Фантастика', '#3DDC97'], ['Sports', 'Спорт', '#FF7A45'],
-  ['Thriller', 'Триллер', '#FF4757'], ['Horror', 'Ужасы', '#C44569'], ['Mecha', 'Меха', '#4CC9F0'],
-  ['Music', 'Музыка', '#F72585'], ['Mahou Shoujo', 'Махо-сёдзё', '#FF9CEE'], ['Ecchi', 'Этти', '#FF8FB1']
+  ['Action', T('Экшен'), '#FF5E5B'], ['Fantasy', T('Фэнтези'), '#7C9DFF'], ['Romance', T('Романтика'), '#FF6FAE'],
+  ['Comedy', T('Комедия'), '#FFC23D'], ['Slice of Life', T('Повседневность'), '#9BE15D'], ['Drama', T('Драма'), '#B18CFF'],
+  ['Adventure', T('Приключения'), '#FF9F43'], ['Supernatural', T('Сверхъестественное'), '#8E7CFF'], ['Mystery', T('Детектив'), '#5AC8FA'],
+  ['Psychological', T('Психология'), '#E056FD'], ['Sci-Fi', T('Фантастика'), '#3DDC97'], ['Sports', T('Спорт'), '#FF7A45'],
+  ['Thriller', T('Триллер'), '#FF4757'], ['Horror', T('Ужасы'), '#C44569'], ['Mecha', T('Меха'), '#4CC9F0'],
+  ['Music', T('Музыка'), '#F72585'], ['Mahou Shoujo', T('Махо-сёдзё'), '#FF9CEE'], ['Ecchi', T('Этти'), '#FF8FB1']
 ];
 const GENRE = Object.fromEntries(GENRES.map(g => [g[0], { ru: g[1], c: g[2] }]));
 const QUICK_GENRES = GENRES.filter(g => g[0] !== 'Ecchi' && g[0] !== 'Mahou Shoujo');
@@ -63,7 +63,7 @@ const ui = {
 function defaultState() {
   return {
     v: 2, items: {}, airCache: {}, lastSync: 0, planLog: {}, activity: {}, watchLog: {}, gone: {}, shareMap: {}, ru: {}, trend: null, trendAt: 0,
-    settings: { titleLang: 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true, glass: true, perf: 'auto', skin: 'cinema' }
+    settings: { titleLang: LANG === 'en' ? 'english' : 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true, glass: true, perf: 'auto', skin: 'cinema' }
   };
 }
 
@@ -73,8 +73,8 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nowSec = () => Math.floor(Date.now() / 1000);
 const pad = n => String(n).padStart(2, '0');
-const pl = (n, a, b, c) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? b : c; };
-const sers = n => n + ' ' + pl(n, 'серия', 'серии', 'серий');
+const pl = (n, a, b, c) => { if (LANG === 'en') return n === 1 ? a : c; const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? b : c; };
+const sers = n => n + ' ' + pl(n, T('серия'), T('серии'), T('серий'));
 const title = it => itemTitle(it, state.settings.titleLang);
 const activeStatus = s => s === 'watching' || s === 'planned' || s === 'paused';
 const initial = s => (String(s || '?').trim().charAt(0) || '?').toUpperCase();
@@ -96,16 +96,16 @@ const ICON = {
 
 function fmtTime(sec) { const d = new Date(sec * 1000); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
 function fmtJST(sec) {
-  try { return new Intl.DateTimeFormat('ru-RU', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' }).format(new Date(sec * 1000)); }
+  try { return new Intl.DateTimeFormat(LOC, { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' }).format(new Date(sec * 1000)); }
   catch (e) { return ''; }
 }
-const monShort = d => new Intl.DateTimeFormat('ru-RU', { month: 'short' }).format(d).replace('.', '');
+const monShort = d => new Intl.DateTimeFormat(LOC, { month: 'short' }).format(d).replace('.', '');
 function fmtDay(sec) {
   const d = new Date(sec * 1000), t = new Date(); t.setHours(0, 0, 0, 0);
   const dd = new Date(d); dd.setHours(0, 0, 0, 0);
   const diff = Math.round((dd - t) / 86400000);
-  if (diff === 0) return 'сегодня';
-  if (diff === 1) return 'завтра';
+  if (diff === 0) return T('сегодня');
+  if (diff === 1) return T('завтра');
   return DAYS[dayIndexMon(d)].toLowerCase() + ', ' + d.getDate() + ' ' + monShort(d);
 }
 function until(sec) {
@@ -113,9 +113,9 @@ function until(sec) {
   const d = Math.floor(s / 86400); s -= d * 86400;
   const h = Math.floor(s / 3600); s -= h * 3600;
   const m = Math.floor(s / 60);
-  if (d > 0) return d + ' д ' + h + ' ч';
-  if (h > 0) return h + ' ч ' + m + ' мин';
-  return Math.max(1, m) + ' мин';
+  if (d > 0) return d + T(' д ') + h + T(' ч');
+  if (h > 0) return h + T(' ч ') + m + T(' мин');
+  return Math.max(1, m) + T(' мин');
 }
 function weekStart(offset) {
   const d = new Date(); d.setHours(0, 0, 0, 0);
@@ -154,7 +154,7 @@ function canInc(it) { return activeStatus(it.status) && (!it.total || it.progres
 function hueColor(s) { let h = 7; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) % 360; return `hsl(${h} 62% 52%)`; }
 function byAni() { const m = {}; Object.values(state.items).forEach(i => { if (i.anilistId) m[i.anilistId] = i; }); return m; }
 const ruN = id => (id && state.ru[id] && state.ru[id].n) || '';
-const ruD = id => (id && state.ru[id] && state.ru[id].d) || '';
+const ruD = id => (LANG !== 'en' && id && state.ru[id] && state.ru[id].d) || '';
 function mediaTitle(m) { return itemTitle({ titles: Object.assign({}, m.title, { russian: ruN(m.idMal) }) }, state.settings.titleLang); }
 function mediaCover(m, big) { const c = m.coverImage || {}; return (big ? c.extraLarge || c.large : c.large || c.extraLarge) || ''; }
 /* Отдельное приложение (APK) даёт мост BangumiNative; в Chrome его нет */
@@ -177,11 +177,11 @@ function weakDevice() {
 }
 /* ---------- Интерфейсы ---------- */
 const SKINS = {
-  cinema: { name: 'Кинотеатр', sub: 'Постеры, свет и стекло', theme: ['#0B0B12', '#F3F3F6'], font: null,
+  cinema: { name: T('Кинотеатр'), sub: T('Постеры, свет и стекло'), theme: ['#0B0B12', '#F3F3F6'], font: null,
     fx: ['#FFC23D', '#FF7A45', '#FF4D8D', '#7C9DFF', '#3DDC97', '#B18CFF', '#ffffff'] },
-  manga: { name: 'Манга', sub: 'Тушь, бумага и панели', theme: ['#121212', '#EFEEEA'], font: 'Dela+Gothic+One',
+  manga: { name: T('Манга'), sub: T('Тушь, бумага и панели'), theme: ['#121212', '#EFEEEA'], font: 'Dela+Gothic+One',
     fx: ['#141414', '#E0262E', '#141414', '#E0262E', '#FFFFFF', '#8C8A84'] },
-  quest: { name: 'Квест', sub: 'Пиксели, уровни и опыт', theme: ['#17132E', '#17132E'], font: 'Press+Start+2P',
+  quest: { name: T('Квест'), sub: T('Пиксели, уровни и опыт'), theme: ['#17132E', '#17132E'], font: 'Press+Start+2P',
     fx: ['#FFD23F', '#FF3E9A', '#3DE0FF', '#7CF06B', '#C58BFF'] }
 };
 const skin = () => (SKINS[state.settings.skin] ? state.settings.skin : 'cinema');
@@ -237,7 +237,7 @@ function scheduleNative() {
           const ep = it.nextEp.episode + k;
           if (k && it.total && ep > it.total) break;
           const at = (it.nextEp.airingAt + k * 7 * 86400) * 1000;
-          if (at > now) list.push({ id: 1000000 + (it.anilistId % 300000) * 3 + k, at, title: 'Вышла ' + ep + ' серия', body: itemTitle(it, pref) });
+          if (at > now) list.push({ id: 1000000 + (it.anilistId % 300000) * 3 + k, at, title: L('Вышла ' + ep + ' серия', 'Episode ' + ep + ' is out'), body: itemTitle(it, pref) });
         }
       });
     }
@@ -250,8 +250,8 @@ function scheduleNative() {
         const mins = planned.reduce((m, i) => { const t = i.plan.time ? i.plan.time.split(':') : null; return Math.min(m, t ? (+t[0]) * 60 + (+t[1]) : 19 * 60); }, 24 * 60);
         d.setHours(Math.floor(mins / 60), mins % 60, 0, 0);
         if (d.getTime() <= now) continue;
-        const body = planned.slice(0, 4).map(i => itemTitle(i, pref) + ' — ' + (i.plan.eps || 1) + ' сер.' + (i.plan.time ? ' в ' + i.plan.time : '')).join('\n');
-        list.push({ id: 900 + k, at: d.getTime(), title: 'Сегодня по плану', body });
+        const body = planned.slice(0, 4).map(i => itemTitle(i, pref) + ' — ' + (i.plan.eps || 1) + T(' сер.') + (i.plan.time ? T(' в ') + i.plan.time : '')).join('\n');
+        list.push({ id: 900 + k, at: d.getTime(), title: T('Сегодня по плану'), body });
       }
     }
     const json = JSON.stringify(list);
@@ -407,7 +407,7 @@ async function syncAll(quiet) {
   ]);
   ui.syncing = false;
   if (ui.tab === 'home' && $('#homeBody')) { if (!ui.heroIds || ui.heroIds.length < 2) ui.heroIds = null; renderHome(['hero']); }
-  if (!quiet) toast(ok ? 'Данные обновлены' : 'Нет связи с AniList. Попробуй позже');
+  if (!quiet) toast(ok ? T('Данные обновлены') : T('Нет связи с AniList. Попробуй позже'));
   renderCurrent();
   if (ui.detailStack.length) renderDetailBlocks();
 }
@@ -455,7 +455,7 @@ async function loadDetailMedia(aniId) {
     if (cur && (cur.aniId === aniId || (cur.itemId && state.items[cur.itemId] && state.items[cur.itemId].anilistId === aniId))) renderDetailBlocks(true);
   } catch (e) {
     const cur = currentDetail();
-    if (cur) { const el = $('#dAbout'); if (el && !el.innerHTML.trim()) el.innerHTML = '<p class="hint">Описание появится, когда будет интернет.</p>'; }
+    if (cur) { const el = $('#dAbout'); if (el && !el.innerHTML.trim()) el.innerHTML = T('<p class="hint">Описание появится, когда будет интернет.</p>'); }
   }
 }
 
@@ -472,7 +472,7 @@ function setProgress(it, val, opts) {
   it.progress = val;
   if (lvBefore) {
     const lv = questLevel(totalEps()).L;
-    if (lv > lvBefore) setTimeout(() => { celebrate(); toast('Новый уровень: ' + lv + '!', { icon: '<b style="font-size:13px">★</b>', ms: 4500 }); }, 900);
+    if (lv > lvBefore) setTimeout(() => { celebrate(); toast(T('Новый уровень: ') + lv + '!', { icon: '<b style="font-size:13px">★</b>', ms: 4500 }); }, 900);
   }
   if (delta > 0 && (it.status === 'planned' || it.status === 'paused')) it.status = 'watching';
   const doLog = opts.log !== false && (opts.max == null || Math.abs(delta) <= opts.max);
@@ -494,9 +494,9 @@ function trimWatchLog() {
 }
 function fmtDur(mins) {
   mins = Math.round(mins);
-  if (mins < 60) return mins + ' мин';
+  if (mins < 60) return mins + T(' мин');
   const h = Math.floor(mins / 60), m = mins % 60;
-  return h.toLocaleString('ru-RU') + ' ч' + (m ? ' ' + m + ' мин' : '');
+  return h.toLocaleString(LOC) + T(' ч') + (m ? ' ' + m + T(' мин') : '');
 }
 function itemDur(id) {
   const it = state.items[id] || state.gone[id];
@@ -504,11 +504,11 @@ function itemDur(id) {
 }
 function periodInfo(p) {
   const t = new Date(); t.setHours(0, 0, 0, 0);
-  const month = d => { const s = new Intl.DateTimeFormat('ru-RU', { month: 'long' }).format(d); return s.charAt(0).toUpperCase() + s.slice(1); };
-  if (p === 'week') { const from = new Date(t); from.setDate(from.getDate() - 6); const to = new Date(t); to.setDate(to.getDate() + 1); return { from, to, label: 'Последние 7 дней' }; }
+  const month = d => { const s = new Intl.DateTimeFormat(LOC, { month: 'long' }).format(d); return s.charAt(0).toUpperCase() + s.slice(1); };
+  if (p === 'week') { const from = new Date(t); from.setDate(from.getDate() - 6); const to = new Date(t); to.setDate(to.getDate() + 1); return { from, to, label: T('Последние 7 дней') }; }
   if (p === 'month') return { from: new Date(t.getFullYear(), t.getMonth(), 1), to: new Date(t.getFullYear(), t.getMonth() + 1, 1), label: month(t) + ' ' + t.getFullYear() };
   if (p === 'prev') { const from = new Date(t.getFullYear(), t.getMonth() - 1, 1); return { from, to: new Date(t.getFullYear(), t.getMonth(), 1), label: month(from) + ' ' + from.getFullYear() }; }
-  return { from: null, to: null, label: 'За всё время' };
+  return { from: null, to: null, label: T('За всё время') };
 }
 /* Минуты по тайтлам за период: [{id, eps, mins}] по убыванию. */
 function timeByTitle(p) {
@@ -532,8 +532,8 @@ function minsForItem(id, p) {
 function maybeComplete(it) {
   if (it.total && it.progress >= it.total && it.status !== 'completed') {
     celebrate();
-    toast('Финал! Перенести в «Просмотрено»?', {
-      action: 'Да', ms: 7000, fn: () => { it.status = 'completed'; it.updatedAt = Date.now(); save(); celebrate(); refreshAfterChange(); toast('«' + title(it) + '» — просмотрено'); }
+    toast(T('Финал! Перенести в «Просмотрено»?'), {
+      action: T('Да'), ms: 7000, fn: () => { it.status = 'completed'; it.updatedAt = Date.now(); save(); celebrate(); refreshAfterChange(); toast('«' + title(it) + T('» — просмотрено')); }
     });
     return true;
   }
@@ -549,7 +549,7 @@ function incEpisode(id, srcEl) {
   refreshAfterChange();
   if (!maybeComplete(it)) {
     toast('EP ' + it.progress + ' — ' + title(it), {
-      action: 'Отменить', fn: () => { setProgress(it, before.progress); it.status = before.status; save(); refreshAfterChange(); }
+      action: T('Отменить'), fn: () => { setProgress(it, before.progress); it.status = before.status; save(); refreshAfterChange(); }
     });
   }
 }
@@ -588,7 +588,7 @@ function togglePlan(key, id, el) {
     if (nb) nb.classList.add('pop');
   }
   if (log[id] && !maybeComplete(it)) {
-    if (allDone) { celebrate(); toast('План на ' + (sameDay(date, new Date()) ? 'сегодня' : DAYS_FULL[dayIndexMon(date)].toLowerCase()) + ' выполнен!'); }
+    if (allDone) { celebrate(); toast(T('План на ') + (sameDay(date, new Date()) ? T('сегодня') : L(DAYS_FULL[dayIndexMon(date)].toLowerCase(), DAYS_FULL[dayIndexMon(date)])) + T(' выполнен!')); }
   }
 }
 function keyTime(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d).getTime(); }
@@ -601,7 +601,7 @@ function floatPlus(el) {
   if (window.sparkle) sparkle(el, 8);
   const r = el.getBoundingClientRect();
   const s = document.createElement('span');
-  s.className = 'float-plus'; s.textContent = skin() === 'quest' ? '+1 XP' : skin() === 'manga' ? 'ДОН!' : '+1';
+  s.className = 'float-plus'; s.textContent = skin() === 'quest' ? '+1 XP' : skin() === 'manga' ? T('ДОН!') : '+1';
   s.style.left = (r.left + r.width / 2) + 'px'; s.style.top = (r.top - 4) + 'px';
   document.body.appendChild(s);
   setTimeout(() => s.remove(), 950);
@@ -646,11 +646,11 @@ function celebrate() {
 function countUp(root) {
   (root || document).querySelectorAll('[data-count]').forEach(el => {
     const to = +el.dataset.count;
-    if (reduced || !to) { el.textContent = to.toLocaleString('ru-RU'); return; }
+    if (reduced || !to) { el.textContent = to.toLocaleString(LOC); return; }
     const t0 = performance.now(), dur = 1000;
     (function step(t) {
       const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-      el.textContent = Math.round(to * e).toLocaleString('ru-RU');
+      el.textContent = Math.round(to * e).toLocaleString(LOC);
       if (k < 1) requestAnimationFrame(step);
     })(t0);
   });
@@ -689,14 +689,14 @@ function posterHTML(c, o) {
   let b = '';
   if (it && o.badge !== false) b += `<span class="p-badge s-${st}" style="--st:var(--st-${st})"><span class="dot"></span>${esc(ST[st].label)}</span>`;
   if (it && activeStatus(st) && newEps(it) > 0) b += `<span class="p-new">+${newEps(it)}</span>`;
-  if (o.plus && it && canInc(it)) b += `<button type="button" class="p-plus" data-action="inc" data-id="${esc(it.id)}" aria-label="Отметить серию ${it.progress + 1}">+1</button>`;
+  if (o.plus && it && canInc(it)) b += `<button type="button" class="p-plus" data-action="inc" data-id="${esc(it.id)}" aria-label="${T("Отметить серию")} ${it.progress + 1}">+1</button>`;
   else if (c.next && c.next.airingAt > nowSec() && o.air !== false) b += `<span class="p-air">EP ${c.next.episode} · ${DAYS[dayIndexMon(new Date(c.next.airingAt * 1000))]}</span>`;
   else if (c.avg) b += `<span class="p-score">★ ${(c.avg / 10).toFixed(1)}</span>`;
   if (it && it.progress && st !== 'completed') {
     const pct = it.total ? Math.min(100, it.progress / it.total * 100) : 60;
     b += `<span class="p-bar"><i style="width:${pct}%"></i></span>`;
   }
-  const sub = o.sub != null ? o.sub : [FORMAT[c.format] || '', c.eps ? c.eps + ' эп.' : '', c.year || ''].filter(Boolean).join(' · ');
+  const sub = o.sub != null ? o.sub : [FORMAT[c.format] || '', c.eps ? c.eps + T(' эп.') : '', c.year || ''].filter(Boolean).join(' · ');
   return `<div class="poster ${o.cls || ''} rise" style="--i:${o.i || 0};--c:${esc(c.color)}" role="button" tabindex="0" data-action="open" ${openAttrs(c)} aria-label="${esc(c.title)}">
     <span class="poster-img" data-vt="${esc(c.key)}"><span class="ph-art">${esc(initial(c.title))}</span>${imgTag(c.cover)}${b}</span>
     <span class="poster-title">${esc(c.title)}</span>${sub ? `<span class="poster-sub">${esc(sub)}</span>` : ''}
@@ -707,8 +707,8 @@ function skeletonPosters(n, grid) {
 }
 function installBanner() {
   if (!ui.deferredInstall) return '';
-  return `<div class="install rise"><p>Поставь Бангуми на главный экран — откроется как обычное приложение.</p>
-    <button class="btn small" type="button" data-action="install">Установить</button></div>`;
+  return `<div class="install rise"><p>${T("Поставь Бангуми на главный экран — откроется как обычное приложение.")}</p>
+    <button class="btn small" type="button" data-action="install">${T("Установить")}</button></div>`;
 }
 
 /* ================= Главная ================= */
@@ -742,9 +742,9 @@ function heroSlideHTML(s, i) {
   if (s.kind === 'item') {
     const it = s.it, ne = newEps(it);
     let kicker;
-    if (it.status === 'watching' && ne > 0) kicker = `<span class="live"></span>Доступно ещё ${sers(ne)}`;
-    else if (it.nextEp && it.nextEp.airingAt > n) kicker = `<span class="live"></span>EP ${it.nextEp.episode} через ${until(it.nextEp.airingAt)}`;
-    else kicker = it.status === 'planned' ? 'В твоих планах' : 'Продолжить просмотр';
+    if (it.status === 'watching' && ne > 0) kicker = `<span class="live"></span>${T("Доступно ещё")} ${sers(ne)}`;
+    else if (it.nextEp && it.nextEp.airingAt > n) kicker = `<span class="live"></span>EP ${it.nextEp.episode} ${T("через")} ${until(it.nextEp.airingAt)}`;
+    else kicker = it.status === 'planned' ? T('В твоих планах') : T('Продолжить просмотр');
     const chips = [
       it.avg ? `<span class="mchip star">${(it.avg / 10).toFixed(1)}</span>` : '',
       FORMAT[it.format] ? `<span class="mchip">${esc(FORMAT[it.format])}</span>` : '',
@@ -762,8 +762,8 @@ function heroSlideHTML(s, i) {
         <div class="meta-chips">${chips}</div>
         ${desc ? `<p class="hero-desc">${esc(desc)}</p>` : ''}
         <div class="hero-actions">
-          ${canInc(it) ? `<button class="btn primary" type="button" data-action="inc" data-id="${esc(it.id)}">${ICON.play}+1 серия</button>` : ''}
-          <button class="btn glass" type="button" data-action="open" data-item="${esc(it.id)}">${ICON.info}Подробнее</button>
+          ${canInc(it) ? `<button class="btn primary" type="button" data-action="inc" data-id="${esc(it.id)}">${ICON.play}${T("+1 серия")}</button>` : ''}
+          <button class="btn glass" type="button" data-action="open" data-item="${esc(it.id)}">${ICON.info}${T("Подробнее")}</button>
         </div>
       </div></article>`;
   }
@@ -774,19 +774,19 @@ function heroSlideHTML(s, i) {
     m.averageScore ? `<span class="mchip star">${(m.averageScore / 10).toFixed(1)}</span>` : '',
     FORMAT[m.format] ? `<span class="mchip">${esc(FORMAT[m.format])}</span>` : '',
     m.seasonYear ? `<span class="mchip">${m.seasonYear}</span>` : '',
-    m.episodes ? `<span class="mchip">${m.episodes} эп.</span>` : ''
+    m.episodes ? `<span class="mchip">${m.episodes} ${T("эп.")}</span>` : ''
   ].join('');
   return `<article class="hero-slide" style="--c:${esc((m.coverImage && m.coverImage.color) || hueColor(t))}" data-i="${i}">
     <div class="hero-bg">${mediaCover(m, true) ? `<img src="${esc(mediaCover(m, true))}" alt="" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async">` : ''}</div>
     <div class="hero-glow"></div><div class="hero-shade"></div>
     <div class="hero-content">
-      <div class="hero-kicker">В тренде${rank ? ' · №' + rank : ''}</div>
+      <div class="hero-kicker">${T("В тренде")}${rank ? ' · №' + rank : ''}</div>
       <h2 class="hero-title">${esc(t)}</h2>
       <div class="meta-chips">${chips}</div>
       ${desc ? `<p class="hero-desc">${esc(desc)}</p>` : ''}
       <div class="hero-actions">
-        <button class="btn primary" type="button" data-action="quick-add" data-ani="${m.id}">${ICON.plus}В список</button>
-        <button class="btn glass" type="button" data-action="open" data-ani="${m.id}">${ICON.info}Подробнее</button>
+        <button class="btn primary" type="button" data-action="quick-add" data-ani="${m.id}">${ICON.plus}${T("В список")}</button>
+        <button class="btn glass" type="button" data-action="open" data-ani="${m.id}">${ICON.info}${T("Подробнее")}</button>
       </div>
     </div></article>`;
 }
@@ -796,10 +796,10 @@ function heroHTML() {
     return `<div class="hero" style="--c:#FF7A45"><div class="hero-track"><article class="hero-slide active" style="background:radial-gradient(120% 80% at 80% 0%, #3a2a6e, transparent 60%), radial-gradient(100% 70% at 0% 100%, #6e2a3a, transparent 60%), #0B0B12">
       <div class="hero-shade"></div>
       <div class="hero-content">
-        <div class="hero-kicker">Добро пожаловать</div>
-        <h2 class="hero-title">Твоё аниме. Твоё расписание.</h2>
-        <p class="hero-desc" style="-webkit-line-clamp:3">Добавляй тайтлы, отмечай серии одним касанием и раскладывай просмотр по дням недели.</p>
-        <div class="hero-actions"><a class="btn primary" href="#search" data-tab-link="search">${ICON.plus}Найти аниме</a></div>
+        <div class="hero-kicker">${T("Добро пожаловать")}</div>
+        <h2 class="hero-title">${T("Твоё аниме. Твоё расписание.")}</h2>
+        <p class="hero-desc" style="-webkit-line-clamp:3">${T("Добавляй тайтлы, отмечай серии одним касанием и раскладывай просмотр по дням недели.")}</p>
+        <div class="hero-actions"><a class="btn primary" href="#search" data-tab-link="search">${ICON.plus}${T("Найти аниме")}</a></div>
       </div></article></div></div>`;
   }
   return `<div class="hero" id="hero"><div class="hero-track" id="heroTrack">${slides.map(heroSlideHTML).join('')}</div>
@@ -857,10 +857,10 @@ function contCardHTML(it, i) {
   return `<div class="cont rise" style="--i:${i};--c:${esc(it.color || hueColor(title(it)))}" role="button" tabindex="0" data-action="open" data-item="${esc(it.id)}" aria-label="${esc(title(it))}">
     <div class="cont-art" data-vt="${esc(it.id)}">${art ? `<img src="${esc(art)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ''}
       ${ne > 0 ? `<span class="p-new">+${ne}</span>` : ''}
-      <span class="cont-ep"><b data-tick="ce-${esc(it.id)}">EP ${it.progress}</b><span>из ${it.total || '?'}</span></span></div>
+      <span class="cont-ep"><b data-tick="ce-${esc(it.id)}">EP ${it.progress}</b><span>${T("из")} ${it.total || '?'}</span></span></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <div class="cont-body"><span class="t">${esc(title(it))}</span>
-      ${canInc(it) ? `<button class="plus-btn" type="button" data-action="inc" data-id="${esc(it.id)}" aria-label="Отметить серию ${it.progress + 1}">+1</button>` : ''}</div>
+      ${canInc(it) ? `<button class="plus-btn" type="button" data-action="inc" data-id="${esc(it.id)}" aria-label="${T("Отметить серию")} ${it.progress + 1}">+1</button>` : ''}</div>
   </div>`;
 }
 function soonCardHTML(it, i) {
@@ -878,29 +878,29 @@ function checklistHTML(date, opts) {
   const future = d0 > today, isToday = d0.getTime() === today.getTime();
   const list = planFor(date);
   const done = list.filter(it => log[it.id]).length;
-  const head = opts.title || (DAYS_FULL[di] + (isToday ? ' · сегодня' : ''));
-  const sub = list.length ? (future ? sers(list.reduce((s, it) => s + (it.plan.eps || 1), 0)) + ' запланировано' : `${done} из ${list.length} выполнено`) : 'Пока ничего не запланировано';
+  const head = opts.title || (DAYS_FULL[di] + (isToday ? T(' · сегодня') : ''));
+  const sub = list.length ? (future ? sers(list.reduce((s, it) => s + (it.plan.eps || 1), 0)) + T(' запланировано') : `${done} ${T("из")} ${list.length} ${T("выполнено")}`) : T('Пока ничего не запланировано');
   let rows = list.map(it => {
     const l = log[it.id];
     let from, to;
     if (l) { from = l.from; to = l.to; }
     else { from = (it.progress || 0) + 1; to = from + (it.plan.eps || 1) - 1; if (it.total) to = Math.min(it.total, to); }
-    const range = (it.total && from > it.total && !l) ? 'всё просмотрено' : (from >= to ? 'EP ' + from : 'EP ' + from + '–' + to);
+    const range = (it.total && from > it.total && !l) ? T('всё просмотрено') : (from >= to ? 'EP ' + from : 'EP ' + from + '–' + to);
     const c = it.color || hueColor(title(it));
     return `<div class="check-item${l ? ' done' : ''}">
-      <button type="button" class="cbox${l ? ' on' : ''}" data-action="plan-check" data-key="${key}" data-id="${esc(it.id)}" ${future ? 'disabled' : ''} aria-pressed="${!!l}" aria-label="Отметить: ${esc(title(it))}">
+      <button type="button" class="cbox${l ? ' on' : ''}" data-action="plan-check" data-key="${key}" data-id="${esc(it.id)}" ${future ? 'disabled' : ''} aria-pressed="${!!l}" aria-label="${T("Отметить:")} ${esc(title(it))}">
         <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button type="button" class="open" data-action="open" data-item="${esc(it.id)}">
         ${thumbHTML(it.cover, title(it), c, it.id)}
         <span class="info"><span class="t">${esc(title(it))}</span>
-          <span class="s"><span class="epchip">${esc(range)}</span>${it.plan.time ? `<span class="mono">${esc(it.plan.time)}</span>` : ''}${l ? '<span>готово</span>' : ''}</span></span>
+          <span class="s"><span class="epchip">${esc(range)}</span>${it.plan.time ? `<span class="mono">${esc(it.plan.time)}</span>` : ''}${l ? T('<span>готово</span>') : ''}</span></span>
       </button></div>`;
   }).join('');
   return `<div class="daycard">
     <div class="daycard-head">${ringHTML(list.length ? done / list.length : 0, list.length ? `${done}/${list.length}` : '0')}
       <div class="txt"><h3>${esc(head)}</h3><small>${esc(sub)}</small></div></div>
     ${rows}
-    <button type="button" class="add-row" data-action="plan-add" data-d="${di}"><span class="plus">${ICON.plus}</span>${list.length ? 'Изменить план по ' + DAYS_DAT[di] : 'Запланировать по ' + DAYS_DAT[di]}</button>
+    <button type="button" class="add-row" data-action="plan-add" data-d="${di}"><span class="plus">${ICON.plus}</span>${list.length ? T('Изменить план по ') + DAYS_DAT[di] : T('Запланировать по ') + DAYS_DAT[di]}</button>
   </div>`;
 }
 
@@ -924,13 +924,13 @@ function renderHome(parts) {
 
   if (has('today')) {
     const hasActive = items.some(i => i.status === 'watching' || i.status === 'planned');
-    $('#homeToday').innerHTML = hasActive ? `<section class="section"><div class="section-head"><h2>Сегодня</h2><a class="more" href="#schedule" data-tab-link="schedule">Вся неделя</a></div>${checklistHTML(new Date())}</section>` : '';
+    $('#homeToday').innerHTML = hasActive ? `<section class="section"><div class="section-head"><h2>${T("Сегодня")}</h2><a class="more" href="#schedule" data-tab-link="schedule">${T("Вся неделя")}</a></div>${checklistHTML(new Date())}</section>` : '';
     animateRings($('#homeToday'));
   }
   if (has('cont')) {
     const x = keepScroll('homeCont');
     const cont = items.filter(i => i.status === 'watching').sort((a, b) => (newEps(b) > 0) - (newEps(a) > 0) || b.updatedAt - a.updatedAt);
-    $('#homeCont').innerHTML = cont.length ? `<section class="section"><div class="section-head"><h2>Продолжить просмотр</h2><a class="more" href="#list" data-tab-link="list">Все</a></div>
+    $('#homeCont').innerHTML = cont.length ? `<section class="section"><div class="section-head"><h2>${T("Продолжить просмотр")}</h2><a class="more" href="#list" data-tab-link="list">${T("Все")}</a></div>
       <div class="rail bleed">${cont.map(contCardHTML).join('')}</div></section>` : '';
     restore('homeCont', x);
   }
@@ -939,21 +939,21 @@ function renderHome(parts) {
     const n = nowSec();
     const soon = items.filter(i => activeStatus(i.status) && i.nextEp && i.nextEp.airingAt > n && i.nextEp.airingAt - n < 8 * 86400)
       .sort((a, b) => a.nextEp.airingAt - b.nextEp.airingAt);
-    $('#homeSoon').innerHTML = soon.length ? `<section class="section"><div class="section-head"><h2>Скоро выйдет</h2><a class="more" href="#schedule" data-tab-link="schedule">Расписание</a></div>
+    $('#homeSoon').innerHTML = soon.length ? `<section class="section"><div class="section-head"><h2>${T("Скоро выйдет")}</h2><a class="more" href="#schedule" data-tab-link="schedule">${T("Расписание")}</a></div>
       <div class="rail bleed">${soon.map(soonCardHTML).join('')}</div></section>` : '';
     restore('homeSoon', x);
   }
   if (has('trend')) {
     const x = keepScroll('homeTrend');
     const tr = state.trend;
-    $('#homeTrend').innerHTML = `<section class="section"><div class="section-head"><h2>В тренде</h2><a class="more" href="#search" data-tab-link="search">Ещё</a></div>
+    $('#homeTrend').innerHTML = `<section class="section"><div class="section-head"><h2>${T("В тренде")}</h2><a class="more" href="#search" data-tab-link="search">${T("Ещё")}</a></div>
       ${tr ? `<div class="rail bleed">${tr.slice(0, 10).map((m, i) => `<div class="rank"><span class="rank-n" aria-hidden="true">${i + 1}</span>${posterHTML(cardFromMedia(m), { i, cls: '', sub: '' })}</div>`).join('')}</div>` : skeletonPosters(4)}</section>`;
     restore('homeTrend', x);
   }
   if (has('empty')) {
-    $('#homeEmpty').innerHTML = items.length ? '' : `<div class="empty rise"><span class="art">番</span><h3>Собери свой список</h3>
-      <p>Найди аниме, отметь «Смотрю» или «В планах», а потом разложи просмотр по дням — как чек-лист в заметках, только серии считаются сами.</p>
-      <a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}Найти аниме</a></div>`;
+    $('#homeEmpty').innerHTML = items.length ? '' : `<div class="empty rise"><span class="art">番</span><h3>${T("Собери свой список")}</h3>
+      <p>${T("Найди аниме, отметь «Смотрю» или «В планах», а потом разложи просмотр по дням — как чек-лист в заметках, только серии считаются сами.")}</p>
+      <a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}${T("Найти аниме")}</a></div>`;
   }
 }
 function updateHeroChip(it) {
@@ -985,16 +985,16 @@ function weekEvents(offset) {
 function renderSchedule() {
   const el = $('#view-schedule');
   const items = Object.values(state.items);
-  el.innerHTML = `<div class="title-row"><div><h1 class="page-title" id="pageTitle">Расписание</h1><p class="page-sub">Выход серий и твой план по дням</p></div>
-      <button class="btn small grad" type="button" data-action="quick-open">${ICON.plus}В план</button></div>
+  el.innerHTML = `<div class="title-row"><div><h1 class="page-title" id="pageTitle">${T("Расписание")}</h1><p class="page-sub">${T("Выход серий и твой план по дням")}</p></div>
+      <button class="btn small grad" type="button" data-action="quick-open">${ICON.plus}${T("В план")}</button></div>
     <div class="weekbar" id="weekbar"></div>
     <div class="daybar" id="daybar"></div>
     <div id="dayContent" class="view" style="gap:22px"></div>`;
   if (!items.length) {
     $('#weekbar').remove(); $('#daybar').remove();
-    $('#dayContent').innerHTML = `<div class="empty rise"><span class="art">月</span><h3>Здесь будет твоя телепрограмма</h3>
-      <p>Добавь аниме — даты новых серий появятся сами, а дни просмотра ты отметишь галочками.</p>
-      <a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}Найти аниме</a></div>`;
+    $('#dayContent').innerHTML = `<div class="empty rise"><span class="art">月</span><h3>${T("Здесь будет твоя телепрограмма")}</h3>
+      <p>${T("Добавь аниме — даты новых серий появятся сами, а дни просмотра ты отметишь галочками.")}</p>
+      <a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}${T("Найти аниме")}</a></div>`;
     return;
   }
   renderWeekbar();
@@ -1004,11 +1004,11 @@ function renderSchedule() {
 function renderWeekbar() {
   const el = $('#weekbar');
   if (!el) return;
-  el.innerHTML = `<button class="icon-btn" type="button" data-action="week" data-v="-1" aria-label="Прошлая неделя">${ICON.back}</button>
+  el.innerHTML = `<button class="icon-btn" type="button" data-action="week" data-v="-1" aria-label="${T("Прошлая неделя")}">${ICON.back}</button>
     <span class="range">${esc(weekLabel(weekStart(ui.weekOffset)))}</span>
-    ${ui.weekLoading ? '<span class="spinner" aria-label="Загрузка"></span>' : ''}
-    ${ui.weekOffset !== 0 ? '<button class="btn small" type="button" data-action="week-today">Сегодня</button>' : ''}
-    <button class="icon-btn" type="button" data-action="week" data-v="1" aria-label="Следующая неделя">${ICON.next}</button>`;
+    ${ui.weekLoading ? T('<span class="spinner" aria-label="Загрузка"></span>') : ''}
+    ${ui.weekOffset !== 0 ? T('<button class="btn small" type="button" data-action="week-today">Сегодня</button>') : ''}
+    <button class="icon-btn" type="button" data-action="week" data-v="1" aria-label="${T("Следующая неделя")}">${ICON.next}</button>`;
 }
 function renderDaybar() {
   const el = $('#daybar');
@@ -1046,24 +1046,24 @@ function renderDay() {
   const air = days[ui.selDay];
   let tl = '';
   if (!air.length) {
-    tl = `<div class="empty soft"><p>${ui.weekError ? 'Нет связи с AniList — показываю сохранённые даты.' : 'В этот день новых серий из твоего списка нет.'}</p></div>`;
+    tl = `<div class="empty soft"><p>${ui.weekError ? T('Нет связи с AniList — показываю сохранённые даты.') : T('В этот день новых серий из твоего списка нет.')}</p></div>`;
   } else {
     let nowShown = !isToday;
     tl = '<div class="timeline">' + air.map((e, i) => {
       const it = e.it, past = e.at <= n, c = it.color || hueColor(title(it));
       let line = '';
-      if (!nowShown && !past) { nowShown = true; line = `<div class="now-line">СЕЙЧАС ${fmtTime(n)}</div>`; }
+      if (!nowShown && !past) { nowShown = true; line = `<div class="now-line">${T("СЕЙЧАС")} ${fmtTime(n)}</div>`; }
       return line + `<div class="tl${past ? ' past' : ''} rise" style="--i:${i}">
         <div class="time"><b>${fmtTime(e.at)}</b><small>JST ${esc(fmtJST(e.at))}</small></div>
         <button type="button" class="tl-card" style="--c:${esc(c)}" data-action="open" data-item="${esc(it.id)}">
           ${thumbHTML(it.cover, title(it), c, it.id)}
           <span class="info"><span class="t">${esc(title(it))}</span>
-            <span class="s"><span class="epchip air">EP ${e.ep}</span>${past ? 'вышла' : 'через ' + esc(until(e.at))}${it.total ? ' · из ' + it.total : ''}</span></span>
+            <span class="s"><span class="epchip air">EP ${e.ep}</span>${past ? T('вышла') : T('через ') + esc(until(e.at))}${it.total ? T(' · из ') + it.total : ''}</span></span>
         </button></div>`;
-    }).join('') + (!nowShown ? `<div class="now-line">СЕЙЧАС ${fmtTime(n)}</div>` : '') + '</div>';
+    }).join('') + (!nowShown ? `<div class="now-line">${T("СЕЙЧАС")} ${fmtTime(n)}</div>` : '') + '</div>';
   }
-  el.innerHTML = `<section class="section rise"><div class="section-head"><h2>Мой план</h2></div>${checklistHTML(date)}</section>
-    <section class="section"><div class="section-head"><h2>Выход серий</h2><span class="label">${air.length ? sers(air.length) : ''}</span></div>${tl}</section>`;
+  el.innerHTML = `<section class="section rise"><div class="section-head"><h2>${T("Мой план")}</h2></div>${checklistHTML(date)}</section>
+    <section class="section"><div class="section-head"><h2>${T("Выход серий")}</h2><span class="label">${air.length ? sers(air.length) : ''}</span></div>${tl}</section>`;
   animateRings(el);
 }
 
@@ -1071,11 +1071,11 @@ function renderDay() {
 function renderSearch() {
   const el = $('#view-search');
   if (!el.dataset.ready) {
-    el.innerHTML = `<div><h1 class="page-title" id="pageTitle">Поиск</h1><p class="page-sub">По-русски, по-английски или ромадзи</p></div>
+    el.innerHTML = `<div><h1 class="page-title" id="pageTitle">${T("Поиск")}</h1><p class="page-sub">${T("По-русски, по-английски или ромадзи")}</p></div>
       <div class="searchbox">
         <svg class="s-ico ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
-        <input id="q" type="search" placeholder="Фрирен, Ван Пис, Chainsaw Man…" autocomplete="off" enterkeyhint="search" aria-label="Поиск аниме">
-        <button class="clear" type="button" data-action="clear-search" aria-label="Очистить" hidden>${ICON.x}</button>
+        <input id="q" type="search" placeholder="${T("Фрирен, Ван Пис, Chainsaw Man…")}" autocomplete="off" enterkeyhint="search" aria-label="${T("Поиск аниме")}">
+        <button class="clear" type="button" data-action="clear-search" aria-label="${T("Очистить")}" hidden>${ICON.x}</button>
       </div>
       <div class="genres bleed" id="genres" style="padding-inline:max(16px, env(safe-area-inset-left, 0px))"></div>
       <div id="searchBody" class="view"></div>`;
@@ -1090,24 +1090,24 @@ function renderSearch() {
   let h = '';
   if (ui.query.trim().length >= 2) {
     if (ui.searching && !ui.results) h += skeletonPosters(6, true);
-    else if (ui.searchError) h += `<div class="empty"><h3>Нет связи</h3><p>Не получилось достучаться до базы аниме. Проверь интернет и попробуй ещё раз.</p></div>`;
-    else if (ui.results && !ui.results.length) h += `<div class="empty"><h3>Ничего не нашлось</h3><p>Попробуй другое написание: «Атака титанов», «Shingeki no Kyojin» или «Attack on Titan».</p></div>`;
-    else if (ui.results) h += `<div class="section"><div class="section-head"><h2>Найдено: ${ui.results.length}</h2></div>${grid(ui.results)}</div>`;
+    else if (ui.searchError) h += `<div class="empty"><h3>${T("Нет связи")}</h3><p>${T("Не получилось достучаться до базы аниме. Проверь интернет и попробуй ещё раз.")}</p></div>`;
+    else if (ui.results && !ui.results.length) h += `<div class="empty"><h3>${T("Ничего не нашлось")}</h3><p>${T("Попробуй другое написание: «Атака титанов», «Shingeki no Kyojin» или «Attack on Titan».")}</p></div>`;
+    else if (ui.results) h += `<div class="section"><div class="section-head"><h2>${T("Найдено:")} ${ui.results.length}</h2></div>${grid(ui.results)}</div>`;
   } else if (ui.genre) {
     const g = GENRE[ui.genre];
     const res = ui.genreRes[ui.genre];
-    h += `<div class="section"><div class="section-head"><h2>${esc(g.ru)}</h2><span class="label">Популярное</span></div>
-      ${res ? (res.length ? grid(res) : '<div class="empty soft"><p>Пусто.</p></div>') : ui.genreLoading ? skeletonPosters(6, true) : '<div class="empty soft"><p>Нет связи.</p></div>'}</div>`;
+    h += `<div class="section"><div class="section-head"><h2>${esc(g.ru)}</h2><span class="label">${T("Популярное")}</span></div>
+      ${res ? (res.length ? grid(res) : T('<div class="empty soft"><p>Пусто.</p></div>')) : ui.genreLoading ? skeletonPosters(6, true) : T('<div class="empty soft"><p>Нет связи.</p></div>')}</div>`;
   } else {
     const cs = currentSeason();
-    h += `<section class="section"><div class="section-head"><h2>Топ недели</h2></div>
+    h += `<section class="section"><div class="section-head"><h2>${T("Топ недели")}</h2></div>
       ${state.trend ? `<div class="rail bleed">${state.trend.slice(0, 10).map((m, i) => `<div class="rank"><span class="rank-n" aria-hidden="true">${i + 1}</span>${posterHTML(cardFromMedia(m), { i, sub: '' })}</div>`).join('')}</div>` : skeletonPosters(4)}</section>
-      <section class="section"><div class="section-head"><h2>${SEASON_RU[cs.s]} ${cs.y}</h2><span class="label">Сезон</span></div>
-      ${ui.season ? grid(ui.season) : ui.seasonError ? `<div class="empty soft"><p>Без интернета сезон не загрузить. Список и расписание работают офлайн.</p><button class="btn small" type="button" data-action="season-retry">Повторить</button></div>` : skeletonPosters(6, true)}</section>`;
+      <section class="section"><div class="section-head"><h2>${SEASON_RU[cs.s]} ${cs.y}</h2><span class="label">${T("Сезон")}</span></div>
+      ${ui.season ? grid(ui.season) : ui.seasonError ? `<div class="empty soft"><p>${T("Без интернета сезон не загрузить. Список и расписание работают офлайн.")}</p><button class="btn small" type="button" data-action="season-retry">${T("Повторить")}</button></div>` : skeletonPosters(6, true)}</section>`;
   }
-  h += `<div class="empty soft"><p>Нет нужного тайтла в базе? Добавь вручную — название и число серий.</p>
-    <div class="btn-row"><button class="btn small line" type="button" data-action="manual-open">${ICON.plus}Добавить вручную</button>
-    <button class="btn small line" type="button" data-action="share-manual">${ICON.ext}Ссылка на серию</button></div></div>`;
+  h += `<div class="empty soft"><p>${T("Нет нужного тайтла в базе? Добавь вручную — название и число серий.")}</p>
+    <div class="btn-row"><button class="btn small line" type="button" data-action="manual-open">${ICON.plus}${T("Добавить вручную")}</button>
+    <button class="btn small line" type="button" data-action="share-manual">${ICON.ext}${T("Ссылка на серию")}</button></div></div>`;
   body.innerHTML = h;
 }
 let searchTimer = null;
@@ -1173,20 +1173,20 @@ function renderList() {
   const items = Object.values(state.items);
   const s = state.settings;
   if (!items.length) {
-    el.innerHTML = `<div><h1 class="page-title" id="pageTitle">Мой список</h1></div>
-      <div class="empty rise"><span class="art">栞</span><h3>Список пока пуст</h3><p>Найди аниме и добавь со статусом «Смотрю» или «В планах».</p>
-      <a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}Найти аниме</a></div>`;
+    el.innerHTML = `<div><h1 class="page-title" id="pageTitle">${T("Мой список")}</h1></div>
+      <div class="empty rise"><span class="art">栞</span><h3>${T("Список пока пуст")}</h3><p>${T("Найди аниме и добавь со статусом «Смотрю» или «В планах».")}</p>
+      <a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}${T("Найти аниме")}</a></div>`;
     return;
   }
-  const viewSeg = `<div class="seg" role="group" aria-label="Вид">
-        <button type="button" data-action="list-view" data-v="grid" aria-pressed="${s.listView === 'grid'}" aria-label="Сетка">${ICON.grid}</button>
-        <button type="button" data-action="list-view" data-v="rows" aria-pressed="${s.listView === 'rows'}" aria-label="Список">${ICON.rows}</button>
-        <button type="button" data-action="list-view" data-v="map" aria-pressed="${s.listView === 'map'}" aria-label="Карта">${ICON.map}</button>
+  const viewSeg = `<div class="seg" role="group" aria-label="${T("Вид")}">
+        <button type="button" data-action="list-view" data-v="grid" aria-pressed="${s.listView === 'grid'}" aria-label="${T("Сетка")}">${ICON.grid}</button>
+        <button type="button" data-action="list-view" data-v="rows" aria-pressed="${s.listView === 'rows'}" aria-label="${T("Список")}">${ICON.rows}</button>
+        <button type="button" data-action="list-view" data-v="map" aria-pressed="${s.listView === 'map'}" aria-label="${T("Карта")}">${ICON.map}</button>
       </div>`;
   if (s.listView === 'map') {
     const hadMap = !!$('#mapView');
     const animate = !hadMap || el.classList.contains('animate');
-    el.innerHTML = `<div class="title-row"><div><h1 class="page-title" id="pageTitle">Мой список</h1><p class="page-sub">${items.length} ${pl(items.length, 'тайтл', 'тайтла', 'тайтлов')} на карте</p></div>${viewSeg}</div>
+    el.innerHTML = `<div class="title-row"><div><h1 class="page-title" id="pageTitle">${T("Мой список")}</h1><p class="page-sub">${items.length} ${pl(items.length, T('тайтл'), T('тайтла'), T('тайтлов'))} ${T("на карте")}</p></div>${viewSeg}</div>
       <div class="map-view bleed" id="mapView"></div>`;
     MindMap.mount($('#mapView'), { animate });
     return;
@@ -1195,12 +1195,12 @@ function renderList() {
   STATUSES.forEach(x => { counts[x.id] = 0; });
   items.forEach(i => { counts[i.status] = (counts[i.status] || 0) + 1; });
   let list = items.filter(i => i.status === ui.listFilter);
-  if (s.listSort === 'az') list.sort((a, b) => title(a).localeCompare(title(b), 'ru'));
+  if (s.listSort === 'az') list.sort((a, b) => title(a).localeCompare(title(b), LANG));
   else if (s.listSort === 'score') list.sort((a, b) => (b.score || 0) - (a.score || 0) || b.updatedAt - a.updatedAt);
   else list.sort((a, b) => (newEps(b) > 0) - (newEps(a) > 0) || b.updatedAt - a.updatedAt);
 
   let body;
-  if (!list.length) body = `<div class="empty soft"><p>В «${esc(ST[ui.listFilter].label)}» пока пусто.</p></div>`;
+  if (!list.length) body = `<div class="empty soft"><p>${T("В «")}${esc(ST[ui.listFilter].label)}${T("» пока пусто.")}</p></div>`;
   else if (s.listView === 'grid') body = '<div class="grid">' + list.map((it, i) => posterHTML(cardFromItem(it), { i: Math.min(i, 12), plus: true, badge: false, sub: `EP ${it.progress} / ${it.total || '?'}${it.score ? ' · ★' + it.score : ''}` })).join('') + '</div>';
   else body = '<div class="list">' + list.map((it, i) => {
     const pct = it.total ? Math.min(100, it.progress / it.total * 100) : (it.progress ? 60 : 0);
@@ -1213,17 +1213,17 @@ function renderList() {
           <span class="meta">${esc(meta)}${it.score ? `<span class="mono" style="color:var(--accent-ink)">★ ${it.score}</span>` : ''}${ne > 0 && activeStatus(it.status) ? `<span class="p-new" style="position:static">+${ne}</span>` : ''}</span>
           <span class="pbar"><span class="b"><i style="width:${pct}%"></i></span>${it.progress}/${it.total || '?'}</span></span>
       </button>
-      ${canInc(it) ? `<button class="plus-btn" type="button" data-action="inc" data-id="${esc(it.id)}" aria-label="Отметить серию ${it.progress + 1}">+1</button>` : ''}
+      ${canInc(it) ? `<button class="plus-btn" type="button" data-action="inc" data-id="${esc(it.id)}" aria-label="${T("Отметить серию")} ${it.progress + 1}">+1</button>` : ''}
     </div>`;
   }).join('') + '</div>';
 
-  el.innerHTML = `<div><h1 class="page-title" id="pageTitle">Мой список</h1><p class="page-sub">${items.length} ${pl(items.length, 'тайтл', 'тайтла', 'тайтлов')}</p></div>
-    <div class="tabs bleed" style="padding-inline:max(16px, env(safe-area-inset-left, 0px))" role="group" aria-label="Статус">
+  el.innerHTML = `<div><h1 class="page-title" id="pageTitle">${T("Мой список")}</h1><p class="page-sub">${items.length} ${pl(items.length, T('тайтл'), T('тайтла'), T('тайтлов'))}</p></div>
+    <div class="tabs bleed" style="padding-inline:max(16px, env(safe-area-inset-left, 0px))" role="group" aria-label="${T("Статус")}">
       ${STATUSES.map(x => `<button type="button" class="tab${ui.listFilter === x.id ? ' on' : ''}" style="--st:var(--st-${x.id})" data-action="list-filter" data-v="${x.id}" aria-pressed="${ui.listFilter === x.id}"><span class="dot"></span>${x.label}<span class="n">${counts[x.id]}</span></button>`).join('')}
     </div>
     <div class="toolbar">
-      <div class="seg" role="group" aria-label="Сортировка">
-        ${[['recent', 'Недавние'], ['az', 'А–Я'], ['score', 'Оценка']].map(o => `<button type="button" data-action="list-sort" data-v="${o[0]}" aria-pressed="${s.listSort === o[0]}">${o[1]}</button>`).join('')}
+      <div class="seg" role="group" aria-label="${T("Сортировка")}">
+        ${[['recent', T('Недавние')], ['az', T('А–Я')], ['score', T('Оценка')]].map(o => `<button type="button" data-action="list-sort" data-v="${o[0]}" aria-pressed="${s.listSort === o[0]}">${o[1]}</button>`).join('')}
       </div>
       ${viewSeg}
     </div>
@@ -1242,14 +1242,14 @@ function renderProfile() {
 
   const stCounts = STATUSES.map(x => ({ x, n: items.filter(i => i.status === x.id).length })).filter(o => o.n);
   const stBar = stCounts.length ? `<div class="stack">${stCounts.map((o, k) => `<i style="flex:${o.n};background:var(--st-${o.x.id});animation-delay:${k * 80}ms"></i>`).join('')}</div>
-    <div class="legend">${stCounts.map(o => `<span><i style="background:var(--st-${o.x.id})"></i>${o.x.label} <b>${o.n}</b></span>`).join('')}</div>` : '<p class="hint">Добавь тайтлы, и здесь появится разбивка.</p>';
+    <div class="legend">${stCounts.map(o => `<span><i style="background:var(--st-${o.x.id})"></i>${o.x.label} <b>${o.n}</b></span>`).join('')}</div>` : T('<p class="hint">Добавь тайтлы, и здесь появится разбивка.</p>');
 
   const gw = {};
   items.forEach(i => (i.genres || []).forEach(g => { gw[g] = (gw[g] || 0) + Math.max(1, i.progress || 0); }));
   const gTop = Object.entries(gw).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const gSum = gTop.reduce((s, g) => s + g[1], 0);
   const gBar = gTop.length ? `<div class="stack">${gTop.map((g, k) => `<i style="flex:${g[1]};background:${(GENRE[g[0]] || {}).c || '#888'};animation-delay:${k * 80}ms"></i>`).join('')}</div>
-    <div class="legend">${gTop.map(g => `<span><i style="background:${(GENRE[g[0]] || {}).c || '#888'}"></i>${esc((GENRE[g[0]] || {}).ru || g[0])} <b>${Math.round(g[1] / gSum * 100)}%</b></span>`).join('')}</div>` : '<p class="hint">Жанры посчитаются по просмотренным сериям.</p>';
+    <div class="legend">${gTop.map(g => `<span><i style="background:${(GENRE[g[0]] || {}).c || '#888'}"></i>${esc((GENRE[g[0]] || {}).ru || g[0])} <b>${Math.round(g[1] / gSum * 100)}%</b></span>`).join('')}</div>` : T('<p class="hint">Жанры посчитаются по просмотренным сериям.</p>');
 
   const cells = [];
   const t = new Date(); t.setHours(0, 0, 0, 0);
@@ -1264,73 +1264,74 @@ function renderProfile() {
 
   const st = state.settings;
   const perm = NATIVE ? (NATIVE.notifEnabled() ? 'granted' : 'default') : typeof Notification === 'undefined' ? 'unsupported' : Notification.permission;
-  const permTxt = perm === 'granted' ? 'Разрешены' : perm === 'denied' ? 'Запрещены в настройках Android — включи их для Бангуми' : perm === 'unsupported' ? 'Браузер не поддерживает уведомления' : 'Ещё не разрешены';
+  const permTxt = perm === 'granted' ? T('Разрешены') : perm === 'denied' ? T('Запрещены в настройках Android — включи их для Бангуми') : perm === 'unsupported' ? T('Браузер не поддерживает уведомления') : T('Ещё не разрешены');
   const seg = (action, cur, opts) => `<div class="seg" role="group">${opts.map(o => `<button type="button" data-action="${action}" data-v="${o[0]}" aria-pressed="${cur === o[0]}">${o[1]}</button>`).join('')}</div>`;
-  const sync = state.lastSync ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(state.lastSync)) : 'ещё не обновлялось';
+  const sync = state.lastSync ? new Intl.DateTimeFormat(LOC, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(state.lastSync)) : T('ещё не обновлялось');
 
-  el.innerHTML = `<div><h1 class="page-title" id="pageTitle">Профиль</h1></div>
+  el.innerHTML = `<div><h1 class="page-title" id="pageTitle">${T("Профиль")}</h1></div>
     ${installBanner()}
     ${skin() === 'quest' ? (() => { const q = questLevel(eps); const segs = 12, on = Math.round(q.into / q.need * segs);
-      return `<div class="lvl-card rise"><div class="lvl-badge"><small>УР.</small><b>${q.L}</b></div>
-        <div class="lvl-info"><span class="lvl-title">${['Новичок', 'Зритель', 'Знаток', 'Отаку', 'Сэнсэй', 'Легенда'][Math.min(5, Math.floor((q.L - 1) / 3))]}</span>
+      return `<div class="lvl-card rise"><div class="lvl-badge"><small>${T("УР.")}</small><b>${q.L}</b></div>
+        <div class="lvl-info"><span class="lvl-title">${[T('Новичок'), T('Зритель'), T('Знаток'), T('Отаку'), T('Сэнсэй'), T('Легенда')][Math.min(5, Math.floor((q.L - 1) / 3))]}</span>
         <span class="lvl-bar">${Array.from({ length: segs }, (_, k) => `<i class="${k < on ? 'on' : ''}" style="--k:${k}"></i>`).join('')}</span>
-        <small>Опыт ${q.into}/${q.need} · до уровня ${q.L + 1}: ${sers(q.need - q.into)}</small></div></div>`; })() : ''}
+        <small>${T("Опыт")} ${q.into}/${q.need} ${T("· до уровня")} ${q.L + 1}: ${sers(q.need - q.into)}</small></div></div>`; })() : ''}
     <div class="profile-hero rise">
-      <div class="label">Время за аниме</div>
-      <div class="big-stat"><b data-count="${Math.round(mins / 60)}">0</b><span>${pl(Math.round(mins / 60), 'час', 'часа', 'часов')}</span></div>
+      <div class="label">${T("Время за аниме")}</div>
+      <div class="big-stat"><b data-count="${Math.round(mins / 60)}">0</b><span>${pl(Math.round(mins / 60), T('час'), T('часа'), T('часов'))}</span></div>
       <div class="stat-row">
-        <div><b data-count="${eps}">0</b><span>${pl(eps, 'серия', 'серии', 'серий')}</span></div>
-        <div><b data-count="${done}">0</b><span>завершено</span></div>
-        <div><b>${avg}</b><span>средняя оценка</span></div>
+        <div><b data-count="${eps}">0</b><span>${pl(eps, T('серия'), T('серии'), T('серий'))}</span></div>
+        <div><b data-count="${done}">0</b><span>${T("завершено")}</span></div>
+        <div><b>${avg}</b><span>${T("средняя оценка")}</span></div>
       </div>
     </div>
-    <div class="card pad rise" style="--i:1"><div class="section-head"><h2 style="font-size:16px">Активность</h2><span class="label">8 недель · ${activeDays} ${pl(activeDays, 'день', 'дня', 'дней')}</span></div><div class="heat">${cells.join('')}</div></div>
+    <div class="card pad rise" style="--i:1"><div class="section-head"><h2 style="font-size:16px">${T("Активность")}</h2><span class="label">${T("8 недель ·")} ${activeDays} ${pl(activeDays, T('день'), T('дня'), T('дней'))}</span></div><div class="heat">${cells.join('')}</div></div>
     <div class="card pad rise" style="--i:2" id="timeCard">${timeCardHTML()}</div>
-    <div class="card pad rise" style="--i:3"><div class="section-head"><h2 style="font-size:16px">Любимые жанры</h2></div>${gBar}</div>
-    <div class="card pad rise" style="--i:4"><div class="section-head"><h2 style="font-size:16px">Статусы</h2></div>${stBar}</div>
+    <div class="card pad rise" style="--i:3"><div class="section-head"><h2 style="font-size:16px">${T("Любимые жанры")}</h2></div>${gBar}</div>
+    <div class="card pad rise" style="--i:4"><div class="section-head"><h2 style="font-size:16px">${T("Статусы")}</h2></div>${stBar}</div>
 
     <div class="section">
-      <div class="label">Интерфейс</div>
-      <div class="skins" role="group" aria-label="Интерфейс">${Object.entries(SKINS).map(([k, v]) => `<button type="button" class="skin-tile sk-${k}${skin() === k ? ' on' : ''}" data-action="set-skin" data-v="${k}" aria-pressed="${skin() === k}">
+      <div class="label">${T("Интерфейс")}</div>
+      <div class="skins" role="group" aria-label="${T("Интерфейс")}">${Object.entries(SKINS).map(([k, v]) => `<button type="button" class="skin-tile sk-${k}${skin() === k ? ' on' : ''}" data-action="set-skin" data-v="${k}" aria-pressed="${skin() === k}">
         <span class="sk-prev" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i><i class="e"></i></span>
         <b>${v.name}</b><small>${v.sub}</small></button>`).join('')}</div>
     </div>
 
     <div class="section">
-      <div class="label">Уведомления</div>
+      <div class="label">${T("Уведомления")}</div>
       <div class="card group">
-        <div class="setting"><div class="txt"><span>О новых сериях</span><small>Когда выходит серия того, что смотришь или запланировал</small></div>
-          <label class="switch"><input type="checkbox" id="swEp" data-k="notifyEpisodes" ${st.notifyEpisodes ? 'checked' : ''} aria-label="Уведомления о новых сериях"><span></span></label></div>
-        <div class="setting"><div class="txt"><span>План на день</span><small>Напоминание, что сегодня по расписанию</small></div>
-          <label class="switch"><input type="checkbox" id="swPlan" data-k="notifyPlan" ${st.notifyPlan ? 'checked' : ''} aria-label="Напоминания о плане"><span></span></label></div>
-        <div class="setting"><div class="txt"><small>Статус: ${esc(permTxt)}. ${NATIVE ? 'Уведомление придёт в минуту выхода серии, даже если Бангуми закрыт. Время берётся из AniList и уточняется каждый раз, когда открываешь приложение.' : 'Android проверяет серии в фоне раз в несколько часов, а при открытии приложения — сразу.'}</small></div></div>
+        <div class="setting"><div class="txt"><span>${T("О новых сериях")}</span><small>${T("Когда выходит серия того, что смотришь или запланировал")}</small></div>
+          <label class="switch"><input type="checkbox" id="swEp" data-k="notifyEpisodes" ${st.notifyEpisodes ? 'checked' : ''} aria-label="${T("Уведомления о новых сериях")}"><span></span></label></div>
+        <div class="setting"><div class="txt"><span>${T("План на день")}</span><small>${T("Напоминание, что сегодня по расписанию")}</small></div>
+          <label class="switch"><input type="checkbox" id="swPlan" data-k="notifyPlan" ${st.notifyPlan ? 'checked' : ''} aria-label="${T("Напоминания о плане")}"><span></span></label></div>
+        <div class="setting"><div class="txt"><small>${T("Статус:")} ${esc(permTxt)}. ${NATIVE ? T('Уведомление придёт в минуту выхода серии, даже если Бангуми закрыт. Время берётся из AniList и уточняется каждый раз, когда открываешь приложение.') : T('Android проверяет серии в фоне раз в несколько часов, а при открытии приложения — сразу.')}</small></div></div>
       </div>
     </div>
     <div class="section">
-      <div class="label">Вид</div>
+      <div class="label">${T("Вид")}</div>
       <div class="card group">
-        <div class="setting"><div class="txt"><span>Названия</span></div>${seg('set-lang', st.titleLang, [['russian', 'Рус'], ['romaji', 'Ромадзи'], ['english', 'Eng']])}</div>
-        <div class="setting"><div class="txt"><span>Быстрый план</span><small>Два свайпа вправо от левого края экрана открывают окошко «Быстро в расписание»</small></div>
-          <label class="switch"><input type="checkbox" id="swEdge" ${st.edgeGesture !== false ? 'checked' : ''} aria-label="Жест быстрого плана"><span></span></label></div>
-        <div class="setting"><div class="txt"><span>Мой список</span><small>Карта — как ментальная карта в Заметках</small></div>${seg('set-listview', st.listView, [['grid', 'Сетка'], ['rows', 'Строки'], ['map', 'Карта']])}</div>
-        <div class="setting"><div class="txt"><span>Стеклянные кнопки</span><small>Полупрозрачные кнопки с размытием и бликом</small></div>
-          <label class="switch"><input type="checkbox" id="swGlass" ${st.glass !== false ? 'checked' : ''} aria-label="Стеклянные кнопки"><span></span></label></div>
-        <div class="setting"><div class="txt"><span>Плавность</span><small>«Быстро» убирает размытие и тяжёлые эффекты. «Авто» само решает по телефону${weakDevice() ? ' — у тебя включится «Быстро»' : ''}</small></div>${seg('set-perf', st.perf || 'auto', [['auto', 'Авто'], ['beauty', 'Красиво'], ['fast', 'Быстро']])}</div>
-        <div class="setting"><div class="txt"><span>Тема</span>${skin() === 'quest' ? '<small>В «Квесте» всегда тёмная</small>' : ''}</div>${seg('set-theme', st.theme, [['system', 'Авто'], ['dark', 'Тёмная'], ['light', 'Светлая']])}</div>
+        <div class="setting"><div class="txt"><span>${LANG === 'en' ? 'Language' : 'Язык'}</span></div>${seg('set-ui-lang', LANG, [['ru', 'Русский'], ['en', 'English']])}</div>
+        <div class="setting"><div class="txt"><span>${T("Названия")}</span></div>${seg('set-lang', st.titleLang, [['russian', T('Рус')], ['romaji', T('Ромадзи')], ['english', 'Eng']])}</div>
+        <div class="setting"><div class="txt"><span>${T("Быстрый план")}</span><small>${T("Два свайпа вправо от левого края экрана открывают окошко «Быстро в расписание»")}</small></div>
+          <label class="switch"><input type="checkbox" id="swEdge" ${st.edgeGesture !== false ? 'checked' : ''} aria-label="${T("Жест быстрого плана")}"><span></span></label></div>
+        <div class="setting"><div class="txt"><span>${T("Мой список")}</span><small>${T("Карта — как ментальная карта в Заметках")}</small></div>${seg('set-listview', st.listView, [['grid', T('Сетка')], ['rows', T('Строки')], ['map', T('Карта')]])}</div>
+        <div class="setting"><div class="txt"><span>${T("Стеклянные кнопки")}</span><small>${T("Полупрозрачные кнопки с размытием и бликом")}</small></div>
+          <label class="switch"><input type="checkbox" id="swGlass" ${st.glass !== false ? 'checked' : ''} aria-label="${T("Стеклянные кнопки")}"><span></span></label></div>
+        <div class="setting"><div class="txt"><span>${T("Плавность")}</span><small>${T("«Быстро» убирает размытие и тяжёлые эффекты. «Авто» само решает по телефону")}${weakDevice() ? T(' — у тебя включится «Быстро»') : ''}</small></div>${seg('set-perf', st.perf || 'auto', [['auto', T('Авто')], ['beauty', T('Красиво')], ['fast', T('Быстро')]])}</div>
+        <div class="setting"><div class="txt"><span>${T("Тема")}</span>${skin() === 'quest' ? T('<small>В «Квесте» всегда тёмная</small>') : ''}</div>${seg('set-theme', st.theme, [['system', T('Авто')], ['dark', T('Тёмная')], ['light', T('Светлая')]])}</div>
       </div>
     </div>
     <div class="section">
-      <div class="label">Данные</div>
+      <div class="label">${T("Данные")}</div>
       <div class="card group">
-        <div class="setting"><div class="txt"><span>Обновить</span><small>Последний раз: ${esc(sync)}</small></div>
-          <button class="btn small" type="button" data-action="refresh" ${ui.syncing ? 'disabled' : ''}>${ui.syncing ? '<span class="spinner"></span>' : 'Обновить'}</button></div>
-        <div class="setting"><div class="txt"><span>Резервная копия</span><small>Список хранится только на этом телефоне</small></div>
-          <div class="btn-row"><button class="btn small" type="button" data-action="export">Сохранить</button>
-          <button class="btn small" type="button" data-action="import">Загрузить</button></div></div>
+        <div class="setting"><div class="txt"><span>${T("Обновить")}</span><small>${T("Последний раз:")} ${esc(sync)}</small></div>
+          <button class="btn small" type="button" data-action="refresh" ${ui.syncing ? 'disabled' : ''}>${ui.syncing ? '<span class="spinner"></span>' : T('Обновить')}</button></div>
+        <div class="setting"><div class="txt"><span>${T("Резервная копия")}</span><small>${T("Список хранится только на этом телефоне")}</small></div>
+          <div class="btn-row"><button class="btn small" type="button" data-action="export">${T("Сохранить")}</button>
+          <button class="btn small" type="button" data-action="import">${T("Загрузить")}</button></div></div>
       </div>
       <input type="file" id="importFile" accept="application/json,.json" hidden>
     </div>
-    <p class="hint">Бангуми, версия ${APP_VERSION}. Тайтлы и расписание — <a class="link" href="https://anilist.co" target="_blank" rel="noopener">AniList</a>, русские названия и описания — <a class="link" href="https://shikimori.io" target="_blank" rel="noopener">Shikimori</a>. Время серий — по твоему часовому поясу, рядом японское (JST).</p>`;
+    <p class="hint">${T("Бангуми, версия")} ${APP_VERSION}${T(". Тайтлы и расписание —")} <a class="link" href="https://anilist.co" target="_blank" rel="noopener">AniList</a>${T(", русские названия и описания —")} <a class="link" href="https://shikimori.io" target="_blank" rel="noopener">Shikimori</a>${T(". Время серий — по твоему часовому поясу, рядом японское (JST).")}</p>`;
   countUp(el);
 }
 
@@ -1343,7 +1344,7 @@ function timeCardHTML() {
   const shown = ui.timeAll ? rows : rows.slice(0, 8);
   const list = shown.map((r, k) => {
     const it = state.items[r.id], g = state.gone[r.id];
-    const name = it ? title(it) : g ? g.t : 'Удалённый тайтл';
+    const name = it ? title(it) : g ? g.t : T('Удалённый тайтл');
     const c = (it && it.color) || (g && g.col) || hueColor(name);
     const cover = (it && it.cover) || (g && g.c) || '';
     const pct = Math.max(3, r.mins / max * 100);
@@ -1352,12 +1353,12 @@ function timeCardHTML() {
       <span class="info"><span class="t">${esc(name)}</span><span class="tb"><i style="width:${pct}%;animation-delay:${k * 60}ms"></i></span></span>
       <span class="v"><b>${fmtDur(r.mins)}</b><small>${sers(r.eps)}</small></span></div>`;
   }).join('');
-  return `<div class="section-head"><h2 style="font-size:16px">Время по тайтлам</h2></div>
-    <div class="seg" role="group" aria-label="Период">${[['week', 'Неделя'], ['month', 'Месяц'], ['prev', 'Прошлый'], ['all', 'Всё время']].map(o => `<button type="button" data-action="time-period" data-v="${o[0]}" aria-pressed="${p === o[0]}">${o[1]}</button>`).join('')}</div>
-    <div class="time-total"><span class="label">${esc(info.label)}</span><b>${total ? fmtDur(total) : '0 мин'}</b><small class="muted">${eps ? sers(eps) + ' · ' + rows.length + ' ' + pl(rows.length, 'тайтл', 'тайтла', 'тайтлов') : 'В этот период ничего не отмечено'}</small></div>
+  return `<div class="section-head"><h2 style="font-size:16px">${T("Время по тайтлам")}</h2></div>
+    <div class="seg" role="group" aria-label="${T("Период")}">${[['week', T('Неделя')], ['month', T('Месяц')], ['prev', T('Прошлый')], ['all', T('Всё время')]].map(o => `<button type="button" data-action="time-period" data-v="${o[0]}" aria-pressed="${p === o[0]}">${o[1]}</button>`).join('')}</div>
+    <div class="time-total"><span class="label">${esc(info.label)}</span><b>${total ? fmtDur(total) : T('0 мин')}</b><small class="muted">${eps ? sers(eps) + ' · ' + rows.length + ' ' + pl(rows.length, T('тайтл'), T('тайтла'), T('тайтлов')) : T('В этот период ничего не отмечено')}</small></div>
     ${list ? `<div class="tlist">${list}</div>` : ''}
-    ${rows.length > 8 ? `<button class="expand" type="button" data-action="time-all">${ui.timeAll ? 'Свернуть' : 'Показать все ' + rows.length}</button>` : ''}
-    <p class="hint">${p === 'all' ? 'Считается по всем отмеченным сериям и длительности серии.' : 'Учитываются серии, отмеченные в эти дни: «+1», галочки плана и сетка серий. Разовая отметка многих серий сразу (уже смотрел раньше) сюда не попадает.'}</p>`;
+    ${rows.length > 8 ? `<button class="expand" type="button" data-action="time-all">${ui.timeAll ? T('Свернуть') : T('Показать все ') + rows.length}</button>` : ''}
+    <p class="hint">${p === 'all' ? T('Считается по всем отмеченным сериям и длительности серии.') : T('Учитываются серии, отмеченные в эти дни: «+1», галочки плана и сетка серий. Разовая отметка многих серий сразу (уже смотрел раньше) сюда не попадает.')}</p>`;
 }
 
 /* ================= Страница тайтла ================= */
@@ -1419,9 +1420,9 @@ function mountDetail(anim, vtCover) {
   $('#detailRoot').innerHTML = `<div class="detail${anim ? ' enter' : ''}" id="detail" style="--c:${esc(v.color)}" role="dialog" aria-modal="true" aria-labelledby="dTitle">
     <div class="d-tint"></div>
     <div class="d-top" id="dTop">
-      <button class="icon-btn glass" type="button" data-action="back" aria-label="Назад">${ICON.back}</button>
+      <button class="icon-btn glass" type="button" data-action="back" aria-label="${T("Назад")}">${ICON.back}</button>
       <span class="ttl">${esc(v.t)}</span>
-      ${v.siteUrl ? `<a class="icon-btn glass" href="${esc(v.siteUrl)}" target="_blank" rel="noopener" aria-label="Открыть на AniList">${ICON.ext}</a>` : ''}
+      ${v.siteUrl ? `<a class="icon-btn glass" href="${esc(v.siteUrl)}" target="_blank" rel="noopener" aria-label="${T("Открыть на AniList")}">${ICON.ext}</a>` : ''}
     </div>
     <div class="d-banner" id="dBanner">${v.banner ? `<img src="${esc(v.banner)}" alt="" decoding="async" onerror="this.remove()">` : ''}</div>
     <div class="d-body wrap">
@@ -1437,7 +1438,7 @@ function mountDetail(anim, vtCover) {
       <div id="dMain"></div>
       <div id="dScore"></div>
       <div id="dPlan"></div>
-      <section class="section" id="dAboutWrap"><div class="section-head"><h2>О тайтле</h2></div><div id="dAbout" class="view" style="gap:14px"></div></section>
+      <section class="section" id="dAboutWrap"><div class="section-head"><h2>${T("О тайтле")}</h2></div><div id="dAbout" class="view" style="gap:14px"></div></section>
       <div id="dPersonal"></div>
       <div id="dRecs"></div>
       <div id="dDanger"></div>
@@ -1464,11 +1465,11 @@ function renderDetailBlocks(all) {
 
   $('#dNext').innerHTML = v.next && v.next.airingAt > n ? `<div class="nextbox rise">
       ${ringHTML(v.total ? (v.next.episode - 1) / v.total : 0.5, 'EP' + v.next.episode, 52)}
-      <div class="txt"><span class="label">Следующая серия</span><span class="cd">${esc(until(v.next.airingAt))}</span>
+      <div class="txt"><span class="label">${T("Следующая серия")}</span><span class="cd">${esc(until(v.next.airingAt))}</span>
       <small>${esc(fmtDay(v.next.airingAt))}, ${fmtTime(v.next.airingAt)} · JST ${esc(fmtJST(v.next.airingAt))}</small></div></div>` : '';
 
   if (!it) {
-    $('#dMain').innerHTML = `<div class="section rise"><div class="label">Добавить в список</div><div class="add-grid">
+    $('#dMain').innerHTML = `<div class="section rise"><div class="label">${T("Добавить в список")}</div><div class="add-grid">
       ${['watching', 'planned', 'completed', 'paused'].map((s, k) => `<button type="button" class="btn ${k === 0 ? 'grad' : ''}" style="--st:var(--st-${s})" data-action="add" data-v="${s}">${k ? '<span class="dot"></span>' : ICON.plus}${ST[s].label}</button>`).join('')}
     </div></div>`;
     ['dScore', 'dPlan', 'dPersonal', 'dDanger'].forEach(id => { $('#' + id).innerHTML = ''; });
@@ -1477,11 +1478,11 @@ function renderDetailBlocks(all) {
     renderDScore();
     renderDPlan();
     if (all || !$('#notes')) {
-      $('#dPersonal').innerHTML = `<section class="section"><div class="section-head"><h2>Моё</h2></div>
-        <label class="label" for="customTitle">Своё название</label>
-        <input class="input" id="customTitle" type="text" placeholder="Например, как ты его называешь" value="${esc(it.customTitle || '')}">
-        <label class="label" for="notes">Заметки</label>
-        <textarea class="textarea" id="notes" placeholder="Где смотрю, с кем, любимые моменты…">${esc(it.notes || '')}</textarea></section>`;
+      $('#dPersonal').innerHTML = `<section class="section"><div class="section-head"><h2>${T("Моё")}</h2></div>
+        <label class="label" for="customTitle">${T("Своё название")}</label>
+        <input class="input" id="customTitle" type="text" placeholder="${T("Например, как ты его называешь")}" value="${esc(it.customTitle || '')}">
+        <label class="label" for="notes">${T("Заметки")}</label>
+        <textarea class="textarea" id="notes" placeholder="${T("Где смотрю, с кем, любимые моменты…")}">${esc(it.notes || '')}</textarea></section>`;
     }
     renderDDanger();
   }
@@ -1489,19 +1490,19 @@ function renderDetailBlocks(all) {
   const about = $('#dAbout');
   const kv = [];
   const m = v.m || {};
-  if (m.studios && m.studios.nodes && m.studios.nodes.length) kv.push(['Студия', m.studios.nodes.map(s => s.name).join(', ')]);
-  if (v.total) kv.push(['Серий', v.total + (v.duration ? ` по ${v.duration} мин` : '')]);
-  if (m.source && SOURCE_RU[m.source]) kv.push(['Источник', SOURCE_RU[m.source]]);
-  if (m.startDate && m.startDate.year) kv.push(['Старт', [m.startDate.day, m.startDate.month ? monShort(new Date(2000, m.startDate.month - 1, 1)) : '', m.startDate.year].filter(Boolean).join(' ')]);
+  if (m.studios && m.studios.nodes && m.studios.nodes.length) kv.push([T('Студия'), m.studios.nodes.map(s => s.name).join(', ')]);
+  if (v.total) kv.push([T('Серий'), v.total + (v.duration ? ` ${T("по")} ${v.duration} ${T("мин")}` : '')]);
+  if (m.source && SOURCE_RU[m.source]) kv.push([T('Источник'), SOURCE_RU[m.source]]);
+  if (m.startDate && m.startDate.year) kv.push([T('Старт'), [m.startDate.day, m.startDate.month ? monShort(new Date(2000, m.startDate.month - 1, 1)) : '', m.startDate.year].filter(Boolean).join(' ')]);
   const longDesc = v.desc && v.desc.length > 260;
-  about.innerHTML = (v.desc ? `<p class="d-desc${longDesc ? ' clamp' : ''}" id="dDesc">${esc(v.desc)}</p>${longDesc ? '<button class="expand" type="button" data-action="expand">Читать полностью</button>' : ''}`
-    : (ui.detailFull[v.aniId] || !v.aniId ? '' : '<div class="loading"><span class="spinner"></span>Загружаю описание…</div>')) +
+  about.innerHTML = (v.desc ? `<p class="d-desc${longDesc ? ' clamp' : ''}" id="dDesc">${esc(v.desc)}</p>${longDesc ? T('<button class="expand" type="button" data-action="expand">Читать полностью</button>') : ''}`
+    : (ui.detailFull[v.aniId] || !v.aniId ? '' : T('<div class="loading"><span class="spinner"></span>Загружаю описание…</div>'))) +
     (v.genres.length ? `<div class="tags">${v.genres.map(g => `<span class="tag" style="--g:${(GENRE[g] || {}).c || '#888'}">${esc((GENRE[g] || {}).ru || g)}</span>`).join('')}</div>` : '') +
     (kv.length ? `<dl class="kv">${kv.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>` : '');
   $('#dAboutWrap').hidden = !about.innerHTML.trim();
 
   const recs = ((m.recommendations && m.recommendations.nodes) || []).map(x => x.mediaRecommendation).filter(Boolean);
-  $('#dRecs').innerHTML = recs.length ? `<section class="section"><div class="section-head"><h2>Похожее</h2></div>
+  $('#dRecs').innerHTML = recs.length ? `<section class="section"><div class="section-head"><h2>${T("Похожее")}</h2></div>
     <div class="rail bleed">${recs.map((r, i) => posterHTML(cardFromMedia(ui.media[r.id] || r), { i, cls: '' })).join('')}</div></section>` : '';
   animateRings($('#detail'));
 }
@@ -1509,57 +1510,57 @@ function renderDMain(popFrom, popTo) {
   const v = dvm(), it = v.it;
   const p = it.progress || 0, total = it.total;
   const ne = newEps(it);
-  let label = it.status === 'completed' ? 'Всё просмотрено' : ne > 0 ? `Доступно ещё ${sers(ne)}` : v.next ? 'Ты в курсе всех серий' : 'просмотрено';
+  let label = it.status === 'completed' ? T('Всё просмотрено') : ne > 0 ? `${T("Доступно ещё")} ${sers(ne)}` : v.next ? T('Ты в курсе всех серий') : T('просмотрено');
   let cnt = total || Math.max(it.aired || 0, p) + (v.next ? 1 : 0);
   cnt = Math.max(cnt, 1);
-  const grid = cnt <= 160 ? `<div class="epgrid" role="group" aria-label="Серии">${Array.from({ length: cnt }, (_, k) => {
+  const grid = cnt <= 160 ? `<div class="epgrid" role="group" aria-label="${T("Серии")}">${Array.from({ length: cnt }, (_, k) => {
     const e = k + 1;
     let c = e <= p ? 'w' : (it.aired != null && e <= it.aired) ? 'av' : (it.aired != null ? 'fu' : '');
     if (popFrom && e >= popFrom && e <= popTo) c += ' pop';
-    return `<button type="button" class="epc ${c}" data-action="ep" data-n="${e}" style="${popFrom ? `animation-delay:${(e - popFrom) * 25}ms` : ''}" aria-label="Серия ${e}">${e}</button>`;
-  }).join('')}</div><p class="hint">Нажми на номер, чтобы отметить всё до этой серии.${it.aired != null ? ' Обведены вышедшие, но не просмотренные.' : ''}</p>` : '';
+    return `<button type="button" class="epc ${c}" data-action="ep" data-n="${e}" style="${popFrom ? `animation-delay:${(e - popFrom) * 25}ms` : ''}" aria-label="${T("Серия")} ${e}">${e}</button>`;
+  }).join('')}</div><p class="hint">${T("Нажми на номер, чтобы отметить всё до этой серии.")}${it.aired != null ? T(' Обведены вышедшие, но не просмотренные.') : ''}</p>` : '';
   $('#dMain').innerHTML = `<div class="section">
-    <div class="statusbar bleed" style="padding-inline:max(16px, env(safe-area-inset-left, 0px))" role="group" aria-label="Статус">
+    <div class="statusbar bleed" style="padding-inline:max(16px, env(safe-area-inset-left, 0px))" role="group" aria-label="${T("Статус")}">
       ${STATUSES.map(s => `<button type="button" class="sbtn${it.status === s.id ? ' on' : ''}" style="--st:var(--st-${s.id})" data-action="set-status" data-v="${s.id}" aria-pressed="${it.status === s.id}"><span class="dot"></span>${s.label}</button>`).join('')}
     </div>
     <div class="card progress-card">
       <div class="prog-top"><div class="big"><b data-tick="dp-${esc(it.id)}">${p}<small> / ${total || '?'}</small></b><span>${esc(label)}</span></div>
         ${ringHTML(total ? p / total : (p ? 0.5 : 0), total ? Math.round(p / total * 100) + '%' : 'EP' + p)}</div>
       <div class="prog-btns">
-        <button class="btn minus" type="button" data-action="d-dec" aria-label="Минус серия" ${p ? '' : 'disabled'}>−</button>
-        <button class="btn primary" type="button" data-action="d-inc" ${total && p >= total ? 'disabled' : ''}>${ICON.play}${total && p >= total ? 'Все серии отмечены' : 'Отметить EP ' + (p + 1)}</button>
+        <button class="btn minus" type="button" data-action="d-dec" aria-label="${T("Минус серия")}" ${p ? '' : 'disabled'}>−</button>
+        <button class="btn primary" type="button" data-action="d-inc" ${total && p >= total ? 'disabled' : ''}>${ICON.play}${total && p >= total ? T('Все серии отмечены') : T('Отметить EP ') + (p + 1)}</button>
       </div>
       ${grid}
-      <div class="spent"><span class="label">Потрачено</span><b>${p ? fmtDur(p * (it.duration || 24)) : '0 мин'}</b>
-        ${minsForItem(it.id, 'month') ? `<span class="muted">· в этом месяце ${fmtDur(minsForItem(it.id, 'month'))}</span>` : ''}</div>
+      <div class="spent"><span class="label">${T("Потрачено")}</span><b>${p ? fmtDur(p * (it.duration || 24)) : T('0 мин')}</b>
+        ${minsForItem(it.id, 'month') ? `<span class="muted">${T("· в этом месяце")} ${fmtDur(minsForItem(it.id, 'month'))}</span>` : ''}</div>
     </div></div>`;
   animateRings($('#dMain'));
 }
-function scoreWord(s) { return !s ? 'Нажми, чтобы оценить' : s <= 3 ? 'Слабо' : s <= 5 ? 'Так себе' : s <= 7 ? 'Хорошо' : s <= 9 ? 'Отлично' : 'Шедевр'; }
+function scoreWord(s) { return !s ? T('Нажми, чтобы оценить') : s <= 3 ? T('Слабо') : s <= 5 ? T('Так себе') : s <= 7 ? T('Хорошо') : s <= 9 ? T('Отлично') : T('Шедевр'); }
 function renderDScore() {
   const it = dvm().it;
-  $('#dScore').innerHTML = `<section class="section"><div class="section-head"><h2>Моя оценка</h2><span class="score-face">${it.score ? it.score + '/10 · ' : ''}${scoreWord(it.score)}</span></div>
-    <div class="stars" role="group" aria-label="Оценка">${Array.from({ length: 10 }, (_, k) => k + 1).map(s => `<button type="button" class="${it.score && s <= it.score ? 'on' : ''}" style="--s:${s};transition-delay:${s * 18}ms" data-action="score" data-v="${s}" aria-pressed="${it.score === s}">${s}</button>`).join('')}</div></section>`;
+  $('#dScore').innerHTML = `<section class="section"><div class="section-head"><h2>${T("Моя оценка")}</h2><span class="score-face">${it.score ? it.score + '/10 · ' : ''}${scoreWord(it.score)}</span></div>
+    <div class="stars" role="group" aria-label="${T("Оценка")}">${Array.from({ length: 10 }, (_, k) => k + 1).map(s => `<button type="button" class="${it.score && s <= it.score ? 'on' : ''}" style="--s:${s};transition-delay:${s * 18}ms" data-action="score" data-v="${s}" aria-pressed="${it.score === s}">${s}</button>`).join('')}</div></section>`;
 }
 function renderDPlan() {
   const it = dvm().it;
   const p = it.plan || { days: [], time: '', eps: 1 };
-  $('#dPlan').innerHTML = `<section class="section"><div class="section-head"><h2>Когда смотрю</h2>${p.days.length ? `<span class="label">${p.days.length} ${pl(p.days.length, 'день', 'дня', 'дней')} в неделю</span>` : ''}</div>
-    <div class="weekpick" role="group" aria-label="Дни просмотра">${DAYS.map((d, i) => `<button type="button" data-action="plan-day" data-v="${i}" aria-pressed="${p.days.includes(i)}">${d}<small>${KANJI[i]}</small></button>`).join('')}</div>
+  $('#dPlan').innerHTML = `<section class="section"><div class="section-head"><h2>${T("Когда смотрю")}</h2>${p.days.length ? `<span class="label">${p.days.length} ${pl(p.days.length, T('день'), T('дня'), T('дней'))} ${T("в неделю")}</span>` : ''}</div>
+    <div class="weekpick" role="group" aria-label="${T("Дни просмотра")}">${DAYS.map((d, i) => `<button type="button" data-action="plan-day" data-v="${i}" aria-pressed="${p.days.includes(i)}">${d}<small>${KANJI[i]}</small></button>`).join('')}</div>
     <div class="plan-row">
-      <label for="planTime">Время<input class="input time" id="planTime" type="time" value="${esc(p.time || '')}"></label>
-      <label>Серий за раз<span class="stepper"><button type="button" data-action="eps" data-v="-1" aria-label="Меньше">−</button>
-        <input id="planEps" type="number" inputmode="numeric" min="1" max="50" value="${p.eps || 1}" aria-label="Серий за раз">
-        <button type="button" data-action="eps" data-v="1" aria-label="Больше">+</button></span></label>
+      <label for="planTime">${T("Время")}<input class="input time" id="planTime" type="time" value="${esc(p.time || '')}"></label>
+      <label>${T("Серий за раз")}<span class="stepper"><button type="button" data-action="eps" data-v="-1" aria-label="${T("Меньше")}">−</button>
+        <input id="planEps" type="number" inputmode="numeric" min="1" max="50" value="${p.eps || 1}" aria-label="${T("Серий за раз")}">
+        <button type="button" data-action="eps" data-v="1" aria-label="${T("Больше")}">+</button></span></label>
     </div>
-    <p class="hint">Отмеченные дни станут чек-листом во вкладке «Расписание»: галочка сама засчитает серии.</p></section>`;
+    <p class="hint">${T("Отмеченные дни станут чек-листом во вкладке «Расписание»: галочка сама засчитает серии.")}</p></section>`;
 }
 function renderDDanger() {
   const it = dvm().it;
-  $('#dDanger').innerHTML = ui.confirmDelete ? `<div class="confirm"><p>Удалить «${esc(title(it))}» из списка?</p>
-      <button class="btn small danger" type="button" data-action="delete-yes">Удалить</button>
-      <button class="btn small" type="button" data-action="delete-no">Оставить</button></div>`
-    : `<button class="btn danger block" type="button" data-action="delete-ask">${ICON.trash}Удалить из списка</button>`;
+  $('#dDanger').innerHTML = ui.confirmDelete ? `<div class="confirm"><p>${T("Удалить «")}${esc(title(it))}${T("» из списка?")}</p>
+      <button class="btn small danger" type="button" data-action="delete-yes">${T("Удалить")}</button>
+      <button class="btn small" type="button" data-action="delete-no">${T("Оставить")}</button></div>`
+    : `<button class="btn danger block" type="button" data-action="delete-ask">${ICON.trash}${T("Удалить из списка")}</button>`;
 }
 function popDetail() {
   ui.detailStack.pop();
@@ -1605,22 +1606,22 @@ function closeSheetNow() {
 }
 function planPickerHTML(di) {
   const items = Object.values(state.items).filter(it => activeStatus(it.status))
-    .sort((a, b) => (b.status === 'watching') - (a.status === 'watching') || title(a).localeCompare(title(b), 'ru'));
-  return `<div class="grab"></div><h2>Что смотрю по ${DAYS_DAT[di]}</h2>
+    .sort((a, b) => (b.status === 'watching') - (a.status === 'watching') || title(a).localeCompare(title(b), LANG));
+  return `<div class="grab"></div><h2>${T("Что смотрю по")} ${DAYS_DAT[di]}</h2>
     ${items.length ? `<div>${items.map(it => {
       const c = it.color || hueColor(title(it));
       const on = it.plan && it.plan.days.includes(di);
       return `<div class="pick-row">${thumbHTML(it.cover, title(it), c, null)}<span class="t">${esc(title(it))}<br><small class="muted">${esc(ST[it.status].label)} · EP ${it.progress}/${it.total || '?'}</small></span>
         <label class="switch"><input type="checkbox" data-pick-day="${di}" data-id="${esc(it.id)}" ${on ? 'checked' : ''} aria-label="${esc(title(it))}"><span></span></label></div>`;
-    }).join('')}</div><p class="hint">Время и число серий за раз настраиваются в карточке тайтла.</p>`
-    : `<p class="hint">В списке нет тайтлов со статусом «Смотрю» или «В планах».</p><a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}Найти аниме</a>`}
-    <button class="btn block" type="button" data-action="back">Готово</button>`;
+    }).join('')}</div><p class="hint">${T("Время и число серий за раз настраиваются в карточке тайтла.")}</p>`
+    : `<p class="hint">${T("В списке нет тайтлов со статусом «Смотрю» или «В планах».")}</p><a class="btn grad" href="#search" data-tab-link="search">${ICON.plus}${T("Найти аниме")}</a>`}
+    <button class="btn block" type="button" data-action="back">${T("Готово")}</button>`;
 }
 function manualHTML() {
-  return `<div class="grab"></div><h2>Добавить вручную</h2>
-    <label class="label" for="mTitle">Название</label><input class="input" id="mTitle" type="text" placeholder="Название тайтла">
-    <label class="label" for="mEps">Всего серий</label><input class="input" id="mEps" type="number" inputmode="numeric" min="1" placeholder="Если не знаешь — оставь пустым">
-    <p class="hint">Для таких тайтлов даты выхода не подтягиваются — только твой план и счётчик.</p>
+  return `<div class="grab"></div><h2>${T("Добавить вручную")}</h2>
+    <label class="label" for="mTitle">${T("Название")}</label><input class="input" id="mTitle" type="text" placeholder="${T("Название тайтла")}">
+    <label class="label" for="mEps">${T("Всего серий")}</label><input class="input" id="mEps" type="number" inputmode="numeric" min="1" placeholder="${T("Если не знаешь — оставь пустым")}">
+    <p class="hint">${T("Для таких тайтлов даты выхода не подтягиваются — только твой план и счётчик.")}</p>
     <div class="add-grid">${['watching', 'planned', 'completed', 'paused'].map((s, k) => `<button type="button" class="btn ${k === 0 ? 'grad' : ''}" style="--st:var(--st-${s})" data-action="manual-save" data-v="${s}">${k ? '<span class="dot"></span>' : ''}${ST[s].label}</button>`).join('')}</div>`;
 }
 
@@ -1635,14 +1636,14 @@ function openQuick(full, day) {
     <aside class="quick" role="dialog" aria-modal="true" aria-labelledby="qTitle">
       <div class="q-head">
         <span class="q-mark" aria-hidden="true">番</span>
-        <div class="q-ttl"><h2 id="qTitle">Быстро в расписание</h2><small id="qSub"></small></div>
-        <button class="icon-btn" type="button" data-action="back" aria-label="Закрыть">${ICON.x}</button>
+        <div class="q-ttl"><h2 id="qTitle">${T("Быстро в расписание")}</h2><small id="qSub"></small></div>
+        <button class="icon-btn" type="button" data-action="back" aria-label="${T("Закрыть")}">${ICON.x}</button>
       </div>
-      <div class="q-days" id="qDays" role="group" aria-label="День недели"></div>
+      <div class="q-days" id="qDays" role="group" aria-label="${T("День недели")}"></div>
       <div class="q-opts" id="qOpts"></div>
       <div class="searchbox q-search">
         <svg class="s-ico ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
-        <input id="qq" type="search" placeholder="Найти в списке или в базе" autocomplete="off" enterkeyhint="search" aria-label="Найти аниме">
+        <input id="qq" type="search" placeholder="${T("Найти в списке или в базе")}" autocomplete="off" enterkeyhint="search" aria-label="${T("Найти аниме")}">
       </div>
       <div class="q-body" id="qBody"></div>
       <div class="q-foot" id="qFoot"></div>
@@ -1668,27 +1669,27 @@ function closeQuickNow() {
 }
 function quickDayList(di) {
   return Object.values(state.items).filter(it => it.plan && it.plan.days && it.plan.days.includes(di) && (it.status === 'watching' || it.status === 'planned'))
-    .sort((a, b) => (a.plan.time || '99').localeCompare(b.plan.time || '99') || title(a).localeCompare(title(b), 'ru'));
+    .sort((a, b) => (a.plan.time || '99').localeCompare(b.plan.time || '99') || title(a).localeCompare(title(b), LANG));
 }
 function quickRow(it, inPlan) {
   const c = it.color || hueColor(title(it));
   const sub = inPlan
-    ? [it.plan.time || 'без времени', sers(it.plan.eps || 1)].join(' · ')
+    ? [it.plan.time || T('без времени'), sers(it.plan.eps || 1)].join(' · ')
     : [ST[it.status].label, 'EP ' + (it.progress || 0) + '/' + (it.total || '?')].join(' · ');
   const fl = quick.flash === it.id ? ' flash' : '';
   return `<div class="q-row${inPlan ? ' on' : ''}${fl}" style="--c:${esc(c)}">
     ${thumbHTML(it.cover, title(it), c, null)}
     <span class="info"><span class="t">${esc(title(it))}</span><span class="s">${esc(sub)}</span></span>
-    <button type="button" class="q-btn" data-action="${inPlan ? 'q-rm' : 'q-add'}" data-id="${esc(it.id)}" aria-label="${inPlan ? 'Убрать из плана' : 'Добавить в план'}: ${esc(title(it))}">
+    <button type="button" class="q-btn" data-action="${inPlan ? 'q-rm' : 'q-add'}" data-id="${esc(it.id)}" aria-label="${inPlan ? T('Убрать из плана') : T('Добавить в план')}: ${esc(title(it))}">
       ${inPlan ? ICON.check : ICON.plus}</button></div>`;
 }
 function quickMediaRow(m) {
   const t = mediaTitle(m), c = (m.coverImage && m.coverImage.color) || hueColor(t);
-  const sub = [FORMAT[m.format] || '', m.episodes ? m.episodes + ' эп.' : '', m.seasonYear || ''].filter(Boolean).join(' · ');
+  const sub = [FORMAT[m.format] || '', m.episodes ? m.episodes + T(' эп.') : '', m.seasonYear || ''].filter(Boolean).join(' · ');
   return `<div class="q-row" style="--c:${esc(c)}">
     ${thumbHTML(mediaCover(m), t, c, null)}
-    <span class="info"><span class="t">${esc(t)}</span><span class="s">${esc(sub || 'из базы')}</span></span>
-    <button type="button" class="q-btn" data-action="q-add-media" data-ani="${m.id}" aria-label="Добавить в список и в план: ${esc(t)}">${ICON.plus}</button></div>`;
+    <span class="info"><span class="t">${esc(t)}</span><span class="s">${esc(sub || T('из базы'))}</span></span>
+    <button type="button" class="q-btn" data-action="q-add-media" data-ani="${m.id}" aria-label="${T("Добавить в список и в план:")} ${esc(t)}">${ICON.plus}</button></div>`;
 }
 function renderQuick(first) {
   if (!quick.open) return;
@@ -1699,13 +1700,13 @@ function renderQuick(first) {
     return `<button type="button" class="q-day${i === di ? ' sel' : ''}${i === today ? ' today' : ''}" data-action="q-day" data-v="${i}" aria-pressed="${i === di}">
       <span class="k">${KANJI[i]}</span><span class="w">${d}</span>${n ? `<span class="c">${n}</span>` : '<span class="c empty"></span>'}</button>`;
   }).join('');
-  $('#qSub').textContent = (di === today ? 'Сегодня · ' : '') + DAYS_EVERY[di];
+  $('#qSub').textContent = (di === today ? T('Сегодня · ') : '') + DAYS_EVERY[di];
   const custom = quick.time && !QUICK_TIMES.includes(quick.time);
-  $('#qOpts').innerHTML = `<div class="q-opt"><span class="label">Время</span>
-      <div class="q-times">${QUICK_TIMES.map(tm => `<button type="button" class="q-time${quick.time === tm ? ' on' : ''}" data-action="q-time" data-v="${tm}">${tm || 'Любое'}</button>`).join('')}
-        <label class="q-time custom${custom ? ' on' : ''}"><input type="time" id="qTimeCustom" value="${custom ? esc(quick.time) : ''}" aria-label="Своё время"></label></div></div>
-    <div class="q-opt row"><span class="label">Серий за раз</span>
-      <span class="stepper"><button type="button" data-action="q-eps" data-v="-1" aria-label="Меньше">−</button><b class="mono" id="qEps">${quick.eps}</b><button type="button" data-action="q-eps" data-v="1" aria-label="Больше">+</button></span></div>`;
+  $('#qOpts').innerHTML = `<div class="q-opt"><span class="label">${T("Время")}</span>
+      <div class="q-times">${QUICK_TIMES.map(tm => `<button type="button" class="q-time${quick.time === tm ? ' on' : ''}" data-action="q-time" data-v="${tm}">${tm || T('Любое')}</button>`).join('')}
+        <label class="q-time custom${custom ? ' on' : ''}"><input type="time" id="qTimeCustom" value="${custom ? esc(quick.time) : ''}" aria-label="${T("Своё время")}"></label></div></div>
+    <div class="q-opt row"><span class="label">${T("Серий за раз")}</span>
+      <span class="stepper"><button type="button" data-action="q-eps" data-v="-1" aria-label="${T("Меньше")}">−</button><b class="mono" id="qEps">${quick.eps}</b><button type="button" data-action="q-eps" data-v="1" aria-label="${T("Больше")}">+</button></span></div>`;
   renderQuickBody();
   if (first) setAnimate($('#qBody'));
 }
@@ -1717,10 +1718,10 @@ function renderQuickBody() {
   const q = quick.q.trim().toLowerCase();
   let h = '';
   if (!q) {
-    h += `<div class="q-sec"><div class="label">В плане по ${DAYS_DAT[di]}</div>${planned.length ? planned.map((it, k) => quickRow(it, true)).join('') : '<p class="hint">Пока пусто. Нажми «+» у тайтла ниже.</p>'}</div>`;
+    h += `<div class="q-sec"><div class="label">${T("В плане по")} ${DAYS_DAT[di]}</div>${planned.length ? planned.map((it, k) => quickRow(it, true)).join('') : T('<p class="hint">Пока пусто. Нажми «+» у тайтла ниже.</p>')}</div>`;
     const rest = Object.values(state.items).filter(it => !plannedIds.has(it.id) && activeStatus(it.status))
       .sort((a, b) => (b.status === 'watching') - (a.status === 'watching') || b.updatedAt - a.updatedAt);
-    h += `<div class="q-sec"><div class="label">Из моего списка</div>${rest.length ? rest.map(it => quickRow(it, false)).join('') : '<p class="hint">Найди аниме через поиск выше — оно сразу попадёт и в список, и в план.</p>'}</div>`;
+    h += `<div class="q-sec"><div class="label">${T("Из моего списка")}</div>${rest.length ? rest.map(it => quickRow(it, false)).join('') : T('<p class="hint">Найди аниме через поиск выше — оно сразу попадёт и в список, и в план.</p>')}</div>`;
   } else {
     const map = byAni();
     const mine = Object.values(state.items).filter(it => {
@@ -1728,17 +1729,17 @@ function renderQuickBody() {
       return names.includes(q);
     });
     (quick.res || []).forEach(m => { const it = map[m.id]; if (it && !mine.includes(it)) mine.push(it); });
-    if (mine.length) h += `<div class="q-sec"><div class="label">В моём списке</div>${mine.map(it => quickRow(it, plannedIds.has(it.id))).join('')}</div>`;
+    if (mine.length) h += `<div class="q-sec"><div class="label">${T("В моём списке")}</div>${mine.map(it => quickRow(it, plannedIds.has(it.id))).join('')}</div>`;
     const online = (quick.res || []).filter(m => !map[m.id]).slice(0, 8);
-    h += `<div class="q-sec"><div class="label">В базе</div>${quick.loading && !quick.res ? '<div class="loading"><span class="spinner"></span>Ищу…</div>'
-      : quick.res === false ? '<p class="hint">Нет связи с базой. Можно выбрать из своего списка.</p>'
-        : online.length ? online.map(quickMediaRow).join('') : (quick.res ? '<p class="hint">Ничего нового не нашлось.</p>' : '')}</div>`;
+    h += `<div class="q-sec"><div class="label">${T("В базе")}</div>${quick.loading && !quick.res ? T('<div class="loading"><span class="spinner"></span>Ищу…</div>')
+      : quick.res === false ? T('<p class="hint">Нет связи с базой. Можно выбрать из своего списка.</p>')
+        : online.length ? online.map(quickMediaRow).join('') : (quick.res ? T('<p class="hint">Ничего нового не нашлось.</p>') : '')}</div>`;
   }
   $('#qBody').innerHTML = h;
   const eps = planned.reduce((s, it) => s + (it.plan.eps || 1), 0);
-  $('#qFoot').innerHTML = `<span class="q-sum">${planned.length ? `<b>${planned.length}</b> ${pl(planned.length, 'тайтл', 'тайтла', 'тайтлов')} · ${sers(eps)}` : 'Ничего не запланировано'}</span>
-    <button class="btn small line" type="button" data-action="q-open-day">Расписание</button>
-    <button class="btn small primary" type="button" data-action="back">Готово</button>`;
+  $('#qFoot').innerHTML = `<span class="q-sum">${planned.length ? `<b>${planned.length}</b> ${pl(planned.length, T('тайтл'), T('тайтла'), T('тайтлов'))} · ${sers(eps)}` : T('Ничего не запланировано')}</span>
+    <button class="btn small line" type="button" data-action="q-open-day">${T("Расписание")}</button>
+    <button class="btn small primary" type="button" data-action="back">${T("Готово")}</button>`;
 }
 let quickTimer = null;
 function onQuickInput(e) {
@@ -1770,7 +1771,7 @@ function quickAdd(it) {
   quick.flash = it.id;
   renderQuick();
   setTimeout(() => { quick.flash = null; }, 600);
-  toast(`${title(it)} — по ${DAYS_DAT[quick.day]}${it.plan.time ? ' в ' + it.plan.time : ''}`, { icon: ICON.check });
+  toast(`${title(it)} ${T("— по")} ${DAYS_DAT[quick.day]}${it.plan.time ? T(' в ') + it.plan.time : ''}`, { icon: ICON.check });
 }
 
 /* Жест: два быстрых свайпа вправо от левого края экрана */
@@ -1932,17 +1933,17 @@ async function toggleNotify(key, on, input) {
   if (on && NATIVE) {
     if (!(await nativeNotifyAllowed())) {
       input.checked = false;
-      toast('Разреши уведомления: Настройки → Приложения → Бангуми → Уведомления', { ms: 6000 });
+      toast(T('Разреши уведомления: Настройки → Приложения → Бангуми → Уведомления'), { ms: 6000 });
       renderProfile();
       return;
     }
   } else if (on) {
-    if (typeof Notification === 'undefined') { input.checked = false; toast('Уведомления здесь не поддерживаются'); return; }
+    if (typeof Notification === 'undefined') { input.checked = false; toast(T('Уведомления здесь не поддерживаются')); return; }
     let perm = Notification.permission;
     if (perm === 'default') { try { perm = await Notification.requestPermission(); } catch (e) { perm = 'denied'; } }
     if (perm !== 'granted') {
       input.checked = false;
-      toast('Разреши уведомления: Настройки → Приложения → Бангуми', { ms: 6000 });
+      toast(T('Разреши уведомления: Настройки → Приложения → Бангуми'), { ms: 6000 });
       renderProfile();
       return;
     }
@@ -1956,7 +1957,7 @@ async function toggleNotify(key, on, input) {
   await flush();
   setupPeriodicSync();
   renderProfile();
-  toast(on ? 'Уведомления включены' : 'Уведомления выключены', { icon: ICON.bell });
+  toast(on ? T('Уведомления включены') : T('Уведомления выключены'), { icon: ICON.bell });
 }
 async function startupCheck() {
   if (!state.settings.notifyEpisodes && !state.settings.notifyPlan) return;
@@ -1976,14 +1977,28 @@ function switchSkin(k, srcEl) {
     applyTheme(); save(); resetViewCache();
     render(false);
   };
-  if (reduced) { apply(); toast('Интерфейс: ' + SKINS[k].name); return; }
+  if (reduced) { apply(); toast(T('Интерфейс: ') + SKINS[k].name); return; }
   const w = document.createElement('div');
   w.className = 'skin-wipe to-' + k;
   w.style.setProperty('--x', x + 'px'); w.style.setProperty('--y', y + 'px');
   w.innerHTML = `<span>${SKINS[k].name}</span>`;
   document.body.appendChild(w);
   setTimeout(() => { apply(); w.classList.add('out'); }, 520);
-  setTimeout(() => { w.remove(); toast('Интерфейс: ' + SKINS[k].name); }, 1050);
+  setTimeout(() => { w.remove(); toast(T('Интерфейс: ') + SKINS[k].name); }, 1050);
+}
+
+/* ================= Язык ================= */
+async function setUiLang(l) {
+  if (l === LANG || (l !== 'ru' && l !== 'en')) return;
+  buzz(16);
+  try { localStorage.setItem('bangumi-lang', l); } catch (e) { /* нет хранилища */ }
+  state.settings.lang = l;
+  // названия тайтлов следуют за языком, если не выбраны ромадзи
+  if (l === 'en' && state.settings.titleLang === 'russian') state.settings.titleLang = 'english';
+  if (l === 'ru' && state.settings.titleLang === 'english') state.settings.titleLang = 'russian';
+  await flush();
+  document.body.classList.add('lang-out');
+  setTimeout(() => location.reload(), reduced ? 0 : 260);
 }
 
 /* ================= Тост ================= */
@@ -2011,7 +2026,7 @@ function exportData() {
   const name = `bangumi-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
   if (NATIVE) {
     const where = NATIVE.saveFile(name, json);
-    toast(where ? 'Сохранено: ' + where : 'Не получилось сохранить файл', { ms: 5000 });
+    toast(where ? T('Сохранено: ') + L('Загрузки/Bangumi/', 'Downloads/Bangumi/') + name : T('Не получилось сохранить файл'), { ms: 5000 });
     return;
   }
   const blob = new Blob([json], { type: 'application/json' });
@@ -2020,7 +2035,7 @@ function exportData() {
   a.href = url; a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 3000);
-  toast('Копия сохранена в «Загрузки»');
+  toast(T('Копия сохранена в «Загрузки»'));
 }
 function importData(file) {
   const r = new FileReader();
@@ -2032,11 +2047,11 @@ function importData(file) {
       let n = 0;
       Object.values(s.items).forEach(it => { if (it && it.id && it.status) { state.items[it.id] = it; n++; } });
       ['planLog', 'activity', 'watchLog', 'gone', 'ru'].forEach(k => { if (s[k]) state[k] = Object.assign(state[k] || {}, s[k]); });
-      if (s.settings) state.settings = Object.assign(state.settings, s.settings);
+      if (s.settings) state.settings = Object.assign(state.settings, s.settings, { lang: LANG });
       applyTheme(); flush(); ui.heroIds = null; render();
-      toast('Загружено тайтлов: ' + n);
+      toast(T('Загружено тайтлов: ') + n);
       syncAll(true);
-    } catch (e) { toast('Это не файл копии Бангуми. Выбери bangumi-….json'); }
+    } catch (e) { toast(T('Это не файл копии Бангуми. Выбери bangumi-….json')); }
   };
   r.readAsText(file);
 }
@@ -2096,7 +2111,7 @@ document.addEventListener('click', e => {
       const item = addToList(m, 'planned');
       ui.heroIds = null;
       celebrate();
-      toast('Добавлено в «В планах»', { action: 'Открыть', fn: () => openDetail({ itemId: item.id }) });
+      toast(T('Добавлено в «В планах»'), { action: T('Открыть'), fn: () => openDetail({ itemId: item.id }) });
       renderCurrent(true);
       break;
     }
@@ -2107,7 +2122,7 @@ document.addEventListener('click', e => {
       ui.detailStack[ui.detailStack.length - 1] = { itemId: item.id, aniId: m.id };
       if (t.dataset.v === 'watching' || t.dataset.v === 'completed') celebrate();
       renderDetailBlocks(true);
-      toast('Добавлено в «' + ST[item.status].label + '»');
+      toast(T('Добавлено в «') + ST[item.status].label + '»');
       break;
     }
     case 'expand': { const d = $('#dDesc'); if (d) { d.classList.remove('clamp'); t.remove(); } break; }
@@ -2154,7 +2169,7 @@ document.addEventListener('click', e => {
       touch(); buzz(8);
       t.setAttribute('aria-pressed', it.plan.days.includes(d));
       const lab = $('#dPlan .section-head .label');
-      if (lab) lab.textContent = it.plan.days.length ? `${it.plan.days.length} ${pl(it.plan.days.length, 'день', 'дня', 'дней')} в неделю` : '';
+      if (lab) lab.textContent = it.plan.days.length ? `${it.plan.days.length} ${pl(it.plan.days.length, T('день'), T('дня'), T('дней'))} ${T("в неделю")}` : '';
       break;
     }
     case 'eps': {
@@ -2174,7 +2189,7 @@ document.addEventListener('click', e => {
       delete state.items[it.id];
       ui.confirmDelete = false; ui.heroIds = null;
       save(); back();
-      setTimeout(() => toast('Удалено: ' + title(copy), { action: 'Вернуть', ms: 7000, fn: () => { state.items[copy.id] = copy; save(); ui.heroIds = null; renderCurrent(true); } }), 320);
+      setTimeout(() => toast(T('Удалено: ') + title(copy), { action: T('Вернуть'), ms: 7000, fn: () => { state.items[copy.id] = copy; save(); ui.heroIds = null; renderCurrent(true); } }), 320);
       break;
     }
     case 'plan-check': togglePlan(t.dataset.key, t.dataset.id, t); break;
@@ -2197,7 +2212,7 @@ document.addEventListener('click', e => {
       if (!x || !x.plan) break;
       const d = quick.day;
       x.plan.days = x.plan.days.filter(v => v !== d); x.updatedAt = Date.now(); save(); buzz(8); renderQuick();
-      toast('Убрано из плана: ' + title(x), { action: 'Вернуть', fn: () => { if (!x.plan.days.includes(d)) x.plan.days = x.plan.days.concat(d).sort(); save(); renderQuick(); refreshAfterChange(); } });
+      toast(T('Убрано из плана: ') + title(x), { action: T('Вернуть'), fn: () => { if (!x.plan.days.includes(d)) x.plan.days = x.plan.days.concat(d).sort(); save(); renderQuick(); refreshAfterChange(); } });
       break;
     }
     case 'q-open-day': {
@@ -2240,7 +2255,7 @@ document.addEventListener('click', e => {
     case 'share-manual': Share.open({}, { manual: true }); break;
     case 'manual-save': {
       const name = ($('#mTitle').value || '').trim();
-      if (!name) { $('#mTitle').focus(); toast('Впиши название'); break; }
+      if (!name) { $('#mTitle').focus(); toast(T('Впиши название')); break; }
       const total = parseInt($('#mEps').value, 10) || null;
       const id = 'm' + Date.now(), now = Date.now();
       state.items[id] = { id, anilistId: null, title: name, titles: {}, cover: '', color: null, total, status: t.dataset.v,
@@ -2253,10 +2268,11 @@ document.addEventListener('click', e => {
     }
     case 'time-period': ui.timePeriod = t.dataset.v; ui.timeAll = false; $('#timeCard').innerHTML = timeCardHTML(); setAnimate($('#timeCard')); break;
     case 'time-all': ui.timeAll = !ui.timeAll; $('#timeCard').innerHTML = timeCardHTML(); break;
-    case 'set-listview': state.settings.listView = t.dataset.v; save(); buzz(8); renderProfile(); toast(t.dataset.v === 'map' ? 'Мой список: карта' : t.dataset.v === 'rows' ? 'Мой список: строки' : 'Мой список: сетка'); break;
-    case 'set-perf': state.settings.perf = t.dataset.v; applyTheme(); save(); buzz(8); renderProfile(); toast(isLite() ? 'Плавность: быстро' : 'Плавность: красиво'); break;
+    case 'set-listview': state.settings.listView = t.dataset.v; save(); buzz(8); renderProfile(); toast(t.dataset.v === 'map' ? T('Мой список: карта') : t.dataset.v === 'rows' ? T('Мой список: строки') : T('Мой список: сетка')); break;
+    case 'set-perf': state.settings.perf = t.dataset.v; applyTheme(); save(); buzz(8); renderProfile(); toast(isLite() ? T('Плавность: быстро') : T('Плавность: красиво')); break;
     case 'set-skin': switchSkin(t.dataset.v, t); break;
     case 'set-lang': state.settings.titleLang = t.dataset.v; save(); renderProfile(); break;
+    case 'set-ui-lang': setUiLang(t.dataset.v); break;
     case 'set-theme': state.settings.theme = t.dataset.v; applyTheme(); save(); renderProfile(); break;
     case 'refresh': syncAll(false); break;
     case 'export': exportData(); break;
@@ -2274,7 +2290,7 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.matches('#swEp, #swPlan')) { toggleNotify(t.dataset.k, t.checked, t); return; }
   if (t.id === 'swGlass') { state.settings.glass = t.checked; applyTheme(); save(); buzz(8); return; }
-  if (t.id === 'swEdge') { state.settings.edgeGesture = t.checked; save(); buzz(8); toast(t.checked ? 'Жест включён: два свайпа от левого края' : 'Жест выключен'); return; }
+  if (t.id === 'swEdge') { state.settings.edgeGesture = t.checked; save(); buzz(8); toast(t.checked ? T('Жест включён: два свайпа от левого края') : T('Жест выключен')); return; }
   if (t.id === 'qTimeCustom') { quick.time = t.value; renderQuick(); return; }
   if (t.id === 'importFile' && t.files && t.files[0]) { importData(t.files[0]); t.value = ''; return; }
   if (t.dataset.pickDay != null) {
@@ -2309,7 +2325,7 @@ document.addEventListener('input', e => {
 });
 window.addEventListener('resize', () => { moveDayInd(true); });
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); ui.deferredInstall = e; if (ui.tab === 'home' || ui.tab === 'profile') renderCurrent(true); });
-window.addEventListener('appinstalled', () => { ui.deferredInstall = null; renderCurrent(true); celebrate(); toast('Бангуми установлен'); });
+window.addEventListener('appinstalled', () => { ui.deferredInstall = null; renderCurrent(true); celebrate(); toast(T('Бангуми установлен')); });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') flush();
   else if (Date.now() - state.lastSync > 30 * 60 * 1000) syncAll(true).then(startupCheck);
@@ -2322,7 +2338,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 12;
+const APP_VERSION = 13;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {
@@ -2339,13 +2355,22 @@ function setupUpdates() {
     if (!hadController || reloading) return;
     const quiet = Date.now() - bootAt < 12000 && !ui.overlays.length && !launchedWithShare;
     if (quiet) { reloading = true; flush().finally(() => location.reload()); return; }
-    toast('Бангуми обновился', { action: 'Перезапустить', ms: 12000, fn: () => { reloading = true; flush().finally(() => location.reload()); } });
+    toast(T('Бангуми обновился'), { action: T('Перезапустить'), ms: 12000, fn: () => { reloading = true; flush().finally(() => location.reload()); } });
   });
 }
 
 /* ================= Старт ================= */
 (async function start() {
   await load();
+  // Язык ещё не выбирали: у прежних пользователей остаётся русский, новым — язык телефона
+  let storedLang = null;
+  try { storedLang = localStorage.getItem('bangumi-lang'); } catch (e) { /* нет хранилища */ }
+  if (!storedLang) {
+    const want = state.settings.lang || (Object.keys(state.items).length ? 'ru' : LANG);
+    try { localStorage.setItem('bangumi-lang', want); } catch (e) { /* нет хранилища */ }
+    if (want !== LANG) { location.reload(); return; }
+  }
+  state.settings.lang = LANG;
   if (document.readyState === 'loading') await new Promise(r => document.addEventListener('DOMContentLoaded', r, { once: true }));
   applyTheme();
   const h = (location.hash || '').replace('#', '');

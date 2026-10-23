@@ -1323,3 +1323,6 @@ html[data-skin="quest"] .sh-row.on { box-shadow: var(--frame), inset 0 0 0 3px v
 html[data-skin="quest"] .sh-row.on .sh-radio::before { content: "▶"; color: var(--accent); font-size: 14px; }
 html[data-skin="quest"] .sh-radio { box-shadow: none; display: grid; place-items: center; }
 html[data-skin="quest"] .sh-badge { box-shadow: var(--frame), var(--bevel); }
+
+/* Смена языка: экран мягко гаснет перед перезапуском */
+body.lang-out main, body.lang-out .tabbar, body.lang-out .appbar { opacity: 0; transform: translateY(6px); transition: opacity .24s ease, transform .24s ease; }

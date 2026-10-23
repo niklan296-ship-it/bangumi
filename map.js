@@ -7,7 +7,7 @@ const MindMap = (function () {
   const DEF = {
     layout: 'right', group: 'status', node: 'line', edge: 'curve', width: 2.5,
     color: 'status', solid: '#FFB81C', bg: 'dots', appear: true, flow: 'none',
-    rotate: 0, rotateGesture: true, bgMode: 'still', upright: false, root: 'Мой список', font: 100, show: 'all'
+    rotate: 0, rotateGesture: true, bgMode: 'still', upright: false, root: T('Мой список'), font: 100, show: 'all'
   };
   const RAINBOW = ['#FFB81C', '#FF7A45', '#FF4D8D', '#B18CFF', '#6EA8FF', '#3DDC97', '#4CC9F0', '#FF5E5B'];
   const SWATCHES = ['#FFB81C', '#FF7A45', '#FF4D8D', '#B18CFF', '#6EA8FF', '#3DDC97', '#4CC9F0', '#E8E6F5'];
@@ -32,20 +32,20 @@ const MindMap = (function () {
     const order = id => STATUSES.findIndex(s => s.id === id);
     const all = Object.values(state.items)
       .filter(it => c.show === 'all' || activeStatus(it.status))
-      .sort((a, b) => order(a.status) - order(b.status) || title(a).localeCompare(title(b), 'ru'));
-    const root = { id: 'root', kind: 'root', label: c.root || 'Мой список', children: [] };
+      .sort((a, b) => order(a.status) - order(b.status) || title(a).localeCompare(title(b), LANG));
+    const root = { id: 'root', kind: 'root', label: (!c.root || c.root === 'Мой список' || c.root === 'My list') ? T('Мой список') : c.root, children: [] };
     const leaf = (it, suf) => ({ id: 't:' + it.id + (suf || ''), kind: 'title', it, label: title(it), children: [] });
     let groups = null;
     if (c.group === 'status') {
       groups = STATUSES.map(s => ({ id: 'g:' + s.id, label: s.label, color: `var(--st-${s.id})`, items: all.filter(it => it.status === s.id) }));
     } else if (c.group === 'day') {
       groups = DAYS_FULL.map((d, i) => ({ id: 'g:d' + i, label: d, suf: '@' + i, items: all.filter(it => it.plan && it.plan.days && it.plan.days.includes(i)) }));
-      groups.push({ id: 'g:dn', label: 'Без плана', suf: '@n', items: all.filter(it => !(it.plan && it.plan.days && it.plan.days.length)) });
+      groups.push({ id: 'g:dn', label: T('Без плана'), suf: '@n', items: all.filter(it => !(it.plan && it.plan.days && it.plan.days.length)) });
     } else if (c.group === 'genre') {
       const m = {};
       all.forEach(it => { const g = (it.genres && it.genres[0]) || '—'; (m[g] = m[g] || []).push(it); });
       groups = Object.keys(m).sort((a, b) => m[b].length - m[a].length)
-        .map(g => ({ id: 'g:ge:' + g, label: g === '—' ? 'Без жанра' : ((GENRE[g] || {}).ru || g), color: (GENRE[g] || {}).c, items: m[g] }));
+        .map(g => ({ id: 'g:ge:' + g, label: g === '—' ? T('Без жанра') : ((GENRE[g] || {}).ru || g), color: (GENRE[g] || {}).c, items: m[g] }));
     }
     if (!groups) root.children = all.map(it => leaf(it));
     else root.children = groups.filter(g => g.items.length).map(g => ({
@@ -80,7 +80,7 @@ const MindMap = (function () {
     }
     const it = n.it, ne = activeStatus(it.status) ? newEps(it) : 0;
     const prog = `${it.progress}/${it.total || '?'}`;
-    const dot = ne > 0 ? `<i class="mn-new" title="Доступно ещё ${ne}"></i>` : '';
+    const dot = ne > 0 ? `<i class="mn-new" title="${T("Доступно ещё")} ${ne}"></i>` : '';
     if (c.node === 'cover') {
       const col = it.color || hueColor(n.label);
       return `<div class="mn mn-title mn-cover" data-node="${esc(n.id)}" ${d}><span class="mn-in">
@@ -362,15 +362,15 @@ const MindMap = (function () {
     if (n.kind === 'title') {
       const it = n.it;
       h = (canInc(it) ? `<button type="button" data-mact="inc">${ICON.play}<span>EP ${it.progress + 1}</span></button>` : '')
-        + `<button type="button" data-mact="open">${ICON.info}<span>Открыть</span></button>`
-        + `<button type="button" data-mact="menu" aria-label="Меню">${ICON.rows}</button>`;
+        + `<button type="button" data-mact="open">${ICON.info}<span>${T("Открыть")}</span></button>`
+        + `<button type="button" data-mact="menu" aria-label="${T("Меню")}">${ICON.rows}</button>`;
     } else if (n.kind === 'group') {
       const col = cfg().collapsed[n.id];
-      h = `<button type="button" data-mact="collapse">${col ? ICON.plus : ICON.x}<span>${col ? 'Развернуть' : 'Свернуть'}</span></button>`;
+      h = `<button type="button" data-mact="collapse">${col ? ICON.plus : ICON.x}<span>${col ? T('Развернуть') : T('Свернуть')}</span></button>`;
     } else {
-      h = `<button type="button" data-mact="custom">${ICON.grid}<span>Оформление</span></button><button type="button" data-mact="fit">${ICON.check}<span>По центру</span></button>`;
+      h = `<button type="button" data-mact="custom">${ICON.grid}<span>${T("Оформление")}</span></button><button type="button" data-mact="fit">${ICON.check}<span>${T("По центру")}</span></button>`;
     }
-    if (n.kind !== 'root' && cfg().offsets[n.id]) h += `<button type="button" data-mact="unmove" aria-label="Вернуть на место">↺</button>`;
+    if (n.kind !== 'root' && cfg().offsets[n.id]) h += `<button type="button" data-mact="unmove" aria-label="${T("Вернуть на место")}">↺</button>`;
     bubble.innerHTML = h;
     bubble.hidden = false;
     bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop');
@@ -558,14 +558,14 @@ const MindMap = (function () {
       <div class="map-world"><svg class="map-edges" width="1" height="1" aria-hidden="true"></svg><div class="map-nodes"></div></div>
       <div class="map-bubble" hidden></div>
       <div class="map-tools map-tools-r">
-        <button type="button" class="map-tool" data-mact="custom" aria-label="Оформление"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.5" cy="10" r="1.3" fill="currentColor"/><circle cx="12" cy="7.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="10" r="1.3" fill="currentColor"/><path d="M12 20.5c-1.5 0-2-1-2-2s1-2 2.5-2h1.5"/></svg></button>
-        <button type="button" class="map-tool" data-mact="rot" aria-label="Повернуть на 90°"><svg class="ico" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4v4.5H15"/></svg></button>
-        <button type="button" class="map-tool" data-mact="fit" aria-label="Показать всё"><svg class="ico" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><circle cx="12" cy="12" r="2.5"/></svg></button>
-        <button type="button" class="map-tool" data-mact="full" aria-label="${full ? 'Свернуть' : 'На весь экран'}">${full ? '<svg class="ico" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>' : '<svg class="ico" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'}</button>
+        <button type="button" class="map-tool" data-mact="custom" aria-label="${T("Оформление")}"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="8.5" cy="10" r="1.3" fill="currentColor"/><circle cx="12" cy="7.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="10" r="1.3" fill="currentColor"/><path d="M12 20.5c-1.5 0-2-1-2-2s1-2 2.5-2h1.5"/></svg></button>
+        <button type="button" class="map-tool" data-mact="rot" aria-label="${T("Повернуть на 90°")}"><svg class="ico" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4v4.5H15"/></svg></button>
+        <button type="button" class="map-tool" data-mact="fit" aria-label="${T("Показать всё")}"><svg class="ico" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><circle cx="12" cy="12" r="2.5"/></svg></button>
+        <button type="button" class="map-tool" data-mact="full" aria-label="${full ? T('Свернуть') : T('На весь экран')}">${full ? '<svg class="ico" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>' : '<svg class="ico" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'}</button>
       </div>
       <div class="map-tools map-tools-l">
-        <button type="button" class="map-tool" data-mact="zin" aria-label="Приблизить">${ICON.plus}</button>
-        <button type="button" class="map-tool" data-mact="zout" aria-label="Отдалить"><svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+        <button type="button" class="map-tool" data-mact="zin" aria-label="${T("Приблизить")}">${ICON.plus}</button>
+        <button type="button" class="map-tool" data-mact="zout" aria-label="${T("Отдалить")}"><svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
       </div>`;
     world = host.querySelector('.map-world');
     svg = host.querySelector('.map-edges');
@@ -597,15 +597,15 @@ const MindMap = (function () {
 
   /* ---------- Панель «Оформление» ---------- */
   const OPT = {
-    layout: [['right', 'Вправо'], ['left', 'Влево'], ['both', 'В обе стороны'], ['down', 'Вниз'], ['radial', 'Кругом']],
-    group: [['none', 'Без групп'], ['status', 'По статусу'], ['day', 'По дням плана'], ['genre', 'По жанрам']],
-    node: [['line', 'Текст на линии'], ['pill', 'Плашки'], ['cover', 'С обложками']],
-    edge: [['curve', 'Плавные'], ['straight', 'Прямые'], ['elbow', 'Углом']],
-    color: [['status', 'По статусу'], ['rainbow', 'Радуга'], ['cover', 'Цвет обложки'], ['solid', 'Один цвет']],
-    bg: [['plain', 'Чистый'], ['dots', 'Точки'], ['grid', 'Клетка'], ['gradient', 'Градиент'], ['stars', 'Звёзды'], ['aurora', 'Сияние'], ['cover', 'Обложка']],
-    flow: [['none', 'Нет'], ['flow', 'Поток'], ['glow', 'Дыхание'], ['sparks', 'Искры'], ['neon', 'Неон']],
-    bgMode: [['still', 'Неподвижный'], ['live', 'Живой']],
-    show: [['all', 'Все'], ['active', 'Только текущие']]
+    layout: [['right', T('Вправо')], ['left', T('Влево')], ['both', T('В обе стороны')], ['down', T('Вниз')], ['radial', T('Кругом')]],
+    group: [['none', T('Без групп')], ['status', T('По статусу')], ['day', T('По дням плана')], ['genre', T('По жанрам')]],
+    node: [['line', T('Текст на линии')], ['pill', T('Плашки')], ['cover', T('С обложками')]],
+    edge: [['curve', T('Плавные')], ['straight', T('Прямые')], ['elbow', T('Углом')]],
+    color: [['status', T('По статусу')], ['rainbow', T('Радуга')], ['cover', T('Цвет обложки')], ['solid', T('Один цвет')]],
+    bg: [['plain', T('Чистый')], ['dots', T('Точки')], ['grid', T('Клетка')], ['gradient', T('Градиент')], ['stars', T('Звёзды')], ['aurora', T('Сияние')], ['cover', T('Обложка')]],
+    flow: [['none', T('Нет')], ['flow', T('Поток')], ['glow', T('Дыхание')], ['sparks', T('Искры')], ['neon', T('Неон')]],
+    bgMode: [['still', T('Неподвижный')], ['live', T('Живой')]],
+    show: [['all', T('Все')], ['active', T('Только текущие')]]
   };
   function chips(key, c) {
     return `<div class="mc-chips" role="group">${OPT[key].map(([v, l]) => `<button type="button" class="mc-chip${c[key] === v ? ' on' : ''}" data-mset="${key}" data-v="${v}" aria-pressed="${c[key] === v}">${key === 'bg' ? `<i class="mc-bg bg-${v}"></i>` : ''}${l}</button>`).join('')}</div>`;
@@ -614,30 +614,30 @@ const MindMap = (function () {
     const c = cfg();
     const sw = (k, label, hint) => `<div class="mc-row"><div class="txt"><span>${label}</span>${hint ? `<small>${hint}</small>` : ''}</div><label class="switch"><input type="checkbox" data-mtog="${k}" ${c[k] ? 'checked' : ''} aria-label="${label}"><span></span></label></div>`;
     return `<div class="grab"></div>
-      <div class="mc-head"><h2>Оформление карты</h2><button class="btn small" type="button" data-mset="_done">Готово</button></div>
-      <div class="mc-sec"><span class="label">Раскладка</span>${chips('layout', c)}</div>
-      <div class="mc-sec"><span class="label">Группы</span>${chips('group', c)}</div>
-      <div class="mc-sec"><span class="label">Узлы</span>${chips('node', c)}</div>
-      <div class="mc-sec"><span class="label">Линии</span>${chips('edge', c)}
-        <div class="mc-range"><span>Толщина</span><input type="range" min="1" max="6" step="0.5" value="${c.width}" data-mrange="width" aria-label="Толщина линий"><b class="mono">${c.width}</b></div></div>
-      <div class="mc-sec"><span class="label">Цвета</span>${chips('color', c)}
-        <div class="mc-sw${c.color === 'solid' ? '' : ' dim'}">${SWATCHES.map(s => `<button type="button" class="mc-dot${c.solid === s ? ' on' : ''}" style="--c:${s}" data-mset="solid" data-v="${s}" aria-label="Цвет ${s}"></button>`).join('')}
-          <label class="mc-dot custom" aria-label="Свой цвет"><input type="color" value="${esc(c.solid)}" data-mcolor="1"></label></div></div>
-      <div class="mc-sec"><span class="label">Фон</span>${chips('bg', c)}${chips('bgMode', c)}</div>
-      <div class="mc-sec"><span class="label">Анимации</span>
-        ${sw('appear', 'Появление веток', 'Ветки прорисовываются при открытии')}
-        <div class="mc-row"><div class="txt"><span>Движение линий</span></div></div>${chips('flow', c)}</div>
-      <div class="mc-sec"><span class="label">Поворот</span>
-        <div class="mc-range"><span>Угол</span><input type="range" min="-180" max="180" step="1" value="${Math.round(((view.r % 360) + 540) % 360 - 180)}" data-mrange="rotate" aria-label="Угол поворота"><b class="mono">${Math.round(((view.r % 360) + 540) % 360 - 180)}°</b></div>
-        ${sw('rotateGesture', 'Поворот двумя пальцами', 'Крути карту, как фото')}
-        ${sw('upright', 'Текст всегда ровно', 'Надписи не наклоняются при повороте')}</div>
-      <div class="mc-sec"><span class="label">Текст</span>
-        <div class="mc-range"><span>Размер</span><input type="range" min="70" max="160" step="5" value="${c.font}" data-mrange="font" aria-label="Размер текста"><b class="mono">${c.font}%</b></div>
-        <label class="mc-field"><span>Надпись в центре</span><input class="input" type="text" maxlength="40" value="${esc(c.root)}" data-mroot="1" placeholder="Мой список"></label></div>
-      <div class="mc-sec"><span class="label">Что показывать</span>${chips('show', c)}</div>
+      <div class="mc-head"><h2>${T("Оформление карты")}</h2><button class="btn small" type="button" data-mset="_done">${T("Готово")}</button></div>
+      <div class="mc-sec"><span class="label">${T("Раскладка")}</span>${chips('layout', c)}</div>
+      <div class="mc-sec"><span class="label">${T("Группы")}</span>${chips('group', c)}</div>
+      <div class="mc-sec"><span class="label">${T("Узлы")}</span>${chips('node', c)}</div>
+      <div class="mc-sec"><span class="label">${T("Линии")}</span>${chips('edge', c)}
+        <div class="mc-range"><span>${T("Толщина")}</span><input type="range" min="1" max="6" step="0.5" value="${c.width}" data-mrange="width" aria-label="${T("Толщина линий")}"><b class="mono">${c.width}</b></div></div>
+      <div class="mc-sec"><span class="label">${T("Цвета")}</span>${chips('color', c)}
+        <div class="mc-sw${c.color === 'solid' ? '' : ' dim'}">${SWATCHES.map(s => `<button type="button" class="mc-dot${c.solid === s ? ' on' : ''}" style="--c:${s}" data-mset="solid" data-v="${s}" aria-label="${T("Цвет")} ${s}"></button>`).join('')}
+          <label class="mc-dot custom" aria-label="${T("Свой цвет")}"><input type="color" value="${esc(c.solid)}" data-mcolor="1"></label></div></div>
+      <div class="mc-sec"><span class="label">${T("Фон")}</span>${chips('bg', c)}${chips('bgMode', c)}</div>
+      <div class="mc-sec"><span class="label">${T("Анимации")}</span>
+        ${sw('appear', T('Появление веток'), T('Ветки прорисовываются при открытии'))}
+        <div class="mc-row"><div class="txt"><span>${T("Движение линий")}</span></div></div>${chips('flow', c)}</div>
+      <div class="mc-sec"><span class="label">${T("Поворот")}</span>
+        <div class="mc-range"><span>${T("Угол")}</span><input type="range" min="-180" max="180" step="1" value="${Math.round(((view.r % 360) + 540) % 360 - 180)}" data-mrange="rotate" aria-label="${T("Угол поворота")}"><b class="mono">${Math.round(((view.r % 360) + 540) % 360 - 180)}°</b></div>
+        ${sw('rotateGesture', T('Поворот двумя пальцами'), T('Крути карту, как фото'))}
+        ${sw('upright', T('Текст всегда ровно'), T('Надписи не наклоняются при повороте'))}</div>
+      <div class="mc-sec"><span class="label">${T("Текст")}</span>
+        <div class="mc-range"><span>${T("Размер")}</span><input type="range" min="70" max="160" step="5" value="${c.font}" data-mrange="font" aria-label="${T("Размер текста")}"><b class="mono">${c.font}%</b></div>
+        <label class="mc-field"><span>${T("Надпись в центре")}</span><input class="input" type="text" maxlength="40" value="${esc(c.root)}" data-mroot="1" placeholder="${T("Мой список")}"></label></div>
+      <div class="mc-sec"><span class="label">${T("Что показывать")}</span>${chips('show', c)}</div>
       <div class="mc-actions">
-        <button class="btn line" type="button" data-mset="_unmove">Вернуть узлы на места</button>
-        <button class="btn danger" type="button" data-mset="_reset">Сбросить оформление</button>
+        <button class="btn line" type="button" data-mset="_unmove">${T("Вернуть узлы на места")}</button>
+        <button class="btn danger" type="button" data-mset="_reset">${T("Сбросить оформление")}</button>
       </div>`;
   }
   function openCustom() {
@@ -658,11 +658,11 @@ const MindMap = (function () {
     if (!b) return;
     const k = b.dataset.mset, v = b.dataset.v, c = cfg();
     if (k === '_done') { back(); return; }
-    if (k === '_unmove') { c.offsets = {}; save(); refresh(false); rerenderCustom(); toast('Узлы вернулись на места'); return; }
+    if (k === '_unmove') { c.offsets = {}; save(); refresh(false); rerenderCustom(); toast(T('Узлы вернулись на места')); return; }
     if (k === '_reset') {
       const keep = { offsets: {}, collapsed: {} };
       state.settings.map = Object.assign({}, DEF, keep);
-      save(); view.r = 0; sel = null; refresh(true, true); rerenderCustom(); toast('Оформление сброшено'); return;
+      save(); view.r = 0; sel = null; refresh(true, true); rerenderCustom(); toast(T('Оформление сброшено')); return;
     }
     if (k === 'solid') { c.solid = v; c.color = 'solid'; }
     else c[k] = v;
@@ -682,7 +682,7 @@ const MindMap = (function () {
       else relayoutSoon();
     } else if (t.dataset.mroot) {
       cfg().root = t.value; save();
-      const r = host && host.querySelector('.mn-root .mn-in'); if (r) r.textContent = t.value || 'Мой список';
+      const r = host && host.querySelector('.mn-root .mn-in'); if (r) r.textContent = t.value || T('Мой список');
       relayoutSoon();
     } else if (t.dataset.mcolor) {
       const c = cfg(); c.solid = t.value; c.color = 'solid'; save(); relayoutSoon();

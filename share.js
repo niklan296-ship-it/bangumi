@@ -24,7 +24,7 @@ const Share = (function () {
     new RegExp(`${B0}(\\d{1,2})\\s*(?:-?(?:й|ый|st|nd|rd|th))?\\s*(?:сезон|season)[^0-9]{0,8}?(?:серия|серию|эпизод|episode|ep\\.?)\\s*[#№:]?\\s*(\\d{1,4})`, 'i')
   ];
   const EPS = [
-    new RegExp(`${B0}(\\d{1,4})\\s*(?:-?(?:я|ю|й))?\\s*(?:серия|серию|эпизод|episode)${B1}`, 'i'),
+    new RegExp(`${B0}(\\d{1,4})\\s*(?:-?(?:я|ю|й))?\\s*(?:серия|серию|эпизод)${B1}|${B0}(\\d{1,4})(?:st|nd|rd|th)\\s*episode${B1}`, 'i'),
     new RegExp(`${B0}(?:episode|ep\\.?|эпизод|серия|серии|серию|e)\\s*[#№:]?\\s*(\\d{1,4})(?![0-9])`, 'i'),
     /\s[-–]\s*(\d{1,4})(?=\s|$|v\d|\[|\()/
   ];
@@ -47,7 +47,7 @@ const Share = (function () {
     let words = (title + ' \n ' + text).replace(/https?:\/\/\S+/g, ' ');
     let ep = null, season = null;
     for (const re of PAIRS) { const m = words.match(re); if (m) { season = +m[1]; ep = +m[2]; words = words.replace(m[0], ' '); break; } }
-    if (ep == null) for (const re of EPS) { const m = words.match(re); if (m) { ep = +m[1]; words = words.replace(m[0], ' '); break; } }
+    if (ep == null) for (const re of EPS) { const m = words.match(re); if (m) { ep = +(m[1] || m[2]); words = words.replace(m[0], ' '); break; } }
     if (season == null) for (const re of SEASONS) { const m = words.match(re); if (m) { season = +m[1]; words = words.replace(m[0], ' '); break; } }
     const path = link.replace(/^https?:\/\/[^/]+/, '');
     if (ep == null && path) { const m = path.match(EP_URL); if (m) ep = +m[1]; }
@@ -218,14 +218,14 @@ const Share = (function () {
       const it = c.it, col = it.color || hueColor(title(it));
       return `<button type="button" class="sh-row${on ? ' on' : ''}" data-shsel="${i}" style="--c:${esc(col)}" aria-pressed="${on}">
         ${thumbHTML(it.cover, title(it), col, null)}
-        <span class="info"><span class="t">${esc(title(it))}</span><span class="s"><span class="sh-in">В списке</span>${esc(ST[it.status].label)} · EP ${it.progress}/${it.total || '?'}</span></span>
+        <span class="info"><span class="t">${esc(title(it))}</span><span class="s"><span class="sh-in">${T("В списке")}</span>${esc(ST[it.status].label)} · EP ${it.progress}/${it.total || '?'}</span></span>
         <span class="sh-radio" aria-hidden="true"></span></button>`;
     }
     const m = c.m, t = mediaTitle(m), col = (m.coverImage && m.coverImage.color) || hueColor(t);
-    const sub = [FORMAT[m.format] || '', m.episodes ? m.episodes + ' эп.' : '', m.seasonYear || ''].filter(Boolean).join(' · ');
+    const sub = [FORMAT[m.format] || '', m.episodes ? m.episodes + T(' эп.') : '', m.seasonYear || ''].filter(Boolean).join(' · ');
     return `<button type="button" class="sh-row${on ? ' on' : ''}" data-shsel="${i}" style="--c:${esc(col)}" aria-pressed="${on}">
       ${thumbHTML(mediaCover(m), t, col, null)}
-      <span class="info"><span class="t">${esc(t)}</span><span class="s">${esc(sub || 'Из базы')}</span></span>
+      <span class="info"><span class="t">${esc(t)}</span><span class="s">${esc(sub || T('Из базы'))}</span></span>
       <span class="sh-radio" aria-hidden="true"></span></button>`;
   }
   function renderSheet() {
@@ -236,31 +236,31 @@ const Share = (function () {
     let action = '', note = '';
     if (c && c.kind === 'item') {
       const it = c.it;
-      if (ep <= (it.progress || 0)) { action = `${ICON.check}Уже отмечено до EP ${it.progress}`; note = `EP ${ep} уже засчитана. Если серия другая, поправь номер выше.`; }
-      else action = `${ICON.play}Отметить EP ${ep}`;
-      if (it.total && ep > it.total) note = `В этом тайтле ${it.total} серий. Возможно, это другой сезон — выбери ниже или поправь номер.`;
-    } else if (c) action = ep ? `${ICON.plus}В «Смотрю» и отметить EP ${ep}` : `${ICON.plus}Добавить в «Смотрю»`;
+      if (ep <= (it.progress || 0)) { action = `${ICON.check}${T("Уже отмечено до EP")} ${it.progress}`; note = `EP ${ep} ${T("уже засчитана. Если серия другая, поправь номер выше.")}`; }
+      else action = `${ICON.play}${T("Отметить EP")} ${ep}`;
+      if (it.total && ep > it.total) note = `${T("В этом тайтле")} ${it.total} ${T("серий. Возможно, это другой сезон — выбери ниже или поправь номер.")}`;
+    } else if (c) action = ep ? `${ICON.plus}${T("В «Смотрю» и отметить EP")} ${ep}` : `${ICON.plus}${T("Добавить в «Смотрю»")}`;
     const linkShort = p.link ? p.link.replace(/^https?:\/\/(www\.)?/, '').slice(0, 46) + (p.link.length > 56 ? '…' : '') : '';
     el.innerHTML = `<div class="grab"></div>
       <div class="sh-head"><span class="sh-badge" aria-hidden="true">${ICON.ext}</span>
-        <div class="txt"><h2>${S.manual ? 'Ссылка на серию' : 'Поделились с Бангуми'}</h2>
-        <small>${p.site ? `<b>${esc(p.site)}</b>` : ''}${p.site && linkShort ? ' · ' : ''}${esc(linkShort || (S.manual ? 'Вставь ссылку или название с номером серии' : 'Без ссылки'))}</small></div></div>
-      ${S.manual ? `<label class="label" for="shUrl">Ссылка или текст</label><input class="input" id="shUrl" type="text" inputmode="url" placeholder="https://… или «Магическая битва 5 серия»" value="${esc(S.raw.text || S.raw.url || '')}">` : ''}
+        <div class="txt"><h2>${S.manual ? T('Ссылка на серию') : T('Поделились с Бангуми')}</h2>
+        <small>${p.site ? `<b>${esc(p.site)}</b>` : ''}${p.site && linkShort ? ' · ' : ''}${esc(linkShort || (S.manual ? T('Вставь ссылку или название с номером серии') : T('Без ссылки')))}</small></div></div>
+      ${S.manual ? `<label class="label" for="shUrl">${T("Ссылка или текст")}</label><input class="input" id="shUrl" type="text" inputmode="url" placeholder="${T("https://… или «Магическая битва 5 серия»")}" value="${esc(S.raw.text || S.raw.url || '')}">` : ''}
       <div class="sh-fields">
-        <label class="sh-name"><span class="label">Название</span><input class="input" id="shName" type="text" value="${esc(p.name)}" placeholder="Название тайтла"></label>
-        <label class="sh-ep"><span class="label">Серия</span><span class="stepper"><button type="button" data-shep="-1" aria-label="Меньше">−</button><input id="shEp" type="number" inputmode="numeric" min="1" value="${ep || ''}" placeholder="—" aria-label="Номер серии"><button type="button" data-shep="1" aria-label="Больше">+</button></span></label>
+        <label class="sh-name"><span class="label">${T("Название")}</span><input class="input" id="shName" type="text" value="${esc(p.name)}" placeholder="${T("Название тайтла")}"></label>
+        <label class="sh-ep"><span class="label">${T("Серия")}</span><span class="stepper"><button type="button" data-shep="-1" aria-label="${T("Меньше")}">−</button><input id="shEp" type="number" inputmode="numeric" min="1" value="${ep || ''}" placeholder="—" aria-label="${T("Номер серии")}"><button type="button" data-shep="1" aria-label="${T("Больше")}">+</button></span></label>
       </div>
-      ${p.season ? `<p class="hint">Нашёл в тексте: сезон ${p.season}. Учитываю при подборе.</p>` : ''}
+      ${p.season ? `<p class="hint">${T("Нашёл в тексте: сезон")} ${p.season}${T(". Учитываю при подборе.")}</p>` : ''}
       <div class="sh-list">
-        <div class="label">${list.length ? 'Это он?' : ''}</div>
+        <div class="label">${list.length ? T('Это он?') : ''}</div>
         ${list.map(rowHTML).join('')}
-        ${S.loading ? '<div class="loading"><span class="spinner"></span>Ищу в базе…</div>' : ''}
-        ${!S.loading && !list.length ? `<div class="empty soft"><p>${S.online === null ? 'Нет связи с базой. Проверь интернет или поправь название.' : 'Не нашёл такой тайтл. Поправь название — например, по-английски или ромадзи.'}</p></div>` : ''}
+        ${S.loading ? T('<div class="loading"><span class="spinner"></span>Ищу в базе…</div>') : ''}
+        ${!S.loading && !list.length ? `<div class="empty soft"><p>${S.online === null ? T('Нет связи с базой. Проверь интернет или поправь название.') : T('Не нашёл такой тайтл. Поправь название — например, по-английски или ромадзи.')}</p></div>` : ''}
       </div>
       ${note ? `<p class="hint sh-note">${esc(note)}</p>` : ''}
       <div class="sh-actions">
-        <button class="btn grad block" type="button" data-shgo="1" ${!c || (c.kind === 'item' && ep <= (c.it.progress || 0)) ? 'disabled' : ''}>${action || 'Выбери тайтл'}</button>
-        ${c ? `<button class="btn line block" type="button" data-shopen="1">${ICON.info}Открыть страницу</button>` : ''}
+        <button class="btn grad block" type="button" data-shgo="1" ${!c || (c.kind === 'item' && ep <= (c.it.progress || 0)) ? 'disabled' : ''}>${action || T('Выбери тайтл')}</button>
+        ${c ? `<button class="btn line block" type="button" data-shopen="1">${ICON.info}${T("Открыть страницу")}</button>` : ''}
       </div>`;
   }
 
@@ -285,8 +285,8 @@ const Share = (function () {
     setTimeout(() => {
       back();
       refreshAfterChange();
-      if (!ep) toast(`«${title(it)}» — в «Смотрю»`, { action: 'Открыть', fn: () => openDetail({ itemId: it.id }, null) });
-      else if (!maybeComplete(it)) toast(`EP ${ep} — ${title(it)}`, { action: 'Отменить', fn: () => { setProgress(it, before); save(); refreshAfterChange(); } });
+      if (!ep) toast(`«${title(it)}${T("» — в «Смотрю»")}`, { action: T('Открыть'), fn: () => openDetail({ itemId: it.id }, null) });
+      else if (!maybeComplete(it)) toast(`EP ${ep} — ${title(it)}`, { action: T('Отменить'), fn: () => { setProgress(it, before); save(); refreshAfterChange(); } });
     }, 220);
   }
 

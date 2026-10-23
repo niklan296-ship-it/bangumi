@@ -209,12 +209,12 @@
   function swAction(row) {
     if (row.matches('.lrow')) {
       const b = row.querySelector('.plus-btn');
-      return b ? { label: '+1 серия', icon: ICON.play, run: () => { sparkle(row.querySelector('.thumb'), 12); incEpisode(b.dataset.id, null); } } : null;
+      return b ? { label: T('+1 серия'), icon: ICON.play, run: () => { sparkle(row.querySelector('.thumb'), 12); incEpisode(b.dataset.id, null); } } : null;
     }
     const c = row.querySelector('.cbox');
     if (!c || c.disabled) return null;
     const on = c.classList.contains('on');
-    return { label: on ? 'Снять отметку' : 'Посмотрел', icon: on ? ICON.x : ICON.check, run: () => { if (!on) sparkle(c, 12); togglePlan(c.dataset.key, c.dataset.id, c); } };
+    return { label: on ? T('Снять отметку') : T('Посмотрел'), icon: on ? ICON.x : ICON.check, run: () => { if (!on) sparkle(c, 12); togglePlan(c.dataset.key, c.dataset.id, c); } };
   }
   document.addEventListener('pointermove', e => {
     if (!sw || e.pointerId !== sw.id) return;
@@ -312,7 +312,7 @@
   function peekHTML() {
     const it = peekItem();
     const m = !it && peek.aniId ? ui.media[peek.aniId] : null;
-    if (!it && !m) return '<div class="grab"></div><p class="hint">Тайтл не найден.</p>';
+    if (!it && !m) return T('<div class="grab"></div><p class="hint">Тайтл не найден.</p>');
     const t = it ? title(it) : mediaTitle(m);
     const c = (it && it.color) || (m && m.coverImage && m.coverImage.color) || hueColor(t);
     const cover = it ? (it.coverXL || it.cover) : mediaCover(m, true);
@@ -324,20 +324,20 @@
       sub = `<span class="sbadge s-${it.status}" style="--st:var(--st-${it.status})"><span class="dot"></span>${esc(ST[it.status].label)}</span>
         <span class="mono" data-tick="pk-${esc(it.id)}">EP ${it.progress}/${it.total || '?'}</span>${ne > 0 && activeStatus(it.status) ? `<span class="p-new" style="position:static">+${ne}</span>` : ''}`;
     } else {
-      sub = [FORMAT[m.format] || '', m.episodes ? m.episodes + ' эп.' : '', m.seasonYear || ''].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
+      sub = [FORMAT[m.format] || '', m.episodes ? m.episodes + T(' эп.') : '', m.seasonYear || ''].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
     }
-    const nextLine = next && next.airingAt > n ? `<div class="peek-next"><span class="countdown-chip">${esc(until(next.airingAt))}</span>EP ${next.episode}, ${esc(fmtDay(next.airingAt))} в ${fmtTime(next.airingAt)}</div>` : '';
+    const nextLine = next && next.airingAt > n ? `<div class="peek-next"><span class="countdown-chip">${esc(until(next.airingAt))}</span>EP ${next.episode}, ${esc(fmtDay(next.airingAt))} ${T("в")} ${fmtTime(next.airingAt)}</div>` : '';
     let actions;
     if (it) {
       actions = `<div class="peek-actions">
-          ${canInc(it) ? `<button class="btn primary" type="button" data-action="peek-inc">${ICON.play}Отметить EP ${it.progress + 1}</button>` : `<button class="btn primary" type="button" disabled>${ICON.check}Все серии отмечены</button>`}
-          <button class="btn" type="button" data-action="peek-plan">${ICON.plus}В расписание</button>
+          ${canInc(it) ? `<button class="btn primary" type="button" data-action="peek-inc">${ICON.play}${T("Отметить EP")} ${it.progress + 1}</button>` : `<button class="btn primary" type="button" disabled>${ICON.check}${T("Все серии отмечены")}</button>`}
+          <button class="btn" type="button" data-action="peek-plan">${ICON.plus}${T("В расписание")}</button>
         </div>
-        <div class="statusbar peek-status" role="group" aria-label="Статус">${STATUSES.map(s => `<button type="button" class="sbtn${it.status === s.id ? ' on' : ''}" style="--st:var(--st-${s.id})" data-action="peek-status" data-v="${s.id}" aria-pressed="${it.status === s.id}"><span class="dot"></span>${s.label}</button>`).join('')}</div>`;
+        <div class="statusbar peek-status" role="group" aria-label="${T("Статус")}">${STATUSES.map(s => `<button type="button" class="sbtn${it.status === s.id ? ' on' : ''}" style="--st:var(--st-${s.id})" data-action="peek-status" data-v="${s.id}" aria-pressed="${it.status === s.id}"><span class="dot"></span>${s.label}</button>`).join('')}</div>`;
     } else {
       actions = `<div class="peek-actions">
-          <button class="btn grad" type="button" data-action="peek-add" data-v="watching">${ICON.plus}Смотрю</button>
-          <button class="btn" type="button" data-action="peek-add" data-v="planned"><span class="dot" style="--st:var(--st-planned)"></span>В планы</button>
+          <button class="btn grad" type="button" data-action="peek-add" data-v="watching">${ICON.plus}${T("Смотрю")}</button>
+          <button class="btn" type="button" data-action="peek-add" data-v="planned"><span class="dot" style="--st:var(--st-planned)"></span>${T("В планы")}</button>
         </div>`;
     }
     return `<div class="grab"></div>
@@ -346,7 +346,7 @@
         <div class="peek-info"><h2>${esc(t)}</h2><div class="peek-sub">${sub}</div>${nextLine}</div>
       </div>
       ${actions}
-      <button class="btn line block" type="button" data-action="peek-open">${ICON.info}Открыть страницу</button>`;
+      <button class="btn line block" type="button" data-action="peek-open">${ICON.info}${T("Открыть страницу")}</button>`;
   }
   function rerenderPeek() {
     const sh = document.querySelector('#sheetWrap .sheet');
@@ -364,7 +364,7 @@
       if (it.status === 'completed') { if (it.total) setProgress(it, it.total, { max: 3 }); if (prev !== 'completed') celebrate(); }
       it.updatedAt = Date.now(); save(); buzz(10);
       rerenderPeek(); refreshAfterChange(); loadWeek(ui.weekOffset, true);
-      toast('Статус: ' + ST[it.status].label);
+      toast(T('Статус: ') + ST[it.status].label);
     } else if (a === 'peek-add' && peek.aniId) {
       const m = ui.media[peek.aniId];
       if (!m) return;
@@ -374,7 +374,7 @@
       sparkle(t, 14);
       if (t.dataset.v === 'watching') celebrate();
       rerenderPeek(); refreshAfterChange();
-      toast('Добавлено в «' + ST[item.status].label + '»');
+      toast(T('Добавлено в «') + ST[item.status].label + '»');
     } else if (a === 'peek-open') {
       const ref = it ? { itemId: it.id } : { aniId: peek.aniId };
       back();

@@ -72,7 +72,7 @@ async function fetchSchedules(ids, from, to) {
 function itemTitle(item, pref) {
   if (item.customTitle) return item.customTitle;
   const t = item.titles || {};
-  const fb = t.romaji || t.english || t.native || item.title || 'Без названия';
+  const fb = t.romaji || t.english || t.native || item.title || (typeof LANG !== 'undefined' && LANG === 'en' ? 'Untitled' : 'Без названия');
   if (pref === 'russian') return t.russian || fb;
   if (pref === 'english') return t.english || fb;
   return fb;
@@ -98,6 +98,7 @@ async function runBackgroundCheck(reg) {
   const result = { aired: [] };
   const canNotify = typeof Notification !== 'undefined' && Notification.permission === 'granted' && reg;
   const pref = settings.titleLang || 'romaji';
+  const en = settings.lang === 'en';
   const byAni = {};
   Object.values(state.items || {}).forEach(i => { if (i.anilistId) byAni[i.anilistId] = i; });
 
@@ -113,7 +114,7 @@ async function runBackgroundCheck(reg) {
           const it = byAni[s.mediaId];
           if (!it || !canNotify || shown >= 6) continue;
           shown++;
-          await reg.showNotification('Вышла ' + s.episode + ' серия', {
+          await reg.showNotification(en ? 'Episode ' + s.episode + ' is out' : 'Вышла ' + s.episode + ' серия', {
             body: itemTitle(it, pref),
             tag: 'ep-' + s.mediaId + '-' + s.episode,
             icon: 'icons/icon-192.png',
@@ -145,9 +146,9 @@ async function runBackgroundCheck(reg) {
       if (planned.length && minutesNow >= earliest - 30) {
         const body = planned.slice(0, 4).map(i => {
           const n = (i.plan.eps || 1);
-          return itemTitle(i, pref) + ' — ' + n + ' сер.' + (i.plan.time ? ' в ' + i.plan.time : '');
+          return itemTitle(i, pref) + ' — ' + n + (en ? ' ep.' : ' сер.') + (i.plan.time ? (en ? ' at ' : ' в ') + i.plan.time : '');
         }).join('\n');
-        await reg.showNotification('Сегодня по плану', {
+        await reg.showNotification(en ? 'On your plan today' : 'Сегодня по плану', {
           body, tag: 'plan-' + today, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png',
           data: { url: './#schedule' }
         });
