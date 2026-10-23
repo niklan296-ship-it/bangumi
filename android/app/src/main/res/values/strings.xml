@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Бангуми</string>
+    <string name="share_label">Бангуми: отметить серию</string>
+    <string name="quick_short">В расписание</string>
+    <string name="quick_long">Быстро в расписание</string>
+</resources>

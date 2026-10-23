@@ -157,7 +157,15 @@ const ruN = id => (id && state.ru[id] && state.ru[id].n) || '';
 const ruD = id => (id && state.ru[id] && state.ru[id].d) || '';
 function mediaTitle(m) { return itemTitle({ titles: Object.assign({}, m.title, { russian: ruN(m.idMal) }) }, state.settings.titleLang); }
 function mediaCover(m, big) { const c = m.coverImage || {}; return (big ? c.extraLarge || c.large : c.large || c.extraLarge) || ''; }
-function buzz(ms) { try { if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return; if (navigator.vibrate) navigator.vibrate(ms || 12); } catch (e) { /* нет вибро */ } }
+/* Отдельное приложение (APK) даёт мост BangumiNative; в Chrome его нет */
+const NATIVE = window.BangumiNative || null;
+function buzz(ms) {
+  try {
+    if (NATIVE) { NATIVE.vibrate(JSON.stringify(Array.isArray(ms) ? ms : [ms || 12])); return; }
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+    if (navigator.vibrate) navigator.vibrate(ms || 12);
+  } catch (e) { /* нет вибро */ }
+}
 
 /* ================= Хранилище ================= */
 let saveTimer = null;
@@ -210,6 +218,47 @@ async function flush() {
   clearTimeout(saveTimer);
   try { await DB.set('state', state); }
   catch (e) { try { localStorage.setItem('bangumi-state', JSON.stringify(state)); } catch (e2) { /* нет места */ } }
+  scheduleNative();
+}
+
+/* Точные уведомления в APK: Android сам покажет их в нужную минуту, даже если Бангуми закрыт */
+let nativeSig = '';
+function scheduleNative() {
+  if (!NATIVE) return;
+  try {
+    const st = state.settings, list = [];
+    const pref = st.titleLang || 'romaji';
+    const now = Date.now();
+    if (st.notifyEpisodes) {
+      Object.values(state.items).forEach(it => {
+        if (!it.anilistId || !it.nextEp || !(it.status === 'watching' || it.status === 'planned')) return;
+        // следующая серия точно по AniList, ещё две — по недельному шагу (уточнятся при следующем открытии)
+        for (let k = 0; k < 3; k++) {
+          const ep = it.nextEp.episode + k;
+          if (k && it.total && ep > it.total) break;
+          const at = (it.nextEp.airingAt + k * 7 * 86400) * 1000;
+          if (at > now) list.push({ id: 1000000 + (it.anilistId % 300000) * 3 + k, at, title: 'Вышла ' + ep + ' серия', body: itemTitle(it, pref) });
+        }
+      });
+    }
+    if (st.notifyPlan) {
+      for (let k = 0; k < 7; k++) {
+        const d = new Date(); d.setDate(d.getDate() + k);
+        const di = dayIndexMon(d);
+        const planned = Object.values(state.items).filter(i => i.plan && Array.isArray(i.plan.days) && i.plan.days.includes(di) && (i.status === 'watching' || i.status === 'planned'));
+        if (!planned.length) continue;
+        const mins = planned.reduce((m, i) => { const t = i.plan.time ? i.plan.time.split(':') : null; return Math.min(m, t ? (+t[0]) * 60 + (+t[1]) : 19 * 60); }, 24 * 60);
+        d.setHours(Math.floor(mins / 60), mins % 60, 0, 0);
+        if (d.getTime() <= now) continue;
+        const body = planned.slice(0, 4).map(i => itemTitle(i, pref) + ' — ' + (i.plan.eps || 1) + ' сер.' + (i.plan.time ? ' в ' + i.plan.time : '')).join('\n');
+        list.push({ id: 900 + k, at: d.getTime(), title: 'Сегодня по плану', body });
+      }
+    }
+    const json = JSON.stringify(list);
+    if (json === nativeSig) return;
+    nativeSig = json;
+    NATIVE.schedule(json);
+  } catch (e) { /* без моста */ }
 }
 async function load() {
   let s = null;
@@ -237,6 +286,7 @@ function applyTheme() {
   const dark = t === 'dark' || (t === 'system' && !matchMedia('(prefers-color-scheme: light)').matches);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', SKINS[skin()].theme[dark ? 0 : 1]);
+  if (NATIVE) { try { NATIVE.setBars(SKINS[skin()].theme[dark ? 0 : 1], !dark); } catch (e) { /* старая версия APK */ } }
 }
 
 /* ================= Источники данных ================= */
@@ -1213,7 +1263,7 @@ function renderProfile() {
   }
 
   const st = state.settings;
-  const perm = typeof Notification === 'undefined' ? 'unsupported' : Notification.permission;
+  const perm = NATIVE ? (NATIVE.notifEnabled() ? 'granted' : 'default') : typeof Notification === 'undefined' ? 'unsupported' : Notification.permission;
   const permTxt = perm === 'granted' ? 'Разрешены' : perm === 'denied' ? 'Запрещены в настройках Android — включи их для Бангуми' : perm === 'unsupported' ? 'Браузер не поддерживает уведомления' : 'Ещё не разрешены';
   const seg = (action, cur, opts) => `<div class="seg" role="group">${opts.map(o => `<button type="button" data-action="${action}" data-v="${o[0]}" aria-pressed="${cur === o[0]}">${o[1]}</button>`).join('')}</div>`;
   const sync = state.lastSync ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(state.lastSync)) : 'ещё не обновлялось';
@@ -1253,7 +1303,7 @@ function renderProfile() {
           <label class="switch"><input type="checkbox" id="swEp" data-k="notifyEpisodes" ${st.notifyEpisodes ? 'checked' : ''} aria-label="Уведомления о новых сериях"><span></span></label></div>
         <div class="setting"><div class="txt"><span>План на день</span><small>Напоминание, что сегодня по расписанию</small></div>
           <label class="switch"><input type="checkbox" id="swPlan" data-k="notifyPlan" ${st.notifyPlan ? 'checked' : ''} aria-label="Напоминания о плане"><span></span></label></div>
-        <div class="setting"><div class="txt"><small>Статус: ${esc(permTxt)}. Android проверяет серии в фоне раз в несколько часов, а при открытии приложения — сразу.</small></div></div>
+        <div class="setting"><div class="txt"><small>Статус: ${esc(permTxt)}. ${NATIVE ? 'Уведомление придёт в минуту выхода серии, даже если Бангуми закрыт. Время берётся из AniList и уточняется каждый раз, когда открываешь приложение.' : 'Android проверяет серии в фоне раз в несколько часов, а при открытии приложения — сразу.'}</small></div></div>
       </div>
     </div>
     <div class="section">
@@ -1864,8 +1914,29 @@ async function setupPeriodicSync() {
     else await reg.periodicSync.unregister('episodes');
   } catch (e) { /* не поддерживается */ }
 }
+async function nativeNotifyAllowed() {
+  if (NATIVE.notifEnabled()) return true;
+  NATIVE.requestNotifications();
+  // ждём ответа на системный вопрос: пока он открыт, страница теряет фокус
+  let asked = false;
+  for (let k = 0; k < 40; k++) {
+    await new Promise(r => setTimeout(r, 400));
+    if (NATIVE.notifEnabled()) return true;
+    const away = document.visibilityState === 'hidden' || !document.hasFocus();
+    if (away) asked = true;
+    else if (asked || k >= 4) break;
+  }
+  return NATIVE.notifEnabled();
+}
 async function toggleNotify(key, on, input) {
-  if (on) {
+  if (on && NATIVE) {
+    if (!(await nativeNotifyAllowed())) {
+      input.checked = false;
+      toast('Разреши уведомления: Настройки → Приложения → Бангуми → Уведомления', { ms: 6000 });
+      renderProfile();
+      return;
+    }
+  } else if (on) {
     if (typeof Notification === 'undefined') { input.checked = false; toast('Уведомления здесь не поддерживаются'); return; }
     let perm = Notification.permission;
     if (perm === 'default') { try { perm = await Notification.requestPermission(); } catch (e) { perm = 'denied'; } }
@@ -1935,11 +2006,18 @@ function hideToast() {
 
 /* ================= Резервная копия ================= */
 function exportData() {
-  const blob = new Blob([JSON.stringify({ app: 'bangumi', exportedAt: new Date().toISOString(), state }, null, 1)], { type: 'application/json' });
+  const json = JSON.stringify({ app: 'bangumi', exportedAt: new Date().toISOString(), state }, null, 1);
+  const d = new Date();
+  const name = `bangumi-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
+  if (NATIVE) {
+    const where = NATIVE.saveFile(name, json);
+    toast(where ? 'Сохранено: ' + where : 'Не получилось сохранить файл', { ms: 5000 });
+    return;
+  }
+  const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const d = new Date();
-  a.href = url; a.download = `bangumi-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
+  a.href = url; a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 3000);
   toast('Копия сохранена в «Загрузки»');
@@ -2244,7 +2322,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 11;
+const APP_VERSION = 12;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {
@@ -2280,5 +2358,6 @@ function setupUpdates() {
   else launchedWithShare = Share.fromLaunch(launchSearch);
   if ('serviceWorker' in navigator) setupUpdates();
   await syncAll(true);
+  scheduleNative();
   startupCheck();
 })();

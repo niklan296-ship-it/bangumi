@@ -1,0 +1,44 @@
+plugins {
+    id 'com.android.application'
+}
+
+def buildNo = (System.getenv('VERSION_CODE') ?: '1') as int
+
+android {
+    namespace 'app.bangumi'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'app.bangumi'
+        minSdk 26
+        targetSdk 34
+        versionCode buildNo
+        versionName "1.${buildNo}"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('../bangumi.jks')
+            storePassword System.getenv('KEYSTORE_PASSWORD') ?: 'bangumi-app'
+            keyAlias 'bangumi'
+            keyPassword System.getenv('KEYSTORE_PASSWORD') ?: 'bangumi-app'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

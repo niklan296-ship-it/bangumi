@@ -1,0 +1,68 @@
+name: Собрать APK
+
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', '.github/workflows/apk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Сборка
+        id: build
+        continue-on-error: true
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          set -o pipefail
+          if [ -z "$KEYSTORE_B64" ]; then echo "Нет секрета KEYSTORE_B64 (Settings → Secrets and variables → Actions)" | tee build.log; exit 1; fi
+          echo "$KEYSTORE_B64" | base64 -d > android/bangumi.jks
+          gradle -p android assembleRelease --stacktrace --no-daemon 2>&1 | tee build.log
+          cp android/app/build/outputs/apk/release/app-release.apk Bangumi.apk
+
+      - name: Выпуск
+        if: steps.build.outcome == 'success'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: Бангуми 1.${{ github.run_number }}
+          body: Установи Bangumi.apk на телефон. Обновлять APK нужно редко — само приложение обновляется через интернет.
+          files: Bangumi.apk
+          make_latest: true
+
+      - name: Отчёт в ветку apk
+        if: always()
+        run: |
+          mkdir -p out
+          echo "${{ steps.build.outcome }} run=${{ github.run_number }} sha=${{ github.sha }}" > out/status.txt
+          tail -c 200000 build.log > out/build.log 2>/dev/null || true
+          [ -f Bangumi.apk ] && cp Bangumi.apk out/ || true
+          cd out
+          git init -q -b apk
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "APK build ${{ github.run_number }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" apk
+
+      - name: Ошибка сборки
+        if: steps.build.outcome != 'success'
+        run: exit 1
