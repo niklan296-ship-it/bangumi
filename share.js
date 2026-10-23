@@ -169,7 +169,16 @@ const Share = (function () {
       const ru = ruN(m.idMal), alt = RU_SITES.test(p.site) && !/[а-яё]/i.test(p.name) ? untranslit(p.name) : '';
       let sc = Math.max(similarity(p.name, mediaTitle(m)), similarity(p.name, m.title.romaji), similarity(p.name, m.title.english || ''), ru ? similarity(p.name, ru) : 0, alt && ru ? similarity(alt, ru) : 0);
       if (p.season > 1 && new RegExp(`(?<![0-9])${p.season}(?![0-9])|season ${p.season}`, 'i').test([m.title.romaji, m.title.english, ru].join(' '))) sc += 0.3;
-      if (m.status === 'RELEASING') sc += 0.05;
+      // Точное совпадение названия — наверх; лишние слова («2nd Season», «Movie»…) — чуть ниже
+      const names = [mediaTitle(m), m.title.romaji, m.title.english, ru].filter(Boolean).map(norm);
+      const target = norm(p.name);
+      if (names.includes(target)) sc += 0.5;
+      else {
+        const extra = Math.min(...names.map(n => Math.max(0, n.split(' ').length - target.split(' ').length)));
+        sc -= Math.min(0.3, extra * 0.06);
+      }
+      if (!p.season && m.format && m.format !== 'TV') sc -= 0.1;
+      if (m.status === 'RELEASING') sc += 0.03;
       return { kind: 'media', m, score: sc };
     }).sort((a, b) => b.score - a.score).filter((c, k) => k < 2 || c.score >= 0.25).slice(0, 6);
   }
