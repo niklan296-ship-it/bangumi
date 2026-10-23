@@ -1280,7 +1280,7 @@ function renderProfile() {
       </div>
       <input type="file" id="importFile" accept="application/json,.json" hidden>
     </div>
-    <p class="hint">Тайтлы и расписание — <a class="link" href="https://anilist.co" target="_blank" rel="noopener">AniList</a>, русские названия и описания — <a class="link" href="https://shikimori.io" target="_blank" rel="noopener">Shikimori</a>. Время серий — по твоему часовому поясу, рядом японское (JST).</p>`;
+    <p class="hint">Бангуми, версия ${APP_VERSION}. Тайтлы и расписание — <a class="link" href="https://anilist.co" target="_blank" rel="noopener">AniList</a>, русские названия и описания — <a class="link" href="https://shikimori.io" target="_blank" rel="noopener">Shikimori</a>. Время серий — по твоему часовому поясу, рядом японское (JST).</p>`;
   countUp(el);
 }
 
@@ -2243,6 +2243,28 @@ setInterval(() => {
   else if (ui.tab === 'home' && $('#homeBody')) renderHome(['soon']);
 }, 60 * 1000);
 
+/* ================= Обновления ================= */
+const APP_VERSION = 10;
+const bootAt = Date.now();
+let launchedWithShare = false;
+function setupUpdates() {
+  const sw = navigator.serviceWorker;
+  const hadController = !!sw.controller;
+  let reloading = false;
+  sw.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    setupPeriodicSync();
+    reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+  }).catch(() => {});
+  // Новая версия встала на место старой
+  sw.addEventListener('controllerchange', () => {
+    if (!hadController || reloading) return;
+    const quiet = Date.now() - bootAt < 12000 && !ui.overlays.length && !launchedWithShare;
+    if (quiet) { reloading = true; flush().finally(() => location.reload()); return; }
+    toast('Бангуми обновился', { action: 'Перезапустить', ms: 12000, fn: () => { reloading = true; flush().finally(() => location.reload()); } });
+  });
+}
+
 /* ================= Старт ================= */
 (async function start() {
   await load();
@@ -2255,8 +2277,8 @@ setInterval(() => {
   history.replaceState(null, '', location.pathname + '#' + ui.tab);
   render(true);
   if (wantQuick) openQuick(true);
-  else Share.fromLaunch(launchSearch);
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(() => setupPeriodicSync()).catch(() => {});
+  else launchedWithShare = Share.fromLaunch(launchSearch);
+  if ('serviceWorker' in navigator) setupUpdates();
   await syncAll(true);
   startupCheck();
 })();
