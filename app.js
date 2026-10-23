@@ -15,6 +15,7 @@ const ST = Object.fromEntries(STATUSES.map(s => [s.id, s]));
 const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const DAYS_FULL = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 const DAYS_DAT = ['понедельникам', 'вторникам', 'средам', 'четвергам', 'пятницам', 'субботам', 'воскресеньям'];
+const DAYS_EVERY = ['каждый понедельник', 'каждый вторник', 'каждую среду', 'каждый четверг', 'каждую пятницу', 'каждую субботу', 'каждое воскресенье'];
 const KANJI = ['月', '火', '水', '木', '金', '土', '日'];
 const FORMAT = { TV: 'TV', TV_SHORT: 'TV-короткий', MOVIE: 'Фильм', SPECIAL: 'Спешл', OVA: 'OVA', ONA: 'ONA', MUSIC: 'Клип' };
 const AIR = { RELEASING: 'Выходит', FINISHED: 'Завершён', NOT_YET_RELEASED: 'Анонс', CANCELLED: 'Отменён', HIATUS: 'Перерыв' };
@@ -62,7 +63,7 @@ const ui = {
 function defaultState() {
   return {
     v: 2, items: {}, airCache: {}, lastSync: 0, planLog: {}, activity: {}, watchLog: {}, gone: {}, ru: {}, trend: null, trendAt: 0,
-    settings: { titleLang: 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent' }
+    settings: { titleLang: 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true }
   };
 }
 
@@ -155,7 +156,7 @@ const ruN = id => (id && state.ru[id] && state.ru[id].n) || '';
 const ruD = id => (id && state.ru[id] && state.ru[id].d) || '';
 function mediaTitle(m) { return itemTitle({ titles: Object.assign({}, m.title, { russian: ruN(m.idMal) }) }, state.settings.titleLang); }
 function mediaCover(m, big) { const c = m.coverImage || {}; return (big ? c.extraLarge || c.large : c.large || c.extraLarge) || ''; }
-function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 12); } catch (e) { /* нет вибро */ } }
+function buzz(ms) { try { if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return; if (navigator.vibrate) navigator.vibrate(ms || 12); } catch (e) { /* нет вибро */ } }
 
 /* ================= Хранилище ================= */
 let saveTimer = null;
@@ -469,7 +470,7 @@ function togglePlan(key, id, el) {
     if (it.status === 'planned' || it.status === 'paused') it.status = 'watching';
     log[id] = { added, from, to: from + added - 1 };
     buzz(18);
-    if (el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+    if (el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); if (window.sparkle) sparkle(el, 12); }
   }
   const keys = Object.keys(state.planLog);
   if (keys.length > 70) keys.sort((a, b) => keyTime(a) - keyTime(b)).slice(0, keys.length - 70).forEach(k => delete state.planLog[k]);
@@ -493,6 +494,7 @@ function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMont
 /* ================= Анимации ================= */
 function floatPlus(el) {
   if (reduced) return;
+  if (window.sparkle) sparkle(el, 8);
   const r = el.getBoundingClientRect();
   const s = document.createElement('span');
   s.className = 'float-plus'; s.textContent = '+1';
@@ -642,7 +644,7 @@ function heroSlideHTML(s, i) {
       it.avg ? `<span class="mchip star">${(it.avg / 10).toFixed(1)}</span>` : '',
       FORMAT[it.format] ? `<span class="mchip">${esc(FORMAT[it.format])}</span>` : '',
       it.seasonYear ? `<span class="mchip">${it.seasonYear}</span>` : '',
-      `<span class="mchip ep" data-hero-ep="${esc(it.id)}">EP ${it.progress}/${it.total || '?'}</span>`
+      `<span class="mchip ep" data-tick="he-${esc(it.id)}" data-hero-ep="${esc(it.id)}">EP ${it.progress}/${it.total || '?'}</span>`
     ].join('');
     const desc = ruD(it.idMal);
     const color = it.color || hueColor(title(it));
@@ -750,7 +752,7 @@ function contCardHTML(it, i) {
   return `<div class="cont rise" style="--i:${i};--c:${esc(it.color || hueColor(title(it)))}" role="button" tabindex="0" data-action="open" data-item="${esc(it.id)}" aria-label="${esc(title(it))}">
     <div class="cont-art" data-vt="${esc(it.id)}">${art ? `<img src="${esc(art)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ''}
       ${ne > 0 ? `<span class="p-new">+${ne}</span>` : ''}
-      <span class="cont-ep"><b>EP ${it.progress}</b><span>из ${it.total || '?'}</span></span></div>
+      <span class="cont-ep"><b data-tick="ce-${esc(it.id)}">EP ${it.progress}</b><span>из ${it.total || '?'}</span></span></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <div class="cont-body"><span class="t">${esc(title(it))}</span>
       ${canInc(it) ? `<button class="plus-btn" type="button" data-action="inc" data-id="${esc(it.id)}" aria-label="Отметить серию ${it.progress + 1}">+1</button>` : ''}</div>
@@ -878,7 +880,8 @@ function weekEvents(offset) {
 function renderSchedule() {
   const el = $('#view-schedule');
   const items = Object.values(state.items);
-  el.innerHTML = `<div><h1 class="page-title" id="pageTitle">Расписание</h1><p class="page-sub">Выход серий и твой план по дням</p></div>
+  el.innerHTML = `<div class="title-row"><div><h1 class="page-title" id="pageTitle">Расписание</h1><p class="page-sub">Выход серий и твой план по дням</p></div>
+      <button class="btn small grad" type="button" data-action="quick-open">${ICON.plus}В план</button></div>
     <div class="weekbar" id="weekbar"></div>
     <div class="daybar" id="daybar"></div>
     <div id="dayContent" class="view" style="gap:22px"></div>`;
@@ -988,13 +991,13 @@ function renderSearch() {
   } else if (ui.genre) {
     const g = GENRE[ui.genre];
     const res = ui.genreRes[ui.genre];
-    h += `<div class="section"><div class="section-head"><h2>${esc(g.ru)}</h2><span class="label">популярное</span></div>
+    h += `<div class="section"><div class="section-head"><h2>${esc(g.ru)}</h2><span class="label">Популярное</span></div>
       ${res ? (res.length ? grid(res) : '<div class="empty soft"><p>Пусто.</p></div>') : ui.genreLoading ? skeletonPosters(6, true) : '<div class="empty soft"><p>Нет связи.</p></div>'}</div>`;
   } else {
     const cs = currentSeason();
     h += `<section class="section"><div class="section-head"><h2>Топ недели</h2></div>
       ${state.trend ? `<div class="rail bleed">${state.trend.slice(0, 10).map((m, i) => `<div class="rank"><span class="rank-n" aria-hidden="true">${i + 1}</span>${posterHTML(cardFromMedia(m), { i, sub: '' })}</div>`).join('')}</div>` : skeletonPosters(4)}</section>
-      <section class="section"><div class="section-head"><h2>${SEASON_RU[cs.s]} ${cs.y}</h2><span class="label">сезон</span></div>
+      <section class="section"><div class="section-head"><h2>${SEASON_RU[cs.s]} ${cs.y}</h2><span class="label">Сезон</span></div>
       ${ui.season ? grid(ui.season) : ui.seasonError ? `<div class="empty soft"><p>Без интернета сезон не загрузить. Список и расписание работают офлайн.</p><button class="btn small" type="button" data-action="season-retry">Повторить</button></div>` : skeletonPosters(6, true)}</section>`;
   }
   h += `<div class="empty soft"><p>Нет нужного тайтла в базе? Добавь вручную — название и число серий.</p>
@@ -1179,6 +1182,8 @@ function renderProfile() {
       <div class="label">Вид</div>
       <div class="card group">
         <div class="setting"><div class="txt"><span>Названия</span></div>${seg('set-lang', st.titleLang, [['russian', 'Рус'], ['romaji', 'Ромадзи'], ['english', 'Eng']])}</div>
+        <div class="setting"><div class="txt"><span>Быстрый план</span><small>Два свайпа вправо от левого края экрана открывают окошко «Быстро в расписание»</small></div>
+          <label class="switch"><input type="checkbox" id="swEdge" ${st.edgeGesture !== false ? 'checked' : ''} aria-label="Жест быстрого плана"><span></span></label></div>
         <div class="setting"><div class="txt"><span>Тема</span></div>${seg('set-theme', st.theme, [['system', 'Авто'], ['dark', 'Тёмная'], ['light', 'Светлая']])}</div>
       </div>
     </div>
@@ -1386,7 +1391,7 @@ function renderDMain(popFrom, popTo) {
       ${STATUSES.map(s => `<button type="button" class="sbtn${it.status === s.id ? ' on' : ''}" style="--st:var(--st-${s.id})" data-action="set-status" data-v="${s.id}" aria-pressed="${it.status === s.id}"><span class="dot"></span>${s.label}</button>`).join('')}
     </div>
     <div class="card progress-card">
-      <div class="prog-top"><div class="big"><b>${p}<small> / ${total || '?'}</small></b><span>${esc(label)}</span></div>
+      <div class="prog-top"><div class="big"><b data-tick="dp-${esc(it.id)}">${p}<small> / ${total || '?'}</small></b><span>${esc(label)}</span></div>
         ${ringHTML(total ? p / total : (p ? 0.5 : 0), total ? Math.round(p / total * 100) + '%' : 'EP' + p)}</div>
       <div class="prog-btns">
         <button class="btn minus" type="button" data-action="d-dec" aria-label="Минус серия" ${p ? '' : 'disabled'}>−</button>
@@ -1432,6 +1437,7 @@ function popDetail() {
   flush();
   const cover = $('#dCover');
   const finish = () => { $('#detailRoot').innerHTML = ''; document.body.classList.remove('locked', 'detail-open'); };
+  if (det.dataset.dragged) { setTimeout(() => { finish(); renderCurrent(); }, reduced ? 0 : 240); return; }
   if (document.startViewTransition && !reduced && cover) {
     cover.style.viewTransitionName = 'cover';
     let target = null;
@@ -1486,6 +1492,187 @@ function manualHTML() {
     <div class="add-grid">${['watching', 'planned', 'completed', 'paused'].map((s, k) => `<button type="button" class="btn ${k === 0 ? 'grad' : ''}" style="--st:var(--st-${s})" data-action="manual-save" data-v="${s}">${k ? '<span class="dot"></span>' : ''}${ST[s].label}</button>`).join('')}</div>`;
 }
 
+/* ================= Быстрый план (свайп от левого края) ================= */
+const quick = { open: false, full: false, day: 0, eps: 1, time: '', q: '', res: null, loading: false, token: 0, flash: null };
+const QUICK_TIMES = ['', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
+function openQuick(full, day) {
+  if (quick.open) return;
+  Object.assign(quick, { open: true, full: !!full, day: day != null ? day : dayIndexMon(new Date()), q: '', res: null, loading: false, flash: null });
+  $('#quickRoot').innerHTML = `<div class="quick-root${quick.full ? ' full' : ''}" id="quickWrap">
+    <div class="backdrop" data-action="back"></div>
+    <aside class="quick" role="dialog" aria-modal="true" aria-labelledby="qTitle">
+      <div class="q-head">
+        <span class="q-mark" aria-hidden="true">番</span>
+        <div class="q-ttl"><h2 id="qTitle">Быстро в расписание</h2><small id="qSub"></small></div>
+        <button class="icon-btn" type="button" data-action="back" aria-label="Закрыть">${ICON.x}</button>
+      </div>
+      <div class="q-days" id="qDays" role="group" aria-label="День недели"></div>
+      <div class="q-opts" id="qOpts"></div>
+      <div class="searchbox q-search">
+        <svg class="s-ico ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+        <input id="qq" type="search" placeholder="Найти в списке или в базе" autocomplete="off" enterkeyhint="search" aria-label="Найти аниме">
+      </div>
+      <div class="q-body" id="qBody"></div>
+      <div class="q-foot" id="qFoot"></div>
+    </aside></div>`;
+  document.body.classList.add('locked', 'quick-open');
+  pushOverlay('quick');
+  $('#qq').addEventListener('input', onQuickInput);
+  renderQuick(true);
+  buzz(15);
+}
+function closeQuickNow() {
+  const w = $('#quickWrap');
+  quick.open = false;
+  clearTimeout(quickTimer);
+  if (!w) return;
+  w.classList.add('leave');
+  setTimeout(() => {
+    $('#quickRoot').innerHTML = '';
+    document.body.classList.remove('quick-open');
+    if (!ui.detailStack.length && !$('#sheetWrap')) document.body.classList.remove('locked');
+  }, reduced ? 0 : 260);
+  refreshAfterChange();
+}
+function quickDayList(di) {
+  return Object.values(state.items).filter(it => it.plan && it.plan.days && it.plan.days.includes(di) && (it.status === 'watching' || it.status === 'planned'))
+    .sort((a, b) => (a.plan.time || '99').localeCompare(b.plan.time || '99') || title(a).localeCompare(title(b), 'ru'));
+}
+function quickRow(it, inPlan) {
+  const c = it.color || hueColor(title(it));
+  const sub = inPlan
+    ? [it.plan.time || 'без времени', sers(it.plan.eps || 1)].join(' · ')
+    : [ST[it.status].label, 'EP ' + (it.progress || 0) + '/' + (it.total || '?')].join(' · ');
+  const fl = quick.flash === it.id ? ' flash' : '';
+  return `<div class="q-row${inPlan ? ' on' : ''}${fl}" style="--c:${esc(c)}">
+    ${thumbHTML(it.cover, title(it), c, null)}
+    <span class="info"><span class="t">${esc(title(it))}</span><span class="s">${esc(sub)}</span></span>
+    <button type="button" class="q-btn" data-action="${inPlan ? 'q-rm' : 'q-add'}" data-id="${esc(it.id)}" aria-label="${inPlan ? 'Убрать из плана' : 'Добавить в план'}: ${esc(title(it))}">
+      ${inPlan ? ICON.check : ICON.plus}</button></div>`;
+}
+function quickMediaRow(m) {
+  const t = mediaTitle(m), c = (m.coverImage && m.coverImage.color) || hueColor(t);
+  const sub = [FORMAT[m.format] || '', m.episodes ? m.episodes + ' эп.' : '', m.seasonYear || ''].filter(Boolean).join(' · ');
+  return `<div class="q-row" style="--c:${esc(c)}">
+    ${thumbHTML(mediaCover(m), t, c, null)}
+    <span class="info"><span class="t">${esc(t)}</span><span class="s">${esc(sub || 'из базы')}</span></span>
+    <button type="button" class="q-btn" data-action="q-add-media" data-ani="${m.id}" aria-label="Добавить в список и в план: ${esc(t)}">${ICON.plus}</button></div>`;
+}
+function renderQuick(first) {
+  if (!quick.open) return;
+  const di = quick.day;
+  const today = dayIndexMon(new Date());
+  $('#qDays').innerHTML = DAYS.map((d, i) => {
+    const n = quickDayList(i).length;
+    return `<button type="button" class="q-day${i === di ? ' sel' : ''}${i === today ? ' today' : ''}" data-action="q-day" data-v="${i}" aria-pressed="${i === di}">
+      <span class="k">${KANJI[i]}</span><span class="w">${d}</span>${n ? `<span class="c">${n}</span>` : '<span class="c empty"></span>'}</button>`;
+  }).join('');
+  $('#qSub').textContent = (di === today ? 'Сегодня · ' : '') + DAYS_EVERY[di];
+  const custom = quick.time && !QUICK_TIMES.includes(quick.time);
+  $('#qOpts').innerHTML = `<div class="q-opt"><span class="label">Время</span>
+      <div class="q-times">${QUICK_TIMES.map(tm => `<button type="button" class="q-time${quick.time === tm ? ' on' : ''}" data-action="q-time" data-v="${tm}">${tm || 'Любое'}</button>`).join('')}
+        <label class="q-time custom${custom ? ' on' : ''}"><input type="time" id="qTimeCustom" value="${custom ? esc(quick.time) : ''}" aria-label="Своё время"></label></div></div>
+    <div class="q-opt row"><span class="label">Серий за раз</span>
+      <span class="stepper"><button type="button" data-action="q-eps" data-v="-1" aria-label="Меньше">−</button><b class="mono" id="qEps">${quick.eps}</b><button type="button" data-action="q-eps" data-v="1" aria-label="Больше">+</button></span></div>`;
+  renderQuickBody();
+  if (first) setAnimate($('#qBody'));
+}
+function renderQuickBody() {
+  if (!quick.open) return;
+  const di = quick.day;
+  const planned = quickDayList(di);
+  const plannedIds = new Set(planned.map(i => i.id));
+  const q = quick.q.trim().toLowerCase();
+  let h = '';
+  if (!q) {
+    h += `<div class="q-sec"><div class="label">В плане по ${DAYS_DAT[di]}</div>${planned.length ? planned.map((it, k) => quickRow(it, true)).join('') : '<p class="hint">Пока пусто. Нажми «+» у тайтла ниже.</p>'}</div>`;
+    const rest = Object.values(state.items).filter(it => !plannedIds.has(it.id) && activeStatus(it.status))
+      .sort((a, b) => (b.status === 'watching') - (a.status === 'watching') || b.updatedAt - a.updatedAt);
+    h += `<div class="q-sec"><div class="label">Из моего списка</div>${rest.length ? rest.map(it => quickRow(it, false)).join('') : '<p class="hint">Найди аниме через поиск выше — оно сразу попадёт и в список, и в план.</p>'}</div>`;
+  } else {
+    const map = byAni();
+    const mine = Object.values(state.items).filter(it => {
+      const names = [title(it), it.customTitle, it.title, it.titles && it.titles.romaji, it.titles && it.titles.english, it.titles && it.titles.russian].filter(Boolean).join(' ').toLowerCase();
+      return names.includes(q);
+    });
+    (quick.res || []).forEach(m => { const it = map[m.id]; if (it && !mine.includes(it)) mine.push(it); });
+    if (mine.length) h += `<div class="q-sec"><div class="label">В моём списке</div>${mine.map(it => quickRow(it, plannedIds.has(it.id))).join('')}</div>`;
+    const online = (quick.res || []).filter(m => !map[m.id]).slice(0, 8);
+    h += `<div class="q-sec"><div class="label">В базе</div>${quick.loading && !quick.res ? '<div class="loading"><span class="spinner"></span>Ищу…</div>'
+      : quick.res === false ? '<p class="hint">Нет связи с базой. Можно выбрать из своего списка.</p>'
+        : online.length ? online.map(quickMediaRow).join('') : (quick.res ? '<p class="hint">Ничего нового не нашлось.</p>' : '')}</div>`;
+  }
+  $('#qBody').innerHTML = h;
+  const eps = planned.reduce((s, it) => s + (it.plan.eps || 1), 0);
+  $('#qFoot').innerHTML = `<span class="q-sum">${planned.length ? `<b>${planned.length}</b> ${pl(planned.length, 'тайтл', 'тайтла', 'тайтлов')} · ${sers(eps)}` : 'Ничего не запланировано'}</span>
+    <button class="btn small line" type="button" data-action="q-open-day">Расписание</button>
+    <button class="btn small primary" type="button" data-action="back">Готово</button>`;
+}
+let quickTimer = null;
+function onQuickInput(e) {
+  quick.q = e.target.value;
+  clearTimeout(quickTimer);
+  if (quick.q.trim().length < 2) { quick.res = null; quick.loading = false; quick.token++; renderQuickBody(); return; }
+  renderQuickBody();
+  quickTimer = setTimeout(async () => {
+    const q = quick.q.trim(), token = ++quick.token;
+    quick.loading = true; quick.res = null; renderQuickBody();
+    let res = null;
+    try {
+      if (/[а-яё]/i.test(q)) { try { res = await searchRu(q); } catch (err) { res = null; } }
+      if (!res || !res.length) { const d = await gql(Q_SEARCH, { q }); res = d.Page.media || []; enrichRu(res).then(ok => { if (ok && token === quick.token) renderQuickBody(); }); }
+      rememberMedia(res);
+    } catch (err) { res = false; }
+    if (token !== quick.token || !quick.open) return;
+    quick.loading = false; quick.res = res; renderQuickBody();
+  }, 380);
+}
+function quickAdd(it) {
+  it.plan = it.plan || { days: [], time: '', eps: 1 };
+  if (!it.plan.days.includes(quick.day)) it.plan.days = it.plan.days.concat(quick.day).sort();
+  it.plan.eps = quick.eps;
+  if (quick.time) it.plan.time = quick.time;
+  if (!(it.status === 'watching' || it.status === 'planned')) it.status = it.progress ? 'watching' : 'planned';
+  it.updatedAt = Date.now();
+  save(); buzz(14);
+  quick.flash = it.id;
+  renderQuick();
+  setTimeout(() => { quick.flash = null; }, 600);
+  toast(`${title(it)} — по ${DAYS_DAT[quick.day]}${it.plan.time ? ' в ' + it.plan.time : ''}`, { icon: ICON.check });
+}
+
+/* Жест: два быстрых свайпа вправо от левого края экрана */
+const edge = { tracking: false, sx: 0, sy: 0, count: 0, last: 0 };
+function edgeGlow(stage) {
+  const g = $('#edgeGlow');
+  if (!g) return;
+  g.className = 'edge-glow ' + stage;
+  clearTimeout(g._t);
+  if (stage === 'one') g._t = setTimeout(() => { g.className = 'edge-glow'; }, 900);
+  if (stage === 'go') g._t = setTimeout(() => { g.className = 'edge-glow'; }, 450);
+}
+document.addEventListener('touchstart', e => {
+  edge.tracking = false;
+  if (state.settings.edgeGesture === false || quick.open || e.touches.length !== 1) return;
+  const t = e.touches[0];
+  if (t.clientX > 30) return;
+  edge.tracking = true; edge.sx = t.clientX; edge.sy = t.clientY;
+}, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (!edge.tracking) return;
+  const t = e.touches[0], dx = t.clientX - edge.sx, dy = Math.abs(t.clientY - edge.sy);
+  if (dy > 60 && dy > dx) { edge.tracking = false; return; }
+  if (dx > 46 && dy < dx * 0.8) {
+    edge.tracking = false;
+    const now = Date.now();
+    edge.count = now - edge.last < 1000 ? edge.count + 1 : 1;
+    edge.last = now;
+    if (edge.count >= 2) { edge.count = 0; edgeGlow('go'); openQuick(false); }
+    else { edgeGlow('one'); buzz(6); }
+  }
+}, { passive: true });
+document.addEventListener('touchend', () => { edge.tracking = false; }, { passive: true });
+
 /* ================= Навигация и история ================= */
 function pushOverlay(kind) { ui.overlays.push(kind); history.pushState({ ov: kind, n: ui.overlays.length }, ''); }
 function back() { if (ui.overlays.length) history.back(); }
@@ -1493,6 +1680,7 @@ window.addEventListener('popstate', () => {
   const k = ui.overlays.pop();
   if (k === 'sheet') closeSheetNow();
   else if (k === 'detail') popDetail();
+  else if (k === 'quick') closeQuickNow();
 });
 
 function setAnimate(el) {
@@ -1505,8 +1693,14 @@ function go(tab) {
   if (!TABS[tab]) tab = 'home';
   if (tab === ui.tab) { window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); return; }
   history.replaceState(history.state, '', '#' + tab);
+  const order = Object.keys(TABS);
+  const dir = order.indexOf(tab) > order.indexOf(ui.tab) ? 'fwd' : 'back';
   const doit = () => { ui.tab = tab; render(true); window.scrollTo(0, 0); };
-  if (document.startViewTransition && !reduced) document.startViewTransition(doit); else doit();
+  if (document.startViewTransition && !reduced) {
+    document.documentElement.dataset.vt = dir;
+    const vt = document.startViewTransition(doit);
+    vt.finished.finally(() => { delete document.documentElement.dataset.vt; });
+  } else doit();
 }
 function render(enter) {
   $$('.tabbar a').forEach(a => {
@@ -1524,6 +1718,7 @@ function render(enter) {
   if (enter) { ui.heroIds = ui.tab === 'home' ? null : ui.heroIds; setAnimate($('#view-' + ui.tab)); }
   renderCurrent(true);
   onScroll();
+  if (window.motionAfterRender) motionAfterRender();
 }
 function renderCurrent(full) {
   if (ui.tab === 'home') { if (full || !$('#homeBody')) renderHome(); else renderHome(['today', 'cont', 'soon', 'trend', 'empty']); }
@@ -1607,9 +1802,17 @@ let toastTimer = null, toastFn = null;
 function toast(msg, o) {
   o = o || {};
   toastFn = o.fn || null;
-  $('#toastRoot').innerHTML = `<div class="toast" role="status"><span class="ti">${o.icon || ICON.check}</span><span>${esc(msg)}</span>${o.action ? `<button type="button" data-action="toast-action">${esc(o.action)}</button>` : ''}</div>`;
+  const ms = o.ms || 3800;
+  $('#toastRoot').innerHTML = `<div class="toast" role="status"><span class="ti">${o.icon || ICON.check}</span><span>${esc(msg)}</span>${o.action ? `<button type="button" data-action="toast-action">${esc(o.action)}</button><i class="toast-bar" style="animation-duration:${ms}ms"></i>` : ''}</div>`;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { $('#toastRoot').innerHTML = ''; toastFn = null; }, o.ms || 3800);
+  toastTimer = setTimeout(hideToast, ms);
+}
+function hideToast() {
+  const t = $('#toastRoot .toast');
+  toastFn = null;
+  if (!t) return;
+  t.classList.add('out');
+  setTimeout(() => { if (t.parentNode) t.remove(); }, reduced ? 0 : 260);
 }
 
 /* ================= Резервная копия ================= */
@@ -1662,8 +1865,8 @@ document.addEventListener('click', e => {
       const n = ui.overlays.length;
       ui.overlays.length = 0;
       ui.detailStack.length = 0;
-      $('#detailRoot').innerHTML = ''; $('#sheetRoot').innerHTML = '';
-      document.body.classList.remove('locked', 'detail-open', 'sheet-open');
+      $('#detailRoot').innerHTML = ''; $('#sheetRoot').innerHTML = ''; $('#quickRoot').innerHTML = ''; quick.open = false;
+      document.body.classList.remove('locked', 'detail-open', 'sheet-open', 'quick-open');
       history.go(-n);
       setTimeout(() => go(tab), 60);
     } else go(tab);
@@ -1779,9 +1982,37 @@ document.addEventListener('click', e => {
       break;
     }
     case 'plan-check': togglePlan(t.dataset.key, t.dataset.id, t); break;
-    case 'plan-add': openSheet(planPickerHTML(+t.dataset.d)); break;
+    case 'plan-add': openQuick(false, +t.dataset.d); break;
+    case 'quick-open': openQuick(false); break;
+    case 'q-day': quick.day = +t.dataset.v; buzz(6); renderQuick(true); break;
+    case 'q-time': quick.time = t.dataset.v; buzz(6); renderQuick(); break;
+    case 'q-eps': quick.eps = Math.min(20, Math.max(1, quick.eps + +t.dataset.v)); $('#qEps').textContent = quick.eps; buzz(6); break;
+    case 'q-add': { const x = state.items[t.dataset.id]; if (x) quickAdd(x); break; }
+    case 'q-add-media': {
+      const m = ui.media[+t.dataset.ani];
+      if (!m) break;
+      const x = byAni()[m.id] || addToList(m, 'planned');
+      ui.heroIds = null;
+      quickAdd(x);
+      break;
+    }
+    case 'q-rm': {
+      const x = state.items[t.dataset.id];
+      if (!x || !x.plan) break;
+      const d = quick.day;
+      x.plan.days = x.plan.days.filter(v => v !== d); x.updatedAt = Date.now(); save(); buzz(8); renderQuick();
+      toast('Убрано из плана: ' + title(x), { action: 'Вернуть', fn: () => { if (!x.plan.days.includes(d)) x.plan.days = x.plan.days.concat(d).sort(); save(); renderQuick(); refreshAfterChange(); } });
+      break;
+    }
+    case 'q-open-day': {
+      const d = quick.day;
+      back();
+      setTimeout(() => { ui.weekOffset = 0; ui.selDay = d; if (ui.tab === 'schedule') { renderWeekbar(); renderDaybar(); renderDay(); } else go('schedule'); }, 300);
+      break;
+    }
     case 'week':
       ui.weekOffset += +t.dataset.v;
+      if ($('#dayContent')) { $('#dayContent').dataset.dir = +t.dataset.v > 0 ? 'fwd' : 'back'; setAnimate($('#dayContent')); }
       renderWeekbar(); renderDaybar(); renderDay(); loadWeek(ui.weekOffset);
       break;
     case 'week-today':
@@ -1789,7 +2020,9 @@ document.addEventListener('click', e => {
       renderWeekbar(); renderDaybar(); renderDay(); loadWeek(0);
       break;
     case 'day': {
+      const prevDay = ui.selDay;
       ui.selDay = +t.dataset.d;
+      if ($('#dayContent')) $('#dayContent').dataset.dir = ui.selDay >= prevDay ? 'fwd' : 'back';
       $$('.dayb').forEach(b => { const on = +b.dataset.d === ui.selDay; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
       moveDayInd(false); buzz(6);
       setAnimate($('#dayContent')); renderDay();
@@ -1840,6 +2073,8 @@ document.addEventListener('keydown', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.matches('#swEp, #swPlan')) { toggleNotify(t.dataset.k, t.checked, t); return; }
+  if (t.id === 'swEdge') { state.settings.edgeGesture = t.checked; save(); buzz(8); toast(t.checked ? 'Жест включён: два свайпа от левого края' : 'Жест выключен'); return; }
+  if (t.id === 'qTimeCustom') { quick.time = t.value; renderQuick(); return; }
   if (t.id === 'importFile' && t.files && t.files[0]) { importData(t.files[0]); t.value = ''; return; }
   if (t.dataset.pickDay != null) {
     const item = state.items[t.dataset.id], di = +t.dataset.pickDay;
@@ -1890,9 +2125,11 @@ setInterval(() => {
   await load();
   applyTheme();
   const h = (location.hash || '').replace('#', '');
-  ui.tab = TABS[h] ? h : 'home';
-  history.replaceState(null, '', '#' + ui.tab);
+  const wantQuick = new URLSearchParams(location.search).has('quick');
+  ui.tab = TABS[h] ? h : (wantQuick ? 'schedule' : 'home');
+  history.replaceState(null, '', location.pathname + '#' + ui.tab);
   render(true);
+  if (wantQuick) openQuick(true);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(() => setupPeriodicSync()).catch(() => {});
   await syncAll(true);
   startupCheck();

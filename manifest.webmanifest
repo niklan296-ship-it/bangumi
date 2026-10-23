@@ -10,13 +10,48 @@
   "background_color": "#10122A",
   "theme_color": "#10122A",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Расписание", "url": "./#schedule" },
-    { "name": "Мой список", "url": "./#list" },
-    { "name": "Поиск", "url": "./#search" }
+    {
+      "name": "Быстро в расписание",
+      "short_name": "В план",
+      "url": "./?quick=1",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Расписание",
+      "url": "./#schedule"
+    },
+    {
+      "name": "Мой список",
+      "url": "./#list"
+    },
+    {
+      "name": "Поиск",
+      "url": "./#search"
+    }
   ]
 }
