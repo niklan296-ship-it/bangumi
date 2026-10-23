@@ -325,22 +325,34 @@ public class MainActivity extends Activity {
             return where;
         }
 
+        private Uri writeImage(String base64, String name) throws Exception {
+            byte[] png = Base64.decode(base64, Base64.DEFAULT);
+            if (Build.VERSION.SDK_INT < 29) return null;
+            ContentValues v = new ContentValues();
+            v.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+            v.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+            v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Bangumi");
+            Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+            if (uri == null) return null;
+            try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+                if (os == null) return null;
+                os.write(png);
+            }
+            return uri;
+        }
+
+        /** Картинка в «Картинки/Bangumi» (видна в галерее). */
+        @JavascriptInterface
+        public boolean saveImage(String base64, String name) {
+            try { return writeImage(base64, name) != null; } catch (Exception e) { return false; }
+        }
+
         /** Картинка «Итогов года»: кладём в «Картинки/Bangumi» и открываем меню «Поделиться». */
         @JavascriptInterface
         public boolean shareImage(String base64, String name, String text) {
             try {
-                byte[] png = Base64.decode(base64, Base64.DEFAULT);
-                if (Build.VERSION.SDK_INT < 29) return false;
-                ContentValues v = new ContentValues();
-                v.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
-                v.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
-                v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Bangumi");
-                Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+                Uri uri = writeImage(base64, name);
                 if (uri == null) return false;
-                try (OutputStream os = getContentResolver().openOutputStream(uri)) {
-                    if (os == null) return false;
-                    os.write(png);
-                }
                 Intent send = new Intent(Intent.ACTION_SEND).setType("image/png")
                         .putExtra(Intent.EXTRA_STREAM, uri)
                         .putExtra(Intent.EXTRA_TEXT, text)

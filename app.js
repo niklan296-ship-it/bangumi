@@ -42,7 +42,9 @@ const Q_GENRE = `query($g:String){Page(perPage:30){media(genre:$g,type:ANIME,sor
 const Q_BY_IDS = `query($ids:[Int]){Page(perPage:50){media(id_in:$ids){${MEDIA_FIELDS}}}}`;
 const Q_BY_MAL = `query($ids:[Int]){Page(perPage:50){media(idMal_in:$ids,type:ANIME){${MEDIA_DESC}}}}`;
 const Q_DETAIL = `query($id:Int){Media(id:$id){${MEDIA_DESC} source studios(isMain:true){nodes{name}}
-  startDate{year month day} recommendations(perPage:12,sort:RATING_DESC){nodes{mediaRecommendation{${LITE}}}}}}`;
+  startDate{year month day} recommendations(perPage:12,sort:RATING_DESC){nodes{mediaRecommendation{${LITE}}}}
+  relations{edges{relationType node{${LITE} type}}}}}`;
+const Q_REL = `query($ids:[Int]){Page(perPage:50){media(id_in:$ids){id relations{edges{relationType node{${LITE} type}}}}}}`;
 const SHIKI = ['https://shikimori.io', 'https://shikimori.one'];
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -62,7 +64,7 @@ const ui = {
 
 function defaultState() {
   return {
-    v: 2, items: {}, airCache: {}, lastSync: 0, planLog: {}, activity: {}, watchLog: {}, gone: {}, shareMap: {}, ru: {}, trend: null, trendAt: 0,
+    v: 2, items: {}, sequels: {}, seqHide: {}, airCache: {}, lastSync: 0, planLog: {}, activity: {}, watchLog: {}, gone: {}, shareMap: {}, ru: {}, trend: null, trendAt: 0,
     settings: { titleLang: LANG === 'en' ? 'english' : 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true, glass: true, perf: 'auto', skin: 'cinema' }
   };
 }
@@ -255,10 +257,79 @@ function scheduleNative() {
       }
     }
     const json = JSON.stringify(list);
-    if (json === nativeSig) return;
-    nativeSig = json;
-    NATIVE.schedule(json);
+    if (json !== nativeSig) { nativeSig = json; NATIVE.schedule(json); }
+    pushWidget();
   } catch (e) { /* без моста */ }
+}
+
+/* ---------- Виджет на рабочем столе ---------- */
+let widgetSig = '';
+function widgetData() {
+  const now = new Date(), tk = dayKey(now), tdi = dayIndexMon(now), n = nowSec();
+  const active = it => it.status === 'watching' || it.status === 'planned';
+  const items = Object.values(state.items);
+  const plan = [];
+  for (let di = 0; di < 7; di++) {
+    plan.push(items.filter(it => active(it) && it.plan && Array.isArray(it.plan.days) && it.plan.days.includes(di))
+      .sort((a, b) => (a.plan.time || '99').localeCompare(b.plan.time || '99'))
+      .slice(0, 3)
+      .map(it => ({ id: it.id, t: title(it), p: it.progress || 0, total: it.total || 0, eps: it.plan.eps || 1,
+        sub: [it.plan.time || '', (it.plan.eps || 1) > 1 ? (it.plan.eps + T(' сер.')) : ''].filter(Boolean).join(' · '),
+        done: di === tdi && !!(state.planLog[tk] || {})[it.id] })));
+  }
+  const watching = items.filter(it => it.status === 'watching').sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).slice(0, 3)
+    .map(it => ({ id: it.id, t: title(it), p: it.progress || 0, total: it.total || 0, sub: newEps(it) > 0 ? T('Доступно ещё') + ' ' + newEps(it) : '' }));
+  const next = items.filter(it => active(it) && it.nextEp && it.nextEp.airingAt > n).sort((a, b) => a.nextEp.airingAt - b.nextEp.airingAt).slice(0, 6)
+    .map(it => ({ t: title(it), ep: it.nextEp.episode, at: it.nextEp.airingAt * 1000 }));
+  return { lang: LANG, doneKey: tk, plan, watching, next,
+    labels: { plan: T('Сегодня по плану'), watching: T('Смотрю'), empty: T('Сегодня ничего не запланировано'), next: T('Дальше'), today: T('сегодня'), marked: T('отмечено') } };
+}
+function pushWidget() {
+  if (!NATIVE || typeof NATIVE.widget !== 'function') return;
+  const json = JSON.stringify(widgetData());
+  if (json === widgetSig) return;
+  widgetSig = json;
+  NATIVE.widget(json);
+}
+/* Отметки, сделанные на виджете, пока Бангуми был закрыт */
+let booted = false;
+function applyWidgetPending() {
+  if (!booted || !NATIVE || typeof NATIVE.takePending !== 'function') return;
+  let ops = [];
+  try { ops = JSON.parse(NATIVE.takePending() || '[]'); } catch (e) { return; }
+  if (!ops.length) return;
+  let n = 0, last = null;
+  ops.forEach(op => {
+    const it = state.items[op.id];
+    if (!it) return;
+    if (op.kind === 'plan') {
+      const key = op.day || dayKey(new Date());
+      state.planLog[key] = state.planLog[key] || {};
+      if (state.planLog[key][it.id]) return;
+      const from = (it.progress || 0) + 1;
+      const added = setProgress(it, (it.progress || 0) + ((it.plan && it.plan.eps) || 1), { day: key });
+      state.planLog[key][it.id] = { added, from, to: from + added - 1 };
+    } else if (canInc(it)) setProgress(it, (it.progress || 0) + 1);
+    else return;
+    n++; last = it;
+  });
+  if (!n) return;
+  save(); refreshAfterChange();
+  if (!(last && maybeComplete(last))) toast(T('С виджета отмечено:') + ' ' + sers(n), { icon: ICON.check });
+}
+window.__nativeResume = () => { if (booted) { applyWidgetPending(); maybeAutoBackup(); } };
+
+/* ---------- Автокопия раз в неделю (только в приложении) ---------- */
+const canAutoBackup = () => !!(NATIVE && typeof NATIVE.autoBackup === 'function');
+function backupJSON() { return JSON.stringify({ app: 'bangumi', exportedAt: new Date().toISOString(), state }, null, 1); }
+function maybeAutoBackup(force) {
+  if (!canAutoBackup() || state.settings.autoBackup === false || !Object.keys(state.items).length) return;
+  if (!force && Date.now() - (state.lastAutoBackup || 0) < 7 * 86400000) return;
+  const d = new Date();
+  const name = `bangumi-auto-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
+  try {
+    if (NATIVE.autoBackup(name, backupJSON())) { state.lastAutoBackup = Date.now(); save(); if (force) toast(T('Автокопия сохранена')); }
+  } catch (e) { /* нет доступа к файлам */ }
 }
 async function load() {
   let s = null;
@@ -268,7 +339,7 @@ async function load() {
     const d = defaultState();
     const oldV = s.v || 1;
     state = Object.assign(d, s, { settings: Object.assign(d.settings, s.settings || {}) });
-    ['airCache', 'planLog', 'activity', 'watchLog', 'gone', 'shareMap', 'ru'].forEach(k => { state[k] = state[k] || {}; });
+    ['airCache', 'planLog', 'activity', 'watchLog', 'gone', 'shareMap', 'ru', 'sequels', 'seqHide'].forEach(k => { state[k] = state[k] || {}; });
     if (oldV < 2) { state.settings.titleLang = 'russian'; state.v = 2; }
   }
   Object.entries(state.airCache).forEach(([k, v]) => { ui.weekAir[k] = v.list; });
@@ -402,6 +473,7 @@ async function syncAll(quiet) {
   } catch (e) { ok = false; }
   await Promise.all([
     loadTrend(),
+    loadSequels(),
     enrichRu(Object.values(state.items).map(i => ({ idMal: i.idMal }))),
     loadWeek(ui.weekOffset, true)
   ]);
@@ -410,6 +482,54 @@ async function syncAll(quiet) {
   if (!quiet) toast(ok ? T('Данные обновлены') : T('Нет связи с AniList. Попробуй позже'));
   renderCurrent();
   if (ui.detailStack.length) renderDetailBlocks();
+}
+
+/* ---------- Продолжения ---------- */
+const relEdges = (m, type) => ((m && m.relations && m.relations.edges) || [])
+  .filter(e => e.relationType === type && e.node && e.node.type === 'ANIME' && e.node.format !== 'MUSIC').map(e => e.node);
+async function loadSequels(force) {
+  const src = Object.values(state.items).filter(i => i.anilistId && (i.status === 'completed' || i.status === 'watching' || i.status === 'paused'));
+  if (!src.length) return;
+  const sig = src.map(i => i.anilistId).sort((a, b) => a - b).join(',');
+  if (!force && Date.now() - (state.seqAt || 0) < 3 * 86400000 && state.seqIds === sig) return;
+  try {
+    const out = {}, all = [];
+    const ids = src.map(i => i.anilistId);
+    for (let i = 0; i < ids.length; i += 50) {
+      const d = await gql(Q_REL, { ids: ids.slice(i, i + 50) });
+      (d.Page.media || []).forEach(m => { const seq = relEdges(m, 'SEQUEL'); if (seq.length) { out[m.id] = seq; all.push(...seq); } });
+    }
+    state.sequels = out; state.seqAt = Date.now(); state.seqIds = sig;
+    rememberMedia(all);
+    await enrichRu(all);
+    save();
+  } catch (e) { /* без сети — покажем то, что уже знаем */ }
+}
+function sequelsOf(it) {
+  const map = byAni(), hide = state.seqHide || {};
+  return ((it && it.anilistId && state.sequels[it.anilistId]) || []).filter(m => !map[m.id] && !hide[m.id]).map(m => ui.media[m.id] || m);
+}
+function sequelSuggestions() {
+  const seen = new Set(), out = [];
+  Object.values(state.items).filter(i => i.anilistId && state.sequels[i.anilistId])
+    .sort((a, b) => (b.status === 'completed') - (a.status === 'completed') || (b.updatedAt || 0) - (a.updatedAt || 0))
+    .forEach(src => sequelsOf(src).forEach(m => { if (!seen.has(m.id)) { seen.add(m.id); out.push({ m, src }); } }));
+  return out;
+}
+function seqStatus(m) {
+  if (m.status === 'NOT_YET_RELEASED') return T('Анонс') + (m.seasonYear ? ' · ' + m.seasonYear : '');
+  if (m.status === 'RELEASING') return T('Выходит сейчас');
+  return T('Уже вышло') + (m.episodes ? ' · ' + m.episodes + T(' эп.') : '');
+}
+/* Досмотрел — подсказываем продолжение */
+function suggestSequel(it) {
+  const m = sequelsOf(it)[0];
+  if (!m) return false;
+  toast(T('Есть продолжение:') + ' ' + mediaTitle(m), {
+    action: T('В планы'), ms: 9000, icon: ICON.next,
+    fn: () => { addToList(m, 'planned'); refreshAfterChange(); toast(T('Добавлено в «В планах»')); }
+  });
+  return true;
 }
 
 function scheduleIds() {
@@ -448,9 +568,11 @@ async function loadDetailMedia(aniId) {
     rememberMedia([m]);
     const recs = ((m.recommendations && m.recommendations.nodes) || []).map(n => n.mediaRecommendation).filter(Boolean);
     rememberMedia(recs);
+    const rels = relEdges(m, 'SEQUEL').concat(relEdges(m, 'PREQUEL'));
+    rememberMedia(rels);
     const it = byAni()[aniId];
     if (it) { updateFromMedia(it, m); save(); }
-    await enrichRu([m].concat(recs));
+    await enrichRu([m].concat(recs, rels));
     const cur = currentDetail();
     if (cur && (cur.aniId === aniId || (cur.itemId && state.items[cur.itemId] && state.items[cur.itemId].anilistId === aniId))) renderDetailBlocks(true);
   } catch (e) {
@@ -533,7 +655,7 @@ function maybeComplete(it) {
   if (it.total && it.progress >= it.total && it.status !== 'completed') {
     celebrate();
     toast(T('Финал! Перенести в «Просмотрено»?'), {
-      action: T('Да'), ms: 7000, fn: () => { it.status = 'completed'; it.updatedAt = Date.now(); save(); celebrate(); refreshAfterChange(); toast('«' + title(it) + T('» — просмотрено')); }
+      action: T('Да'), ms: 7000, fn: () => { it.status = 'completed'; it.updatedAt = Date.now(); save(); celebrate(); refreshAfterChange(); if (!suggestSequel(it)) toast('«' + title(it) + T('» — просмотрено')); }
     });
     return true;
   }
@@ -911,9 +1033,9 @@ function renderHome(parts) {
     el.innerHTML = `<div id="homeHero"></div>
       <div class="wrap view" id="homeBody">
         ${installBanner()}
-        <div id="homeToday"></div><div id="homeCont"></div><div id="homeSoon"></div><div id="homeTrend"></div><div id="homeEmpty"></div>
+        <div id="homeToday"></div><div id="homeCont"></div><div id="homeSeq"></div><div id="homeSoon"></div><div id="homeTrend"></div><div id="homeEmpty"></div>
       </div>`;
-    parts = ['hero', 'today', 'cont', 'soon', 'trend', 'empty'];
+    parts = ['hero', 'today', 'cont', 'seq', 'soon', 'trend', 'empty'];
   }
   const items = Object.values(state.items);
   const has = p => parts.includes(p);
@@ -933,6 +1055,13 @@ function renderHome(parts) {
     $('#homeCont').innerHTML = cont.length ? `<section class="section"><div class="section-head"><h2>${T("Продолжить просмотр")}</h2><a class="more" href="#list" data-tab-link="list">${T("Все")}</a></div>
       <div class="rail bleed">${cont.map(contCardHTML).join('')}</div></section>` : '';
     restore('homeCont', x);
+  }
+  if (has('seq')) {
+    const x = keepScroll('homeSeq');
+    const sq = sequelSuggestions().slice(0, 12);
+    $('#homeSeq').innerHTML = sq.length ? `<section class="section"><div class="section-head"><h2>${T("Продолжения")}</h2><span class="label">${T("к тому, что ты смотрел")}</span></div>
+      <div class="rail bleed">${sq.map(({ m }, i) => `<div class="seq-card">${posterHTML(cardFromMedia(m), { i, cls: '', sub: seqStatus(m) })}<button type="button" class="seq-x" data-action="seq-hide" data-ani="${m.id}" aria-label="${T("Скрыть")}">${ICON.x}</button></div>`).join('')}</div></section>` : '';
+    restore('homeSeq', x);
   }
   if (has('soon')) {
     const x = keepScroll('homeSoon');
@@ -1284,6 +1413,8 @@ function renderProfile() {
         <div><b>${avg}</b><span>${T("средняя оценка")}</span></div>
       </div>
     </div>
+    ${(() => { const y = YearWrap.pickYear(); return `<button type="button" class="yw-entry rise" data-action="year-wrap"><span class="yw-e-year">${y}</span>
+      <span class="yw-e-txt"><b>${T("Итоги года")}</b><small>${T("Часы, топ тайтлов и жанр года — можно отправить друзьям")}</small></span>${ICON.next}</button>`; })()}
     <div class="card pad rise" style="--i:1"><div class="section-head"><h2 style="font-size:16px">${T("Активность")}</h2><span class="label">${T("8 недель ·")} ${activeDays} ${pl(activeDays, T('день'), T('дня'), T('дней'))}</span></div><div class="heat">${cells.join('')}</div></div>
     <div class="card pad rise" style="--i:2" id="timeCard">${timeCardHTML()}</div>
     <div class="card pad rise" style="--i:3"><div class="section-head"><h2 style="font-size:16px">${T("Любимые жанры")}</h2></div>${gBar}</div>
@@ -1328,6 +1459,10 @@ function renderProfile() {
         <div class="setting"><div class="txt"><span>${T("Резервная копия")}</span><small>${T("Список хранится только на этом телефоне")}</small></div>
           <div class="btn-row"><button class="btn small" type="button" data-action="export">${T("Сохранить")}</button>
           <button class="btn small" type="button" data-action="import">${T("Загрузить")}</button></div></div>
+        <div class="setting"><div class="txt"><span>${T("Импорт списка")}</span><small>${T("Из AniList, Shikimori или MyAnimeList")}</small></div>
+          <button class="btn small" type="button" data-action="import-list">${T("Импорт")}</button></div>
+        ${canAutoBackup() ? `<div class="setting"><div class="txt"><span>${T("Автокопия раз в неделю")}</span><small>${state.lastAutoBackup ? T('Последняя:') + ' ' + esc(new Intl.DateTimeFormat(LOC, { day: 'numeric', month: 'short' }).format(new Date(state.lastAutoBackup))) + ' · ' + L('Загрузки/Bangumi', 'Downloads/Bangumi') : T('Файл появится в «Загрузки/Bangumi»')}</small></div>
+          <label class="switch"><input type="checkbox" id="swAutoBk" ${state.settings.autoBackup !== false ? 'checked' : ''} aria-label="${T("Автокопия раз в неделю")}"><span></span></label></div>` : ''}
       </div>
       <input type="file" id="importFile" accept="application/json,.json" hidden>
     </div>
@@ -1440,6 +1575,7 @@ function mountDetail(anim, vtCover) {
       <div id="dPlan"></div>
       <section class="section" id="dAboutWrap"><div class="section-head"><h2>${T("О тайтле")}</h2></div><div id="dAbout" class="view" style="gap:14px"></div></section>
       <div id="dPersonal"></div>
+      <div id="dSeq"></div>
       <div id="dRecs"></div>
       <div id="dDanger"></div>
     </div>
@@ -1501,6 +1637,9 @@ function renderDetailBlocks(all) {
     (kv.length ? `<dl class="kv">${kv.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>` : '');
   $('#dAboutWrap').hidden = !about.innerHTML.trim();
 
+  const rel = relEdges(m, 'PREQUEL').map(x => ({ x, k: T('Предыдущее') })).concat(relEdges(m, 'SEQUEL').map(x => ({ x, k: T('Продолжение') })));
+  $('#dSeq').innerHTML = rel.length ? `<section class="section"><div class="section-head"><h2>${T("Сезоны")}</h2></div>
+    <div class="rail bleed">${rel.map((r, i) => posterHTML(cardFromMedia(ui.media[r.x.id] || r.x), { i, cls: '', sub: r.k + ' · ' + (r.x.status === 'NOT_YET_RELEASED' ? T('Анонс') : (r.x.seasonYear || '')) })).join('')}</div></section>` : '';
   const recs = ((m.recommendations && m.recommendations.nodes) || []).map(x => x.mediaRecommendation).filter(Boolean);
   $('#dRecs').innerHTML = recs.length ? `<section class="section"><div class="section-head"><h2>${T("Похожее")}</h2></div>
     <div class="rail bleed">${recs.map((r, i) => posterHTML(cardFromMedia(ui.media[r.id] || r), { i, cls: '' })).join('')}</div></section>` : '';
@@ -1815,6 +1954,7 @@ window.addEventListener('popstate', () => {
   else if (k === 'detail') popDetail();
   else if (k === 'quick') closeQuickNow();
   else if (k === 'map') MindMap.exitFull();
+  else if (k === 'wrap') YearWrap.closeNow();
 });
 
 function setAnimate(el) {
@@ -1865,7 +2005,7 @@ function render(enter) {
 }
 const viewStamp = {};
 function renderCurrent(full) {
-  if (ui.tab === 'home') { if (full || !$('#homeBody')) renderHome(); else renderHome(['today', 'cont', 'soon', 'trend', 'empty']); }
+  if (ui.tab === 'home') { if (full || !$('#homeBody')) renderHome(); else renderHome(['today', 'cont', 'seq', 'soon', 'trend', 'empty']); }
   else if (ui.tab === 'schedule') renderSchedule();
   else if (ui.tab === 'search') { renderSearch(); loadSeason(); }
   else if (ui.tab === 'list') renderList();
@@ -1880,7 +2020,7 @@ function refreshAfterChange() {
     else renderDetailBlocks();
   }
   if (ui.tab === 'home' && $('#homeBody')) {
-    renderHome(['today', 'cont', 'soon', 'empty']);
+    renderHome(['today', 'cont', 'seq', 'soon', 'empty']);
     Object.values(state.items).forEach(updateHeroChip);
     viewStamp.home = { v: ui.ver, t: Date.now() };
   } else if (ui.tab === 'schedule' && $('#daybar')) { renderDaybar(); renderDay(); }
@@ -2021,7 +2161,7 @@ function hideToast() {
 
 /* ================= Резервная копия ================= */
 function exportData() {
-  const json = JSON.stringify({ app: 'bangumi', exportedAt: new Date().toISOString(), state }, null, 1);
+  const json = backupJSON();
   const d = new Date();
   const name = `bangumi-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
   if (NATIVE) {
@@ -2130,7 +2270,7 @@ document.addEventListener('click', e => {
       if (!it) break;
       const prev = it.status;
       it.status = t.dataset.v;
-      if (it.status === 'completed') { if (it.total) setProgress(it, it.total, { max: 3 }); if (prev !== 'completed') celebrate(); }
+      if (it.status === 'completed') { if (it.total) setProgress(it, it.total, { max: 3 }); if (prev !== 'completed') { celebrate(); setTimeout(() => suggestSequel(it), 700); } }
       touch(); buzz(10); refreshAfterChange(); loadWeek(ui.weekOffset, true);
       break;
     }
@@ -2271,6 +2411,14 @@ document.addEventListener('click', e => {
     case 'set-listview': state.settings.listView = t.dataset.v; save(); buzz(8); renderProfile(); toast(t.dataset.v === 'map' ? T('Мой список: карта') : t.dataset.v === 'rows' ? T('Мой список: строки') : T('Мой список: сетка')); break;
     case 'set-perf': state.settings.perf = t.dataset.v; applyTheme(); save(); buzz(8); renderProfile(); toast(isLite() ? T('Плавность: быстро') : T('Плавность: красиво')); break;
     case 'set-skin': switchSkin(t.dataset.v, t); break;
+    case 'import-list': Import.open(); break;
+    case 'year-wrap': YearWrap.open(); break;
+    case 'seq-hide': {
+      state.seqHide[t.dataset.ani] = 1; save(); buzz(8);
+      const card = t.closest('.seq-card');
+      if (card && !reduced) { card.classList.add('out'); setTimeout(() => renderHome(['seq']), 260); } else renderHome(['seq']);
+      break;
+    }
     case 'set-lang': state.settings.titleLang = t.dataset.v; save(); renderProfile(); break;
     case 'set-ui-lang': setUiLang(t.dataset.v); break;
     case 'set-theme': state.settings.theme = t.dataset.v; applyTheme(); save(); renderProfile(); break;
@@ -2289,6 +2437,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.matches('#swEp, #swPlan')) { toggleNotify(t.dataset.k, t.checked, t); return; }
+  if (t.id === 'swAutoBk') { state.settings.autoBackup = t.checked; save(); buzz(8); if (t.checked) maybeAutoBackup(true); else toast(T('Автокопия выключена')); return; }
   if (t.id === 'swGlass') { state.settings.glass = t.checked; applyTheme(); save(); buzz(8); return; }
   if (t.id === 'swEdge') { state.settings.edgeGesture = t.checked; save(); buzz(8); toast(t.checked ? T('Жест включён: два свайпа от левого края') : T('Жест выключен')); return; }
   if (t.id === 'qTimeCustom') { quick.time = t.value; renderQuick(); return; }
@@ -2328,7 +2477,10 @@ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); ui.def
 window.addEventListener('appinstalled', () => { ui.deferredInstall = null; renderCurrent(true); celebrate(); toast(T('Бангуми установлен')); });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') flush();
-  else if (Date.now() - state.lastSync > 30 * 60 * 1000) syncAll(true).then(startupCheck);
+  else {
+    applyWidgetPending();
+    if (Date.now() - state.lastSync > 30 * 60 * 1000) syncAll(true).then(startupCheck);
+  }
 });
 matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme);
 setInterval(() => {
@@ -2338,7 +2490,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 13;
+const APP_VERSION = 14;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {
@@ -2371,6 +2523,7 @@ function setupUpdates() {
     if (want !== LANG) { location.reload(); return; }
   }
   state.settings.lang = LANG;
+  booted = true;
   if (document.readyState === 'loading') await new Promise(r => document.addEventListener('DOMContentLoaded', r, { once: true }));
   applyTheme();
   const h = (location.hash || '').replace('#', '');
@@ -2382,7 +2535,9 @@ function setupUpdates() {
   if (wantQuick) openQuick(true);
   else launchedWithShare = Share.fromLaunch(launchSearch);
   if ('serviceWorker' in navigator) setupUpdates();
+  applyWidgetPending();
   await syncAll(true);
   scheduleNative();
+  maybeAutoBackup();
   startupCheck();
 })();

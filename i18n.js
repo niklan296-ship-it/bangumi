@@ -192,6 +192,37 @@ const EN = {
   'Не нашёл такой тайтл. Поправь название — например, по-английски или ромадзи.': 'Couldn’t find that title. Try fixing the name, e.g. in romaji.',
   'Выбери тайтл': 'Pick a title', '» — в «Смотрю»': '” — now “Watching”',
 
+  // Виджет, автокопия, продолжения
+  'Сегодня ничего не запланировано': 'Nothing planned for today', 'Дальше': 'Next', 'отмечено': 'marked', 'С виджета отмечено:': 'Marked from the widget:',
+  'Автокопия сохранена': 'Auto-backup saved', 'Автокопия выключена': 'Auto-backup off', 'Автокопия раз в неделю': 'Weekly auto-backup', 'Последняя:': 'Last:',
+  'Файл появится в «Загрузки/Bangumi»': 'The file will appear in Downloads/Bangumi',
+  'Выходит сейчас': 'Airing now', 'Уже вышло': 'Out now', 'Есть продолжение:': 'There’s a sequel:', 'Продолжения': 'Sequels', 'к тому, что ты смотрел': 'for what you’ve watched',
+  'Скрыть': 'Hide', 'Предыдущее': 'Prequel', 'Продолжение': 'Sequel', 'Сезоны': 'Seasons',
+  // Импорт
+  'Импорт списка': 'Import list', 'Из AniList, Shikimori или MyAnimeList': 'From AniList, Shikimori or MyAnimeList', 'Импорт': 'Import',
+  'Перенеси список из другого сервиса. Тайтлы, которые уже есть, не потеряются: прогресс возьмётся больший.': 'Bring your list over from another service. Titles you already have stay — the higher progress wins.',
+  'MyAnimeList: myanimelist.net/panel.php?go=export → Export My Anime List.': 'MyAnimeList: myanimelist.net/panel.php?go=export → Export My Anime List.',
+  'Shikimori: в настройках профиля — «Экспорт списка», формат XML. Или просто введи никнейм во вкладке Shikimori.': 'Shikimori: “Export list” in profile settings, XML format. Or just enter your nickname in the Shikimori tab.',
+  'Выбрать файл .xml или .xml.gz': 'Choose an .xml or .xml.gz file', 'Имя на AniList': 'AniList username', 'Никнейм на Shikimori': 'Shikimori nickname', 'Найти': 'Find',
+  'Список должен быть открыт для всех.': 'The list has to be public.', 'Загружаю список…': 'Loading the list…', 'Готово!': 'Done!', 'у': '·', 'в файле': 'in the file',
+  'Новых': 'New', 'Обновится': 'Will update', 'Уже есть': 'Already there', 'Нет в базе AniList': 'Not on AniList', 'Добавить в мой список': 'Add to my list', 'Нечего добавлять': 'Nothing to add',
+  'Сверяю с базой…': 'Matching with the database…', 'Список пустой — нечего переносить.': 'The list is empty — nothing to import.',
+  'Не нашёл такого пользователя на Shikimori.': 'Couldn’t find that user on Shikimori.',
+  'В файле нет аниме. Нужен файл экспорта MyAnimeList или Shikimori (.xml).': 'No anime in that file. It needs to be a MyAnimeList or Shikimori export (.xml).',
+  'Не получилось распаковать .gz — распакуй файл и выбери .xml.': 'Couldn’t unpack the .gz — unzip it and pick the .xml.',
+  'Нет связи. Проверь интернет и попробуй ещё раз.': 'No connection. Check your internet and try again.',
+  'Не нашёл такого пользователя на AniList или его список скрыт.': 'Couldn’t find that AniList user, or their list is private.',
+  'Не получилось загрузить список. Проверь имя и что список открыт.': 'Couldn’t load the list. Check the name and that the list is public.',
+  'Добавлено:': 'Added:', 'обновлено:': 'updated:',
+  // Итоги года
+  'Итоги года': 'Year in review', 'Часы, топ тайтлов и жанр года — можно отправить друзьям': 'Hours, top titles and genre of the year — ready to share',
+  'Твой год в аниме': 'Your year in anime', 'Касайся справа — дальше, слева — назад': 'Tap right for next, left to go back', 'Пока пусто': 'Nothing yet',
+  'Отмечай серии — итоги соберутся сами.': 'Mark episodes and your recap builds itself.', 'В этом году ты смотрел аниме': 'This year you watched anime for',
+  'Это': 'That’s', 'Жанр года': 'Genre of the year', 'времени — тайтлы этого жанра': 'of your time went to this genre', 'Топ года': 'Top of the year', 'Твой ритм': 'Your rhythm',
+  'Самый активный месяц': 'Busiest month', 'Дней подряд': 'Day streak', 'лучшая серия дней': 'longest run', 'Дней с аниме': 'Days with anime', 'Рекорд за день': 'Best day',
+  'аниме': 'of anime', 'дней подряд': 'day streak', 'Поделиться': 'Share', 'Сохранить картинку': 'Save image', 'Мой год в аниме': 'My year in anime',
+  'Картинка сохранена': 'Image saved', 'Не получилось сделать картинку': 'Couldn’t make the image',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'
