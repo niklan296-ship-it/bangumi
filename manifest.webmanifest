@@ -53,5 +53,18 @@
       "name": "Поиск",
       "url": "./#search"
     }
-  ]
+  ],
+  "id": "./",
+  "display_override": [
+    "standalone"
+  ],
+  "share_target": {
+    "action": "./index.html",
+    "method": "GET",
+    "params": {
+      "title": "share_title",
+      "text": "share_text",
+      "url": "share_url"
+    }
+  }
 }

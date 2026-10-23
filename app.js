@@ -62,7 +62,7 @@ const ui = {
 
 function defaultState() {
   return {
-    v: 2, items: {}, airCache: {}, lastSync: 0, planLog: {}, activity: {}, watchLog: {}, gone: {}, ru: {}, trend: null, trendAt: 0,
+    v: 2, items: {}, airCache: {}, lastSync: 0, planLog: {}, activity: {}, watchLog: {}, gone: {}, shareMap: {}, ru: {}, trend: null, trendAt: 0,
     settings: { titleLang: 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true, glass: true, perf: 'auto', skin: 'cinema' }
   };
 }
@@ -219,7 +219,7 @@ async function load() {
     const d = defaultState();
     const oldV = s.v || 1;
     state = Object.assign(d, s, { settings: Object.assign(d.settings, s.settings || {}) });
-    ['airCache', 'planLog', 'activity', 'watchLog', 'gone', 'ru'].forEach(k => { state[k] = state[k] || {}; });
+    ['airCache', 'planLog', 'activity', 'watchLog', 'gone', 'shareMap', 'ru'].forEach(k => { state[k] = state[k] || {}; });
     if (oldV < 2) { state.settings.titleLang = 'russian'; state.v = 2; }
   }
   Object.entries(state.airCache).forEach(([k, v]) => { ui.weekAir[k] = v.list; });
@@ -1056,7 +1056,8 @@ function renderSearch() {
       ${ui.season ? grid(ui.season) : ui.seasonError ? `<div class="empty soft"><p>Без интернета сезон не загрузить. Список и расписание работают офлайн.</p><button class="btn small" type="button" data-action="season-retry">Повторить</button></div>` : skeletonPosters(6, true)}</section>`;
   }
   h += `<div class="empty soft"><p>Нет нужного тайтла в базе? Добавь вручную — название и число серий.</p>
-    <button class="btn small line" type="button" data-action="manual-open">${ICON.plus}Добавить вручную</button></div>`;
+    <div class="btn-row"><button class="btn small line" type="button" data-action="manual-open">${ICON.plus}Добавить вручную</button>
+    <button class="btn small line" type="button" data-action="share-manual">${ICON.ext}Ссылка на серию</button></div></div>`;
   body.innerHTML = h;
 }
 let searchTimer = null;
@@ -1759,7 +1760,7 @@ function pushOverlay(kind) { ui.overlays.push(kind); history.pushState({ ov: kin
 function back() { if (ui.overlays.length) history.back(); }
 window.addEventListener('popstate', () => {
   const k = ui.overlays.pop();
-  if (k === 'sheet') closeSheetNow();
+  if (k === 'sheet') { if (window.Share) Share.close(); closeSheetNow(); }
   else if (k === 'detail') popDetail();
   else if (k === 'quick') closeQuickNow();
   else if (k === 'map') MindMap.exitFull();
@@ -2158,6 +2159,7 @@ document.addEventListener('click', e => {
     case 'clear-search': ui.query = ''; ui.results = null; ui.searchToken++; $('#q').value = ''; $('#q').focus(); renderSearch(); break;
     case 'season-retry': ui.seasonError = false; renderSearch(); loadSeason(); break;
     case 'manual-open': openSheet(manualHTML()); break;
+    case 'share-manual': Share.open({}, { manual: true }); break;
     case 'manual-save': {
       const name = ($('#mTitle').value || '').trim();
       if (!name) { $('#mTitle').focus(); toast('Впиши название'); break; }
@@ -2249,9 +2251,11 @@ setInterval(() => {
   const h = (location.hash || '').replace('#', '');
   const wantQuick = new URLSearchParams(location.search).has('quick');
   ui.tab = TABS[h] ? h : (wantQuick ? 'schedule' : 'home');
+  const launchSearch = location.search;
   history.replaceState(null, '', location.pathname + '#' + ui.tab);
   render(true);
   if (wantQuick) openQuick(true);
+  else Share.fromLaunch(launchSearch);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(() => setupPeriodicSync()).catch(() => {});
   await syncAll(true);
   startupCheck();
