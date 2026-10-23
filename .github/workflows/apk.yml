@@ -15,17 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - uses: android-actions/setup-android@v3
-
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.7'
-
       - name: Сборка
         id: build
         continue-on-error: true
@@ -34,24 +23,32 @@ jobs:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
         run: |
           set -o pipefail
+          exec > >(tee build.log) 2>&1
+          export JAVA_HOME="${JAVA_HOME_17_X64:-$JAVA_HOME}"
+          echo "java: $JAVA_HOME"; "$JAVA_HOME/bin/java" -version
+          echo "android sdk: ${ANDROID_HOME:-$ANDROID_SDK_ROOT}"; ls "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/platforms" || true
+          curl -fsSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          G=/tmp/gradle-8.7/bin/gradle
           if [ -z "$KEYSTORE_B64" ]; then
-            # без ключа только проверяем, что проект собирается
-            echo "NOKEY: нет секрета KEYSTORE_B64 (Settings → Secrets and variables → Actions)" | tee build.log
-            gradle -p android assembleDebug --stacktrace --no-daemon 2>&1 | tee -a build.log
-            echo "NOKEY: debug-сборка прошла" >> build.log
+            echo "NOKEY: нет секрета KEYSTORE_B64 — проверяю debug-сборку"
+            $G -p android assembleDebug --stacktrace --no-daemon
+            echo "NOKEY: debug-сборка прошла"
             exit 1
           fi
           echo "$KEYSTORE_B64" | base64 -d > android/bangumi.jks
-          gradle -p android assembleRelease --stacktrace --no-daemon 2>&1 | tee build.log
+          $G -p android assembleRelease --stacktrace --no-daemon
           cp android/app/build/outputs/apk/release/app-release.apk Bangumi.apk
 
       - name: Выпуск
+        id: release
         if: steps.build.outcome == 'success'
+        continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-${{ github.run_number }}
           name: Бангуми 1.${{ github.run_number }}
-          body: Установи Bangumi.apk на телефон. Обновлять APK нужно редко — само приложение обновляется через интернет.
+          body: Установи Bangumi.apk на телефон. Переустанавливать APK нужно редко — интерфейс обновляется сам через интернет.
           files: Bangumi.apk
           make_latest: true
 
@@ -59,8 +56,8 @@ jobs:
         if: always()
         run: |
           mkdir -p out
-          echo "${{ steps.build.outcome }} run=${{ github.run_number }} sha=${{ github.sha }}" > out/status.txt
-          tail -c 200000 build.log > out/build.log 2>/dev/null || true
+          echo "build=${{ steps.build.outcome }} release=${{ steps.release.outcome }} run=${{ github.run_number }} sha=${{ github.sha }}" > out/status.txt
+          tail -c 300000 build.log > out/build.log 2>/dev/null || echo "нет build.log" > out/build.log
           [ -f Bangumi.apk ] && cp Bangumi.apk out/ || true
           cd out
           git init -q -b apk
@@ -69,6 +66,6 @@ jobs:
           git add -A && git commit -qm "APK build ${{ github.run_number }}"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" apk
 
-      - name: Ошибка сборки
+      - name: Итог
         if: steps.build.outcome != 'success'
         run: exit 1
