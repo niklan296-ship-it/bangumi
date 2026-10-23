@@ -63,7 +63,7 @@ const ui = {
 function defaultState() {
   return {
     v: 2, items: {}, airCache: {}, lastSync: 0, planLog: {}, activity: {}, watchLog: {}, gone: {}, ru: {}, trend: null, trendAt: 0,
-    settings: { titleLang: 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true, glass: true }
+    settings: { titleLang: 'russian', theme: 'system', notifyEpisodes: false, notifyPlan: false, listView: 'grid', listSort: 'recent', edgeGesture: true, glass: true, perf: 'auto', skin: 'cinema' }
   };
 }
 
@@ -161,7 +161,51 @@ function buzz(ms) { try { if (navigator.userActivation && !navigator.userActivat
 
 /* ================= Хранилище ================= */
 let saveTimer = null;
-function save() { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 250); }
+function save() { ui.ver = (ui.ver || 0) + 1; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 250); }
+/* Слабый телефон: меньше размытия и тяжёлых эффектов, внешне почти то же самое */
+function weakDevice() {
+  const mem = navigator.deviceMemory, cores = navigator.hardwareConcurrency;
+  return (mem && mem <= 4) || (cores && cores <= 4);
+}
+/* ---------- Интерфейсы ---------- */
+const SKINS = {
+  cinema: { name: 'Кинотеатр', sub: 'Постеры, свет и стекло', theme: ['#0B0B12', '#F3F3F6'], font: null,
+    fx: ['#FFC23D', '#FF7A45', '#FF4D8D', '#7C9DFF', '#3DDC97', '#B18CFF', '#ffffff'] },
+  manga: { name: 'Манга', sub: 'Тушь, бумага и панели', theme: ['#121212', '#EFEEEA'], font: 'Dela+Gothic+One',
+    fx: ['#141414', '#E0262E', '#141414', '#E0262E', '#FFFFFF', '#8C8A84'] },
+  quest: { name: 'Квест', sub: 'Пиксели, уровни и опыт', theme: ['#17132E', '#17132E'], font: 'Press+Start+2P',
+    fx: ['#FFD23F', '#FF3E9A', '#3DE0FF', '#7CF06B', '#C58BFF'] }
+};
+const skin = () => (SKINS[state.settings.skin] ? state.settings.skin : 'cinema');
+const skinFx = () => SKINS[skin()].fx;
+const loadedFonts = {};
+function applySkin() {
+  const k = skin();
+  document.documentElement.dataset.skin = k;
+  ensureFont(k);
+}
+function ensureFont(k) {
+  const f = SKINS[k] && SKINS[k].font;
+  if (f && !loadedFonts[f]) {
+    loadedFonts[f] = true;
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = `https://fonts.googleapis.com/css2?family=${f}&display=swap`;
+    document.head.appendChild(l);
+  }
+}
+/* Уровни для «Квеста»: уровень L начинается с 3·(L−1)² серий */
+function questLevel(eps) {
+  const L = Math.floor(Math.sqrt(eps / 3)) + 1;
+  const from = 3 * (L - 1) * (L - 1), to = 3 * L * L;
+  return { L, from, to, into: eps - from, need: to - from };
+}
+const totalEps = () => Object.values(state.items).reduce((s, i) => s + (i.progress || 0), 0);
+function isLite() { return document.documentElement.classList.contains('lite'); }
+function applyPerf() {
+  const p = state.settings.perf || 'auto';
+  document.documentElement.classList.toggle('lite', p === 'fast' || (p === 'auto' && weakDevice()));
+}
 async function flush() {
   clearTimeout(saveTimer);
   try { await DB.set('state', state); }
@@ -184,13 +228,15 @@ async function load() {
 
 /* ================= Тема ================= */
 function applyTheme() {
-  document.documentElement.classList.toggle('glass', state.settings.glass !== false);
-  const t = state.settings.theme;
+  applySkin();
+  document.documentElement.classList.toggle('glass', state.settings.glass !== false && skin() === 'cinema');
+  applyPerf();
+  const t = skin() === 'quest' ? 'dark' : state.settings.theme;
   if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
   else document.documentElement.removeAttribute('data-theme');
   const dark = t === 'dark' || (t === 'system' && !matchMedia('(prefers-color-scheme: light)').matches);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', dark ? '#0B0B12' : '#F3F3F6');
+  if (meta) meta.setAttribute('content', SKINS[skin()].theme[dark ? 0 : 1]);
 }
 
 /* ================= Источники данных ================= */
@@ -301,6 +347,7 @@ async function syncAll(quiet) {
       (d.Page.media || []).forEach(m => { if (map[m.id]) updateFromMedia(map[m.id], m); });
     }
     state.lastSync = Date.now();
+    ui.ver = (ui.ver || 0) + 1;
     await flush();
   } catch (e) { ok = false; }
   await Promise.all([
@@ -371,7 +418,12 @@ function setProgress(it, val, opts) {
   if (it.total) val = Math.min(it.total, val);
   const delta = val - (it.progress || 0);
   if (!delta) return 0;
+  const lvBefore = delta > 0 && skin() === 'quest' && opts.log !== false ? questLevel(totalEps()).L : 0;
   it.progress = val;
+  if (lvBefore) {
+    const lv = questLevel(totalEps()).L;
+    if (lv > lvBefore) setTimeout(() => { celebrate(); toast('Новый уровень: ' + lv + '!', { icon: '<b style="font-size:13px">★</b>', ms: 4500 }); }, 900);
+  }
   if (delta > 0 && (it.status === 'planned' || it.status === 'paused')) it.status = 'watching';
   const doLog = opts.log !== false && (opts.max == null || Math.abs(delta) <= opts.max);
   if (doLog) {
@@ -499,7 +551,7 @@ function floatPlus(el) {
   if (window.sparkle) sparkle(el, 8);
   const r = el.getBoundingClientRect();
   const s = document.createElement('span');
-  s.className = 'float-plus'; s.textContent = '+1';
+  s.className = 'float-plus'; s.textContent = skin() === 'quest' ? '+1 XP' : skin() === 'manga' ? 'ДОН!' : '+1';
   s.style.left = (r.left + r.width / 2) + 'px'; s.style.top = (r.top - 4) + 'px';
   document.body.appendChild(s);
   setTimeout(() => s.remove(), 950);
@@ -512,9 +564,10 @@ function celebrate() {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const colors = ['#FFC23D', '#FF7A45', '#FF4D8D', '#7C9DFF', '#3DDC97', '#B18CFF', '#ffffff'];
+  const colors = skinFx();
   const P = [];
-  for (let i = 0; i < 150; i++) {
+  const N = isLite() ? 70 : 150;
+  for (let i = 0; i < N; i++) {
     const fromLeft = i % 2 === 0;
     P.push({
       x: fromLeft ? -10 : innerWidth + 10, y: innerHeight * (0.55 + Math.random() * 0.25),
@@ -1166,6 +1219,11 @@ function renderProfile() {
 
   el.innerHTML = `<div><h1 class="page-title" id="pageTitle">Профиль</h1></div>
     ${installBanner()}
+    ${skin() === 'quest' ? (() => { const q = questLevel(eps); const segs = 12, on = Math.round(q.into / q.need * segs);
+      return `<div class="lvl-card rise"><div class="lvl-badge"><small>УР.</small><b>${q.L}</b></div>
+        <div class="lvl-info"><span class="lvl-title">${['Новичок', 'Зритель', 'Знаток', 'Отаку', 'Сэнсэй', 'Легенда'][Math.min(5, Math.floor((q.L - 1) / 3))]}</span>
+        <span class="lvl-bar">${Array.from({ length: segs }, (_, k) => `<i class="${k < on ? 'on' : ''}" style="--k:${k}"></i>`).join('')}</span>
+        <small>Опыт ${q.into}/${q.need} · до уровня ${q.L + 1}: ${sers(q.need - q.into)}</small></div></div>`; })() : ''}
     <div class="profile-hero rise">
       <div class="label">Время за аниме</div>
       <div class="big-stat"><b data-count="${Math.round(mins / 60)}">0</b><span>${pl(Math.round(mins / 60), 'час', 'часа', 'часов')}</span></div>
@@ -1179,6 +1237,13 @@ function renderProfile() {
     <div class="card pad rise" style="--i:2" id="timeCard">${timeCardHTML()}</div>
     <div class="card pad rise" style="--i:3"><div class="section-head"><h2 style="font-size:16px">Любимые жанры</h2></div>${gBar}</div>
     <div class="card pad rise" style="--i:4"><div class="section-head"><h2 style="font-size:16px">Статусы</h2></div>${stBar}</div>
+
+    <div class="section">
+      <div class="label">Интерфейс</div>
+      <div class="skins" role="group" aria-label="Интерфейс">${Object.entries(SKINS).map(([k, v]) => `<button type="button" class="skin-tile sk-${k}${skin() === k ? ' on' : ''}" data-action="set-skin" data-v="${k}" aria-pressed="${skin() === k}">
+        <span class="sk-prev" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i><i class="e"></i></span>
+        <b>${v.name}</b><small>${v.sub}</small></button>`).join('')}</div>
+    </div>
 
     <div class="section">
       <div class="label">Уведомления</div>
@@ -1199,7 +1264,8 @@ function renderProfile() {
         <div class="setting"><div class="txt"><span>Мой список</span><small>Карта — как ментальная карта в Заметках</small></div>${seg('set-listview', st.listView, [['grid', 'Сетка'], ['rows', 'Строки'], ['map', 'Карта']])}</div>
         <div class="setting"><div class="txt"><span>Стеклянные кнопки</span><small>Полупрозрачные кнопки с размытием и бликом</small></div>
           <label class="switch"><input type="checkbox" id="swGlass" ${st.glass !== false ? 'checked' : ''} aria-label="Стеклянные кнопки"><span></span></label></div>
-        <div class="setting"><div class="txt"><span>Тема</span></div>${seg('set-theme', st.theme, [['system', 'Авто'], ['dark', 'Тёмная'], ['light', 'Светлая']])}</div>
+        <div class="setting"><div class="txt"><span>Плавность</span><small>«Быстро» убирает размытие и тяжёлые эффекты. «Авто» само решает по телефону${weakDevice() ? ' — у тебя включится «Быстро»' : ''}</small></div>${seg('set-perf', st.perf || 'auto', [['auto', 'Авто'], ['beauty', 'Красиво'], ['fast', 'Быстро']])}</div>
+        <div class="setting"><div class="txt"><span>Тема</span>${skin() === 'quest' ? '<small>В «Квесте» всегда тёмная</small>' : ''}</div>${seg('set-theme', st.theme, [['system', 'Авто'], ['dark', 'Тёмная'], ['light', 'Светлая']])}</div>
       </div>
     </div>
     <div class="section">
@@ -1278,7 +1344,7 @@ function openDetail(ref, srcEl) {
   ui.confirmDelete = false;
   const aniId = ref.aniId || (ref.itemId && state.items[ref.itemId] && state.items[ref.itemId].anilistId);
   const src = srcEl && (srcEl.matches('[data-vt]') ? srcEl : srcEl.querySelector('[data-vt]'));
-  if (!wasOpen && src && document.startViewTransition && !reduced) {
+  if (!wasOpen && src && document.startViewTransition && !reduced && !isLite()) {
     src.style.viewTransitionName = 'cover';
     const vt = document.startViewTransition(() => { src.style.viewTransitionName = ''; mountDetail(false, true); });
     vt.finished.finally(() => { const c = $('#dCover'); if (c) c.style.viewTransitionName = ''; });
@@ -1453,7 +1519,7 @@ function popDetail() {
   const cover = $('#dCover');
   const finish = () => { $('#detailRoot').innerHTML = ''; document.body.classList.remove('locked', 'detail-open'); };
   if (det.dataset.dragged) { setTimeout(() => { finish(); renderCurrent(); }, reduced ? 0 : 240); return; }
-  if (document.startViewTransition && !reduced && cover) {
+  if (document.startViewTransition && !reduced && cover && !isLite()) {
     cover.style.viewTransitionName = 'cover';
     let target = null;
     const vt = document.startViewTransition(() => {
@@ -1710,13 +1776,10 @@ function go(tab) {
   if (tab === ui.tab) { window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); return; }
   history.replaceState(history.state, '', '#' + tab);
   const order = Object.keys(TABS);
-  const dir = order.indexOf(tab) > order.indexOf(ui.tab) ? 'fwd' : 'back';
-  const doit = () => { ui.tab = tab; render(true); window.scrollTo(0, 0); };
-  if (document.startViewTransition && !reduced) {
-    document.documentElement.dataset.vt = dir;
-    const vt = document.startViewTransition(doit);
-    vt.finished.finally(() => { delete document.documentElement.dataset.vt; });
-  } else doit();
+  ui.tabDir = order.indexOf(tab) > order.indexOf(ui.tab) ? 'fwd' : 'back';
+  ui.tab = tab;
+  render(true);
+  window.scrollTo(0, 0);
 }
 function render(enter) {
   $$('.tabbar a').forEach(a => {
@@ -1731,18 +1794,33 @@ function render(enter) {
   const bar = $('#appbar');
   bar.classList.toggle('on-hero', ui.tab === 'home');
   $('.appbar .logo').hidden = ui.tab !== 'home';
-  if (enter) { ui.heroIds = ui.tab === 'home' ? null : ui.heroIds; setAnimate($('#view-' + ui.tab)); }
-  renderCurrent(true);
+  const view = $('#view-' + ui.tab);
+  const stamp = viewStamp[ui.tab];
+  // Вкладка не менялась с прошлого раза — показываем готовую, без перерисовки
+  const cached = enter && stamp && stamp.v === ui.ver && Date.now() - stamp.t < 60000 && view.childElementCount;
+  if (enter) {
+    if (!cached) { if (ui.tab === 'home') ui.heroIds = null; setAnimate(view); }
+    if (!reduced) {
+      view.classList.remove('tab-in-fwd', 'tab-in-back'); void view.offsetWidth;
+      view.classList.add('tab-in-' + (ui.tabDir || 'fwd'));
+      clearTimeout(view._tin); view._tin = setTimeout(() => view.classList.remove('tab-in-fwd', 'tab-in-back'), 450);
+    }
+  }
+  if (cached) { if (ui.tab === 'home') setupHero(true); }
+  else renderCurrent(true);
   onScroll();
   if (window.motionAfterRender) motionAfterRender();
 }
+const viewStamp = {};
 function renderCurrent(full) {
   if (ui.tab === 'home') { if (full || !$('#homeBody')) renderHome(); else renderHome(['today', 'cont', 'soon', 'trend', 'empty']); }
   else if (ui.tab === 'schedule') renderSchedule();
   else if (ui.tab === 'search') { renderSearch(); loadSeason(); }
   else if (ui.tab === 'list') renderList();
   else renderProfile();
+  viewStamp[ui.tab] = { v: ui.ver, t: Date.now() };
 }
+function resetViewCache() { Object.keys(viewStamp).forEach(k => delete viewStamp[k]); }
 function refreshAfterChange() {
   if (ui.detailStack.length) {
     const v = dvm();
@@ -1752,6 +1830,7 @@ function refreshAfterChange() {
   if (ui.tab === 'home' && $('#homeBody')) {
     renderHome(['today', 'cont', 'soon', 'empty']);
     Object.values(state.items).forEach(updateHeroChip);
+    viewStamp.home = { v: ui.ver, t: Date.now() };
   } else if (ui.tab === 'schedule' && $('#daybar')) { renderDaybar(); renderDay(); }
   else renderCurrent();
 }
@@ -1811,6 +1890,28 @@ async function startupCheck() {
   if (!state.settings.notifyEpisodes && !state.settings.notifyPlan) return;
   const reg = await getReg();
   try { await runBackgroundCheck(reg); } catch (e) { /* без сети */ }
+}
+
+/* ================= Смена интерфейса ================= */
+function switchSkin(k, srcEl) {
+  if (!SKINS[k] || k === skin()) return;
+  buzz(16);
+  ensureFont(k);
+  const r = srcEl ? srcEl.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 };
+  const x = r.left + r.width / 2, y = r.top + r.height / 2;
+  const apply = () => {
+    state.settings.skin = k;
+    applyTheme(); save(); resetViewCache();
+    render(false);
+  };
+  if (reduced) { apply(); toast('Интерфейс: ' + SKINS[k].name); return; }
+  const w = document.createElement('div');
+  w.className = 'skin-wipe to-' + k;
+  w.style.setProperty('--x', x + 'px'); w.style.setProperty('--y', y + 'px');
+  w.innerHTML = `<span>${SKINS[k].name}</span>`;
+  document.body.appendChild(w);
+  setTimeout(() => { apply(); w.classList.add('out'); }, 520);
+  setTimeout(() => { w.remove(); toast('Интерфейс: ' + SKINS[k].name); }, 1050);
 }
 
 /* ================= Тост ================= */
@@ -2073,6 +2174,8 @@ document.addEventListener('click', e => {
     case 'time-period': ui.timePeriod = t.dataset.v; ui.timeAll = false; $('#timeCard').innerHTML = timeCardHTML(); setAnimate($('#timeCard')); break;
     case 'time-all': ui.timeAll = !ui.timeAll; $('#timeCard').innerHTML = timeCardHTML(); break;
     case 'set-listview': state.settings.listView = t.dataset.v; save(); buzz(8); renderProfile(); toast(t.dataset.v === 'map' ? 'Мой список: карта' : t.dataset.v === 'rows' ? 'Мой список: строки' : 'Мой список: сетка'); break;
+    case 'set-perf': state.settings.perf = t.dataset.v; applyTheme(); save(); buzz(8); renderProfile(); toast(isLite() ? 'Плавность: быстро' : 'Плавность: красиво'); break;
+    case 'set-skin': switchSkin(t.dataset.v, t); break;
     case 'set-lang': state.settings.titleLang = t.dataset.v; save(); renderProfile(); break;
     case 'set-theme': state.settings.theme = t.dataset.v; applyTheme(); save(); renderProfile(); break;
     case 'refresh': syncAll(false); break;

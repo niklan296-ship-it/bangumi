@@ -51,7 +51,7 @@
     const r = el.getBoundingClientRect();
     if (!r.width) return;
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    const colors = ['#FFC23D', '#FF7A45', '#FF4D8D', '#7C9DFF', '#3DDC97'];
+    const colors = typeof skinFx === 'function' ? skinFx() : ['#FFC23D', '#FF7A45', '#FF4D8D', '#7C9DFF', '#3DDC97'];
     const box = document.createElement('div');
     box.className = 'sparks';
     box.style.left = cx + 'px'; box.style.top = cy + 'px';
@@ -131,7 +131,7 @@
   /* ============ Параллакс героя ============ */
   let pxQueued = false;
   window.addEventListener('scroll', () => {
-    if (RM || pxQueued || ui.tab !== 'home') return;
+    if (RM || pxQueued || ui.tab !== 'home' || isLite()) return;
     pxQueued = true;
     requestAnimationFrame(() => {
       pxQueued = false;

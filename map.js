@@ -7,7 +7,7 @@ const MindMap = (function () {
   const DEF = {
     layout: 'right', group: 'status', node: 'line', edge: 'curve', width: 2.5,
     color: 'status', solid: '#FFB81C', bg: 'dots', appear: true, flow: 'none',
-    rotate: 0, rotateGesture: true, upright: false, root: 'Мой список', font: 100, show: 'all'
+    rotate: 0, rotateGesture: true, bgMode: 'still', upright: false, root: 'Мой список', font: 100, show: 'all'
   };
   const RAINBOW = ['#FFB81C', '#FF7A45', '#FF4D8D', '#B18CFF', '#6EA8FF', '#3DDC97', '#4CC9F0', '#FF5E5B'];
   const SWATCHES = ['#FFB81C', '#FF7A45', '#FF4D8D', '#B18CFF', '#6EA8FF', '#3DDC97', '#4CC9F0', '#E8E6F5'];
@@ -218,22 +218,57 @@ const MindMap = (function () {
     return `M${f(x1)} ${f(y1)}C${f(x1 + ux * k)} ${f(y1 + uy * k)} ${f(x2 - ux * k)} ${f(y2 - uy * k)} ${f(x2)} ${f(y2)}`;
   }
   function drawEdges(c) {
-    let h = '';
+    const under = [], core = [], over = [];
+    const lite = typeof isLite === 'function' && isLite();
     flat.forEach((n, i) => {
       if (!n.parent) return;
       const d = edgeD(n.parent, n, c);
-      const w = (n.depth === 1 ? c.width * 1.4 : c.width).toFixed(2);
-      h += `<path class="me" data-e="${esc(n.id)}" d="${d}" pathLength="1" style="stroke:${n.color};stroke-width:${w};--d:${n.depth};--i:${i}"/>`;
-      if (c.flow === 'flow') h += `<path class="me-flow" data-f="${esc(n.id)}" d="${d}" style="stroke-width:${Math.max(1.2, c.width * 0.6).toFixed(2)};--i:${i}"/>`;
+      const wn = n.depth === 1 ? c.width * 1.4 : c.width;
+      const id = esc(n.id), col = n.color;
+      const hi = `color-mix(in srgb, ${col} 40%, #fff)`;
+      const dl = ((n.depth - 1) * 0.42 + (i % 7) * 0.07).toFixed(2);
+      const pid = 'mp' + i;
+      const f = v => v.toFixed(2);
+      let coreCol = col, coreW = wn;
+      if (c.flow === 'flow') {
+        // Поток: от центра к краям бегут кометы с хвостом, ветки слегка подсвечены
+        if (!lite) under.push(`<path class="me-halo" data-e="${id}" d="${d}" style="stroke:${col};stroke-width:${f(wn * 3.4)}"/>`);
+        over.push(`<path class="me-tail" data-e="${id}" d="${d}" pathLength="1" style="stroke:${col};stroke-width:${f(wn * 1.6)};--dl:${dl}s"/>`);
+        over.push(`<path class="me-head" data-e="${id}" d="${d}" pathLength="1" style="stroke:${hi};stroke-width:${f(wn * 1.7)};--dl:${dl}s"/>`);
+        if (!lite) over.push(`<path class="me-headglow" data-e="${id}" d="${d}" pathLength="1" style="stroke:${col};stroke-width:${f(wn * 6)};--dl:${dl}s"/>`);
+      } else if (c.flow === 'glow') {
+        // Дыхание: мягкое свечение волной от центра наружу
+        const bd = ((n.depth - 1) * 0.38).toFixed(2);
+        under.push(`<path class="me-breath" data-e="${id}" d="${d}" style="stroke:${col};stroke-width:${f(wn * 6)};--dl:${bd}s"/>`);
+        if (!lite) under.push(`<path class="me-breath2" data-e="${id}" d="${d}" style="stroke:${col};stroke-width:${f(wn * 2.6)};--dl:${bd}s"/>`);
+      } else if (c.flow === 'sparks') {
+        // Искры: светлячки летят по веткам
+        under.push(`<path class="me-halo soft" data-e="${id}" d="${d}" style="stroke:${col};stroke-width:${f(wn * 3)}"/>`);
+        const dur = (2.6 + (i % 4) * 0.4).toFixed(2);
+        const count = lite ? 1 : (n.depth === 1 ? 3 : 2);
+        for (let k = 0; k < count; k++) {
+          const b = (n.depth * 0.3 + k * dur / count + (i % 5) * 0.13).toFixed(2);
+          const anim = `<animateMotion dur="${dur}s" begin="${b}s" repeatCount="indefinite" calcMode="spline" keyTimes="0;1" keySplines=".4 0 .6 1" keyPoints="0;1"><mpath href="#${pid}"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.12;.82;1" dur="${dur}s" begin="${b}s" repeatCount="indefinite"/>`;
+          over.push(`<g class="me-spark" opacity="0">${lite ? '' : `<circle r="${f(wn * 2.6)}" fill="${col}" opacity=".28"/>`}<circle r="${f(Math.max(1.6, wn * 0.95))}" fill="${hi}"/>${anim}</g>`);
+        }
+      } else if (c.flow === 'neon') {
+        // Неон: светящаяся трубка, иногда мерцает
+        const fl = (-((i * 1.37) % 7)).toFixed(2);
+        under.push(`<path class="me-neon-o" data-e="${id}" d="${d}" style="stroke:${col};stroke-width:${f(wn * 6.5)};--fl:${fl}s"/>`);
+        under.push(`<path class="me-neon-m" data-e="${id}" d="${d}" style="stroke:${col};stroke-width:${f(wn * 2.8)};--fl:${fl}s"/>`);
+        coreCol = hi; coreW = Math.max(1, wn * 0.75);
+        core.push(`<path class="me neon" id="${pid}" data-e="${id}" d="${d}" pathLength="1" style="stroke:${coreCol};stroke-width:${f(coreW)};--d:${n.depth};--i:${i};--fl:${fl}s"/>`);
+        return;
+      }
+      core.push(`<path class="me" id="${pid}" data-e="${id}" d="${d}" pathLength="1" style="stroke:${coreCol};stroke-width:${f(coreW)};--d:${n.depth};--i:${i};--dl:${dl}s"/>`);
     });
-    svg.innerHTML = h;
+    svg.innerHTML = `<g class="fx-under">${under.join('')}</g><g class="fx-core">${core.join('')}</g><g class="fx-over">${over.join('')}</g>`;
   }
   function updateEdges(c, ids) {
     flat.forEach(n => {
       if (!n.parent || (ids && !ids.has(n.id))) return;
       const d = edgeD(n.parent, n, c);
-      const e = svg.querySelector(`[data-e="${CSS.escape(n.id)}"]`); if (e) e.setAttribute('d', d);
-      const f = svg.querySelector(`[data-f="${CSS.escape(n.id)}"]`); if (f) f.setAttribute('d', d);
+      svg.querySelectorAll(`[data-e="${CSS.escape(n.id)}"]`).forEach(e => e.setAttribute('d', d));
     });
   }
 
@@ -516,10 +551,10 @@ const MindMap = (function () {
     opt = opt || {};
     host = el;
     const c = cfg();
-    host.className = `map-view bleed bg-${c.bg}${c.flow !== 'none' ? ' flow-' + c.flow : ''}${c.upright ? ' upright' : ''}`;
+    host.className = `map-view bleed bg-${c.bg}${c.bgMode === 'live' ? ' bg-live' : ''}${c.flow !== 'none' ? ' flow-' + c.flow : ''}${c.upright ? ' upright' : ''}`;
     host.style.setProperty('--mf', (c.font / 100).toFixed(2));
     const coverItem = Object.values(state.items).filter(i => i.status === 'watching' && (i.banner || i.coverXL || i.cover)).sort((a, b) => b.updatedAt - a.updatedAt)[0];
-    host.innerHTML = `<div class="map-bgfx"${c.bg === 'cover' && coverItem ? ` style="background-image:url('${esc(coverItem.banner || coverItem.coverXL || coverItem.cover)}')"` : ''}></div>
+    host.innerHTML = `<div class="map-bgfx"${c.bg === 'cover' && coverItem ? ` style="background-image:url('${esc(coverItem.banner || coverItem.coverXL || coverItem.cover)}')"` : ''}>${c.bgMode === 'live' ? '<i class="fx1"></i><i class="fx2"></i><i class="fx3"></i>' : ''}</div>
       <div class="map-world"><svg class="map-edges" width="1" height="1" aria-hidden="true"></svg><div class="map-nodes"></div></div>
       <div class="map-bubble" hidden></div>
       <div class="map-tools map-tools-r">
@@ -568,7 +603,8 @@ const MindMap = (function () {
     edge: [['curve', 'Плавные'], ['straight', 'Прямые'], ['elbow', 'Углом']],
     color: [['status', 'По статусу'], ['rainbow', 'Радуга'], ['cover', 'Цвет обложки'], ['solid', 'Один цвет']],
     bg: [['plain', 'Чистый'], ['dots', 'Точки'], ['grid', 'Клетка'], ['gradient', 'Градиент'], ['stars', 'Звёзды'], ['aurora', 'Сияние'], ['cover', 'Обложка']],
-    flow: [['none', 'Нет'], ['flow', 'Поток'], ['glow', 'Дыхание']],
+    flow: [['none', 'Нет'], ['flow', 'Поток'], ['glow', 'Дыхание'], ['sparks', 'Искры'], ['neon', 'Неон']],
+    bgMode: [['still', 'Неподвижный'], ['live', 'Живой']],
     show: [['all', 'Все'], ['active', 'Только текущие']]
   };
   function chips(key, c) {
@@ -587,7 +623,7 @@ const MindMap = (function () {
       <div class="mc-sec"><span class="label">Цвета</span>${chips('color', c)}
         <div class="mc-sw${c.color === 'solid' ? '' : ' dim'}">${SWATCHES.map(s => `<button type="button" class="mc-dot${c.solid === s ? ' on' : ''}" style="--c:${s}" data-mset="solid" data-v="${s}" aria-label="Цвет ${s}"></button>`).join('')}
           <label class="mc-dot custom" aria-label="Свой цвет"><input type="color" value="${esc(c.solid)}" data-mcolor="1"></label></div></div>
-      <div class="mc-sec"><span class="label">Фон</span>${chips('bg', c)}</div>
+      <div class="mc-sec"><span class="label">Фон</span>${chips('bg', c)}${chips('bgMode', c)}</div>
       <div class="mc-sec"><span class="label">Анимации</span>
         ${sw('appear', 'Появление веток', 'Ветки прорисовываются при открытии')}
         <div class="mc-row"><div class="txt"><span>Движение линий</span></div></div>${chips('flow', c)}</div>
