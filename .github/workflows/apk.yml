@@ -34,7 +34,13 @@ jobs:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
         run: |
           set -o pipefail
-          if [ -z "$KEYSTORE_B64" ]; then echo "Нет секрета KEYSTORE_B64 (Settings → Secrets and variables → Actions)" | tee build.log; exit 1; fi
+          if [ -z "$KEYSTORE_B64" ]; then
+            # без ключа только проверяем, что проект собирается
+            echo "NOKEY: нет секрета KEYSTORE_B64 (Settings → Secrets and variables → Actions)" | tee build.log
+            gradle -p android assembleDebug --stacktrace --no-daemon 2>&1 | tee -a build.log
+            echo "NOKEY: debug-сборка прошла" >> build.log
+            exit 1
+          fi
           echo "$KEYSTORE_B64" | base64 -d > android/bangumi.jks
           gradle -p android assembleRelease --stacktrace --no-daemon 2>&1 | tee build.log
           cp android/app/build/outputs/apk/release/app-release.apk Bangumi.apk
