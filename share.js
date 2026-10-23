@@ -14,7 +14,7 @@ const Share = (function () {
   const L = 'a-zа-яё';
   const B0 = `(?<![${L}0-9])`, B1 = `(?![${L}])`;
   const SITE_WORDS = new RegExp(`${B0}(?:crunchyroll|animeon(?:\\.club)?|anilibria|aniliberty|animego|jut\\.?su|yummy ?anime|animevost|youtube|netflix|shikimori|anilist|myanimelist|hianime|aniwatch|anixart|кинопоиск|rutube)${B1}`, 'gi');
-  const JUNK = new RegExp(`${B0}(?:watch(?:ing)?|now|on|смотреть|смотри|смотрю|онлайн|online|бесплатно|free|в хорошем качестве|full ?hd|hd|1080p?|720p?|subbed|dubbed|sub|dub|english|eng|rus|русская|русский|озвучк[${L}]*|субтитр[${L}]*|аниме|anime|сериал|все серии|series|tv)${B1}`, 'gi');
+  const JUNK = new RegExp(`${B0}(?:check(?:\\s+it)?\\s+out|i'?m\\s+watching|i\\s+am\\s+watching|look\\s+at|watch(?:ing)?|streaming|stream|смотрите|посмотрите|посмотри|зацени|заценить|глянь|гляньте|рекомендую|смотреть|смотри|смотрю|онлайн|online|бесплатно|free|в хорошем качестве|full ?hd|hd|1080p?|720p?|subbed|dubbed|sub|dub|english|eng|rus|русская|русский|озвучк[${L}]*|субтитр[${L}]*|аниме|anime|сериал|все серии|series|tv)${B1}`, 'gi');
   const RU_SITES = /AnimeOn|AnimeGO|Jut\.su|YummyAnime|AnimeVost|AniLibria|Anixart|Кинопоиск|Иви|Wink|Okko|Rutube|VK Видео|Shikimori/;
   // Сначала пары «сезон + серия», потом по отдельности
   const PAIRS = [
@@ -57,14 +57,25 @@ const Share = (function () {
     let t = words.replace(SITE_WORDS, ' ').replace(JUNK, ' ').replace(/[«»"“”„()[\]]/g, ' ').replace(/[!?]+/g, ' ');
     let parts = t.split(/\s[|–—•·:]\s|\s-\s|\n|\|/).map(x => x.replace(/^[\s\-–—:|,.]+|[\s\-–—:|,.]+$/g, '').replace(/\s+/g, ' ')).filter(x => new RegExp(`[${L}]{2,}`, 'i').test(x));
     let name = parts.sort((a, b) => b.replace(/[^a-zа-яё]/gi, '').length - a.replace(/[^a-zа-яё]/gi, '').length)[0] || '';
-    if (!name && path) {
+    name = name.replace(new RegExp(`\\s+(?:on|at|via|now|на|в|здесь)$`, 'i'), '').replace(new RegExp(`^(?:now|сейчас)\\s+`, 'i'), '');
+    // Название из адреса (crunchyroll.com/series/…/black-clover) — чистое, без «Check out» и прочего
+    let slug = '';
+    if (path) {
       const segs = path.split(/[/?#&=]/).map(x => { try { return decodeURIComponent(x); } catch (e) { return x; } })
         .map(x => x.replace(/^\d+[-_]/, '').replace(/[-_]\d{3,}$/, '').replace(EP_URL, ' ').replace(/season[-_]?\d+/i, ' ').replace(/[-_+.]+/g, ' ').replace(/\b(watch|anime|series|episode|ep|seriya|html?|php)\b/gi, ' ').replace(/\s+/g, ' ').trim())
-        .filter(x => /[a-zа-яё]{3,}/i.test(x));
-      name = segs.sort((a, b) => b.length - a.length)[0] || '';
+        .filter(x => /[a-zа-яё]{3,}/i.test(x) && !/^[A-Z0-9]{6,}$/.test(x.replace(/\s/g, '')));
+      slug = segs.sort((a, b) => b.length - a.length)[0] || '';
     }
+    if (slug && name) {
+      const st = norm(slug).split(' ').filter(Boolean), nt = new Set(norm(name).split(' '));
+      if (st.length && st.every(w => nt.has(w))) {
+        const m = name.match(new RegExp(st.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[^a-zа-яё0-9]+'), 'i'));
+        name = m ? m[0] : slug;
+      }
+    }
+    if (!name) name = slug;
     name = name.trim().slice(0, 80);
-    return { name, ep, season, site, link, aniId, malId };
+    return { name, ep, season, site, link, aniId, malId, slug };
   }
   /* Транслит из адресов русских сайтов обратно в кириллицу: magicheskaya bitva → магическая битва */
   function untranslit(s) {
@@ -135,6 +146,20 @@ const Share = (function () {
         const seen = new Set(res.map(m => m.id));
         (b || []).forEach(m => { if (!seen.has(m.id)) { seen.add(m.id); res.push(m); } });
         if (!res.length && cyr) { const d = await gql(Q_SEARCH, { q }); res = d.Page.media || []; }
+        // Ничего не нашлось — пробуем короче: без лишних слов в начале или в конце, потом название из адреса
+        if (!res.length) {
+          const w = q.split(/\s+/), tries = [];
+          for (let k = 1; k <= Math.min(3, w.length - 1); k++) tries.push(w.slice(k).join(' '));
+          for (let k = 1; k <= Math.min(2, w.length - 1); k++) tries.push(w.slice(0, w.length - k).join(' '));
+          if (p.slug && norm(p.slug) !== norm(q)) tries.push(p.slug);
+          for (const t of tries) {
+            if (t.replace(/[^a-zа-яё]/gi, '').length < 3) continue;
+            try {
+              res = /[а-яё]/i.test(t) ? await searchRu(t) : ((await gql(Q_SEARCH, { q: t })).Page.media || []);
+            } catch (e) { res = []; }
+            if (res.length) { S && (S.p.name = t); break; }
+          }
+        }
       }
     } catch (e) { return null; }
     rememberMedia(res);
@@ -175,7 +200,7 @@ const Share = (function () {
   function target(c) {
     if (!c) return null;
     if (c.kind === 'item') return S.p.ep || (c.it.progress || 0) + 1;
-    return S.p.ep || 1;
+    return S.p.ep || 0;
   }
 
   function rowHTML(c, i) {
@@ -205,7 +230,7 @@ const Share = (function () {
       if (ep <= (it.progress || 0)) { action = `${ICON.check}Уже отмечено до EP ${it.progress}`; note = `EP ${ep} уже засчитана. Если серия другая, поправь номер выше.`; }
       else action = `${ICON.play}Отметить EP ${ep}`;
       if (it.total && ep > it.total) note = `В этом тайтле ${it.total} серий. Возможно, это другой сезон — выбери ниже или поправь номер.`;
-    } else if (c) action = `${ICON.plus}В «Смотрю» и отметить EP ${ep}`;
+    } else if (c) action = ep ? `${ICON.plus}В «Смотрю» и отметить EP ${ep}` : `${ICON.plus}Добавить в «Смотрю»`;
     const linkShort = p.link ? p.link.replace(/^https?:\/\/(www\.)?/, '').slice(0, 46) + (p.link.length > 56 ? '…' : '') : '';
     el.innerHTML = `<div class="grab"></div>
       <div class="sh-head"><span class="sh-badge" aria-hidden="true">${ICON.ext}</span>
@@ -214,7 +239,7 @@ const Share = (function () {
       ${S.manual ? `<label class="label" for="shUrl">Ссылка или текст</label><input class="input" id="shUrl" type="text" inputmode="url" placeholder="https://… или «Магическая битва 5 серия»" value="${esc(S.raw.text || S.raw.url || '')}">` : ''}
       <div class="sh-fields">
         <label class="sh-name"><span class="label">Название</span><input class="input" id="shName" type="text" value="${esc(p.name)}" placeholder="Название тайтла"></label>
-        <label class="sh-ep"><span class="label">Серия</span><span class="stepper"><button type="button" data-shep="-1" aria-label="Меньше">−</button><input id="shEp" type="number" inputmode="numeric" min="1" value="${ep || ''}" aria-label="Номер серии"><button type="button" data-shep="1" aria-label="Больше">+</button></span></label>
+        <label class="sh-ep"><span class="label">Серия</span><span class="stepper"><button type="button" data-shep="-1" aria-label="Меньше">−</button><input id="shEp" type="number" inputmode="numeric" min="1" value="${ep || ''}" placeholder="—" aria-label="Номер серии"><button type="button" data-shep="1" aria-label="Больше">+</button></span></label>
       </div>
       ${p.season ? `<p class="hint">Нашёл в тексте: сезон ${p.season}. Учитываю при подборе.</p>` : ''}
       <div class="sh-list">
@@ -251,7 +276,8 @@ const Share = (function () {
     setTimeout(() => {
       back();
       refreshAfterChange();
-      if (!maybeComplete(it)) toast(`EP ${ep} — ${title(it)}`, { action: 'Отменить', fn: () => { setProgress(it, before); save(); refreshAfterChange(); } });
+      if (!ep) toast(`«${title(it)}» — в «Смотрю»`, { action: 'Открыть', fn: () => openDetail({ itemId: it.id }, null) });
+      else if (!maybeComplete(it)) toast(`EP ${ep} — ${title(it)}`, { action: 'Отменить', fn: () => { setProgress(it, before); save(); refreshAfterChange(); } });
     }, 220);
   }
 
