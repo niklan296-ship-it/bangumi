@@ -1270,14 +1270,8 @@ async function doSearch() {
   ui.searching = true; ui.searchError = null; ui.results = null; ui.animate = true; renderSearch();
   let res = null, err = null;
   try {
-    if (/[а-яё]/i.test(q)) {
-      try { res = await searchRu(q); } catch (e) { res = null; }
-    }
-    if (!res || !res.length) {
-      const d = await gql(Q_SEARCH, { q });
-      res = d.Page.media || [];
-      if (token === ui.searchToken) enrichRu(res).then(ok => { if (ok && token === ui.searchToken && ui.tab === 'search') { ui.animate = false; renderSearch(); } });
-    }
+    res = await SmartSearch.search(q);
+    if (token === ui.searchToken) enrichRu(res).then(ok => { if (ok && token === ui.searchToken && ui.tab === 'search') { ui.animate = false; renderSearch(); } });
   } catch (e) { err = e; }
   if (token !== ui.searchToken) return;
   ui.searching = false;
@@ -1659,6 +1653,7 @@ function renderDetailBlocks(all) {
   $('#dAboutWrap').hidden = !about.innerHTML.trim();
 
   $('#dDub').innerHTML = Dub.blockHTML(v);
+  if (v.m && v.m.externalLinks) Watch.verify(Dub.streams(v.it || v.m));
   if (v.idMal && !Dub._cache[v.idMal]) {
     const want = v.idMal;
     Dub.loadRu(want).then(() => { const c = dvm(); if (c && c.idMal === want && $('#dDub')) $('#dDub').innerHTML = Dub.blockHTML(c); });
@@ -1918,7 +1913,7 @@ function onQuickInput(e) {
     let res = null;
     try {
       if (/[а-яё]/i.test(q)) { try { res = await searchRu(q); } catch (err) { res = null; } }
-      if (!res || !res.length) { const d = await gql(Q_SEARCH, { q }); res = d.Page.media || []; enrichRu(res).then(ok => { if (ok && token === quick.token) renderQuickBody(); }); }
+      if (!res || !res.length) { res = await SmartSearch.search(q); enrichRu(res).then(ok => { if (ok && token === quick.token) renderQuickBody(); }); }
       rememberMedia(res);
     } catch (err) { res = false; }
     if (token !== quick.token || !quick.open) return;
@@ -2522,7 +2517,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 17;
+const APP_VERSION = 18;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {

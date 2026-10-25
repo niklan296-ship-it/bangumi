@@ -341,6 +341,60 @@ public class MainActivity extends Activity {
             return uri;
         }
 
+        /**
+         * Запрос в сеть без ограничений браузера (CORS): страница так находит прямую ссылку на тайтл
+         * и проверяет, живы ли ссылки. Ответ приходит в window.__nativeHttp(id, status, body).
+         */
+        @JavascriptInterface
+        public void http(final String method, final String url, final String cbId) {
+            new Thread(() -> {
+                int status = 0;
+                String body = "";
+                java.net.HttpURLConnection c = null;
+                try {
+                    c = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+                    c.setRequestMethod("HEAD".equals(method) ? "HEAD" : "GET");
+                    c.setInstanceFollowRedirects(true);
+                    c.setConnectTimeout(7000);
+                    c.setReadTimeout(9000);
+                    c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36");
+                    c.setRequestProperty("Accept-Language", "ru,en;q=0.8");
+                    status = c.getResponseCode();
+                    if (!"HEAD".equals(method)) {
+                        java.io.InputStream in = status >= 400 ? c.getErrorStream() : c.getInputStream();
+                        if (in != null) {
+                            java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                            byte[] buf = new byte[16384];
+                            int n, total = 0;
+                            while ((n = in.read(buf)) > 0 && total < 1500000) { bo.write(buf, 0, n); total += n; }
+                            in.close();
+                            body = bo.toString("UTF-8");
+                        }
+                    }
+                    String finalUrl = c.getURL().toString();
+                    if (!finalUrl.equals(url)) body = "<!--final:" + finalUrl + "-->" + body;
+                } catch (Exception e) {
+                    status = 0;
+                } finally {
+                    if (c != null) c.disconnect();
+                }
+                final String js = "window.__nativeHttp && window.__nativeHttp(" + org.json.JSONObject.quote(cbId) + "," + status + "," + org.json.JSONObject.quote(body) + ")";
+                runOnUiThread(() -> { if (web != null) web.evaluateJavascript(js, null); });
+            }).start();
+        }
+
+        /** Открыть ссылку в браузере или приложении. */
+        @JavascriptInterface
+        public void openUrl(String url) {
+            try {
+                Uri u = Uri.parse(url);
+                Intent it = "intent".equals(u.getScheme()) ? Intent.parseUri(url, Intent.URI_INTENT_SCHEME) : new Intent(Intent.ACTION_VIEW, u);
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(it);
+            } catch (Exception ignored) {
+            }
+        }
+
         /** Картинка в «Картинки/Bangumi» (видна в галерее). */
         @JavascriptInterface
         public boolean saveImage(String base64, String name) {

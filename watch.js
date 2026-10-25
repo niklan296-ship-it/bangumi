@@ -4,7 +4,10 @@
 
 const Watch = (() => {
   const enc = encodeURIComponent;
-  const viaGoogle = host => q => 'https://www.google.com/search?q=' + enc('site:' + host + ' ' + q);
+  /* Сайты без своего поиска по ссылке: DuckDuckGo «мне повезёт» (\\) сразу открывает первую страницу тайтла на этом сайте.
+     В приложении (APK) Бангуми сам читает выдачу и выбирает самую подходящую страницу. */
+  const ducky = (host, q) => 'https://duckduckgo.com/?q=' + enc('\\site:' + host + ' ' + q);
+  const viaFind = host => q => ducky(host, q);
   // ru — каким названием искать: русским (true) или английским/ромадзи
   // g — группа: en (США, английская озвучка), ru (русская), more (прочее)
   const BUILTIN = [
@@ -12,15 +15,15 @@ const Watch = (() => {
     { id: 'netflix', g: 'en', name: 'Netflix', ab: 'N', c: '#E50914', ru: false, url: q => 'https://www.netflix.com/search?q=' + enc(q) },
     { id: 'hulu', g: 'en', name: 'Hulu', ab: 'H', c: '#1CE783', fg: '#04150C', ru: false, url: q => 'https://www.hulu.com/search?q=' + enc(q) },
     { id: 'prime', g: 'en', name: 'Prime Video', ab: 'PV', c: '#1A98FF', ru: false, url: q => 'https://www.primevideo.com/search?phrase=' + enc(q) },
-    { id: 'hidive', g: 'en', name: 'HIDIVE', ab: 'HI', c: '#00AEEF', ru: false, url: viaGoogle('hidive.com') },
-    { id: 'disney', g: 'en', name: 'Disney+', ab: 'D+', c: '#113CCF', ru: false, url: viaGoogle('disneyplus.com') },
-    { id: 'max', g: 'en', name: 'Max', ab: 'MX', c: '#002BE7', ru: false, url: viaGoogle('max.com') },
+    { id: 'hidive', g: 'en', name: 'HIDIVE', ab: 'HI', c: '#00AEEF', ru: false, host: 'hidive.com', url: viaFind('hidive.com') },
+    { id: 'disney', g: 'en', name: 'Disney+', ab: 'D+', c: '#113CCF', ru: false, host: 'disneyplus.com', url: viaFind('disneyplus.com') },
+    { id: 'max', g: 'en', name: 'Max', ab: 'MX', c: '#002BE7', ru: false, host: 'max.com', url: viaFind('max.com') },
     { id: 'tubi', g: 'en', name: 'Tubi', ab: 'TU', c: '#7408FF', ru: false, url: q => 'https://tubitv.com/search/' + enc(q) },
     { id: 'appletv', g: 'en', name: 'Apple TV', ab: 'TV', c: '#2B2B2F', ru: false, url: q => 'https://tv.apple.com/search?term=' + enc(q) },
-    { id: 'retrocrush', g: 'en', name: 'RetroCrush', ab: 'RC', c: '#E8421C', ru: false, url: viaGoogle('retrocrush.tv') },
-    { id: 'animego', g: 'ru', name: 'AnimeGO', ab: 'GO', c: '#7B4DFF', ru: true, url: viaGoogle('animego.me') },
-    { id: 'animeon', g: 'ru', name: 'AnimeOn', ab: 'ON', c: '#E8364F', ru: true, url: viaGoogle('animeon.club') },
-    { id: 'jutsu', g: 'ru', name: 'Jut.su', ab: 'JS', c: '#4E9A3E', ru: true, url: viaGoogle('jut.su') },
+    { id: 'retrocrush', g: 'en', name: 'RetroCrush', ab: 'RC', c: '#E8421C', ru: false, host: 'retrocrush.tv', url: viaFind('retrocrush.tv') },
+    { id: 'animego', g: 'ru', name: 'AnimeGO', ab: 'GO', c: '#7B4DFF', ru: true, host: 'animego.me', path: /^\/anime\//, url: viaFind('animego.me') },
+    { id: 'animeon', g: 'ru', name: 'AnimeOn', ab: 'ON', c: '#E8364F', ru: false, host: 'animeon.club', url: viaFind('animeon.club') },
+    { id: 'jutsu', g: 'ru', name: 'Jut.su', ab: 'JS', c: '#4E9A3E', ru: true, host: 'jut.su', path: /^\/[a-z0-9-]+\/?/, url: viaFind('jut.su') },
     { id: 'shikimori', g: 'ru', name: 'Shikimori', ab: 'SH', c: '#3A3F4B', ru: true, url: (q, mal) => mal ? 'https://shikimori.one/animes/' + mal : 'https://shikimori.one/animes?search=' + enc(q) },
     { id: 'youtube', g: 'more', name: 'YouTube', ab: '▶', c: '#FF0033', ru: false, url: q => 'https://www.youtube.com/results?search_query=' + enc(q + ' anime') },
     { id: 'google', g: 'more', name: 'Google', ab: 'G', c: '#4285F4', ru: LANG !== 'en', url: q => 'https://www.google.com/search?q=' + enc(q + (LANG === 'en' ? ' watch online' : ' смотреть онлайн')) }
@@ -72,6 +75,93 @@ const Watch = (() => {
     u = String(u || '').trim();
     if (!/^[a-z][a-z0-9+.\-]*:/i.test(u)) return false;
     return !/^(javascript|data|vbscript|file|blob):/i.test(u);
+  }
+
+  /* ---------- Поиск страницы тайтла (в APK) ---------- */
+  const httpCb = {};
+  let httpN = 0;
+  window.__nativeHttp = (id, status, body) => { const f = httpCb[id]; if (f) { delete httpCb[id]; f({ status, body }); } };
+  const canNative = () => !!(NATIVE && typeof NATIVE.http === 'function');
+  function nhttp(method, url, ms) {
+    return new Promise(res => {
+      if (!canNative()) return res(null);
+      const id = 'h' + (++httpN);
+      const tm = setTimeout(() => { delete httpCb[id]; res(null); }, ms || 12000);
+      httpCb[id] = r => { clearTimeout(tm); res(r); };
+      try { NATIVE.http(method, url, id); } catch (e) { clearTimeout(tm); delete httpCb[id]; res(null); }
+    });
+  }
+  const SEASONISH = /(\d+\s*сезон|сезон\s*\d|season\s*\d|\d+(st|nd|rd|th)\s*season|фильм|кино|movie|\bova\b|спешл|special|recap|шорт|shorts)/i;
+  function namesOf(x) {
+    const t = x.titles || x.title || {};
+    return [(x.titles && x.titles.russian) || ruN(x.idMal), t.romaji, t.english].concat(x.synonyms || []).filter(Boolean);
+  }
+  function pickBest(items, x) {
+    const n = SmartSearch.norm;
+    const names = namesOf(x).map(n).filter(s => s.length >= 2);
+    const ours = namesOf(x).join(' ');
+    const oursSeq = SEASONISH.test(ours) || /!!$/.test(ours.trim());
+    const year = String(x.seasonYear || '');
+    const fmt = x.format || '';
+    let best = null, bestS = -1e9;
+    items.forEach((it, i) => {
+      const nt = n(it.t);
+      let s = 0;
+      names.forEach(nm => { if (nt.includes(nm)) s = Math.max(s, 50 + (nt.startsWith(nm) ? 10 : 0) + Math.min(10, nm.length / 2)); });
+      if (SEASONISH.test(it.t) && !oursSeq && fmt !== 'MOVIE') s -= 25;
+      if (fmt === 'MOVIE' && /фильм|кино|movie/i.test(it.t)) s += 12;
+      if (year && it.t.includes(year)) s += 8;
+      s -= i * 1.5;
+      if (s > bestS) { bestS = s; best = it; }
+    });
+    return best && bestS >= 25 ? best.url : (items[0] && items[0].url) || null;
+  }
+  async function resolve(host, path, q, x) {
+    const key = host + '|' + q;
+    resolve.cache = resolve.cache || {};
+    if (resolve.cache[key]) return resolve.cache[key];
+    const r = await nhttp('GET', 'https://html.duckduckgo.com/html/?q=' + enc('site:' + host + ' ' + q));
+    if (!r || r.status !== 200 || !r.body) return null;
+    const doc = new DOMParser().parseFromString(r.body, 'text/html');
+    const items = [...doc.querySelectorAll('a.result__a')].map(a => {
+      let h = a.getAttribute('href') || '';
+      const m = h.match(/[?&]uddg=([^&]+)/);
+      if (m) { try { h = decodeURIComponent(m[1]); } catch (e) { /* как есть */ } }
+      if (h.startsWith('//')) h = 'https:' + h;
+      return { url: h, t: a.textContent.trim() };
+    }).filter(i => {
+      try { const u = new URL(i.url); return (u.hostname === host || u.hostname.endsWith('.' + host)) && (!path || path.test(u.pathname)); } catch (e) { return false; }
+    });
+    const url = pickBest(items, x);
+    if (url) resolve.cache[key] = url;
+    return url;
+  }
+  /* Открыть сайт: в APK — сразу страница тайтла, иначе — «мне повезёт» */
+  async function openFound(el, host, path, ru) {
+    const d = !W && ui.detailStack.length ? dvm() : null;
+    const x = (W && W.x) || (d && (d.it || d.m));
+    if (!x) return;
+    const q = queryFor(x, ru);
+    el.classList.add('busy');
+    const url = await resolve(host, path, q, x);
+    el.classList.remove('busy');
+    NATIVE.openUrl(url || ducky(host, q));
+    setTimeout(() => { if (ui.overlays[ui.overlays.length - 1] === 'sheet') back(); }, 300);
+  }
+  /* Проверка точных ссылок (в APK): мёртвые прячем, живые помечаем */
+  const linkState = {};
+  function verify(links) {
+    if (!canNative()) return;
+    links.filter(l => !l.find && !(l.url in linkState)).forEach(l => {
+      linkState[l.url] = 'wait';
+      nhttp('GET', l.url, 10000).then(r => {
+        linkState[l.url] = !r ? 'unknown' : r.status === 404 || r.status === 410 ? 'dead' : r.status >= 200 && r.status < 400 ? 'ok' : 'unknown';
+        if (r && r.status === 200 && /<title>[^<]*(404|not found|не найден|page not found)/i.test(r.body || '')) linkState[l.url] = 'dead';
+        if (W && W.mode === 'pick') rerender();
+        const det = $('#dDub'); const c = det && dvm();
+        if (c) det.innerHTML = Dub.blockHTML(c);
+      });
+    });
   }
 
   /* ---------- Кнопка ---------- */
@@ -129,10 +219,11 @@ const Watch = (() => {
   }
   /* Точные ссылки на этот тайтл (AniList + Shikimori) */
   function officialHTML() {
-    const links = Dub.streams(W.x);
+    const links = Dub.streams(W.x).filter(l => linkState[l.url] !== 'dead');
+    verify(links);
     if (!links.length) return '';
     return `<div class="label ws-gl">${T('Точно есть на')}</div><div class="ws-off">${links.map(l =>
-      `<a class="ws-chip" href="${esc(l.url)}" target="_blank" rel="noopener" data-ws-off="1" style="--c:${esc(l.color || '#888')}"><span class="ws-dot"></span>${esc(l.site)}${l.lang ? `<small>${esc(l.lang)}</small>` : ''}</a>`).join('')}</div>`;
+      `<a class="ws-chip" href="${esc(l.url)}" target="_blank" rel="noopener" ${l.find ? `data-ws-find="${esc(l.find)}"` : 'data-ws-off="1"'} style="--c:${esc(l.color || '#888')}"><span class="ws-dot"></span>${esc(l.site)}${linkState[l.url] === 'ok' ? '<i class="ws-ok-mark">✓</i>' : ''}${l.lang ? `<small>${esc(l.lang)}</small>` : ''}</a>`).join('')}</div>`;
   }
   function html() {
     if (W.mode === 'add') return addHTML();
@@ -204,11 +295,15 @@ const Watch = (() => {
   }
 
   document.addEventListener('click', e => {
+    const fnd = e.target.closest('[data-ws-find]');
+    if (fnd && canNative()) { e.preventDefault(); buzz(10); openFound(fnd, fnd.dataset.wsFind, null, false); return; }
     const off = e.target.closest('[data-ws-off]');
     if (off) { buzz(10); setTimeout(() => { if (ui.overlays[ui.overlays.length - 1] === 'sheet') back(); }, 350); return; }
     const go = e.target.closest('[data-ws-go]');
     if (go) {
       cfg().watchLast = go.dataset.wsGo;
+      const site = BUILTIN.find(z => z.id === go.dataset.wsGo);
+      if (site && site.host && canNative()) { e.preventDefault(); save(); buzz(10); openFound(go, site.host, site.path, site.ru); return; }
       save();
       buzz(10);
       // ссылка откроется сама; лист закрываем, чтобы по возвращении было чисто
@@ -229,6 +324,6 @@ const Watch = (() => {
   });
   document.addEventListener('input', e => { if (e.target.id === 'wsTpl') checkDraft(); });
 
-  return { open, manage, btnHTML, targetFrom, summary, urlFor, sites, normTpl, okUrl };
+  return { open, manage, btnHTML, targetFrom, summary, urlFor, sites, normTpl, okUrl, ducky, verify, isDead: u => linkState[u] === 'dead', isOk: u => linkState[u] === 'ok', _pick: pickBest };
 })();
 function watchBtnHTML(x, cls) { return Watch.btnHTML(x, cls); }

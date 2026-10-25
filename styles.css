@@ -1665,3 +1665,8 @@ html.lite .ach-rays { animation: none; }
 .spinner.sm { width: 16px; height: 16px; border-width: 2px; }
 [data-skin="manga"] .dub-card, [data-skin="manga"] .dub-chip, [data-skin="manga"] .ws-chip { border-radius: 0; border: 2px solid currentColor; }
 [data-skin="manga"] .dub-lang, [data-skin="quest"] .dub-lang, [data-skin="quest"] .dub-card, [data-skin="quest"] .dub-chip, [data-skin="quest"] .ws-chip { border-radius: 0; }
+.ws-tile.busy, .ws-chip.busy, .dub-chip.busy { pointer-events: none; opacity: .75; }
+.ws-tile.busy .ws-ico { animation: wsPulse .8s ease-in-out infinite alternate; }
+.ws-chip.busy::after, .dub-chip.busy::after { content: ''; width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; border-top-color: transparent; animation: spin .7s linear infinite; }
+@keyframes wsPulse { to { transform: scale(.86); opacity: .6; } }
+.ws-ok-mark { font-style: normal; color: #3DDC97; font-weight: 800; font-size: 12px; }

@@ -15,6 +15,8 @@ const Dub = (() => {
     crunchyroll: ['Crunchyroll', '#F47521', ''], netflix: ['Netflix', '#E50914', ''], hulu: ['Hulu', '#1CE783', ''], amazon: ['Prime Video', '#1A98FF', ''],
     hidive: ['HIDIVE', '#00AEEF', ''], youtube: ['YouTube', '#FF0033', ''], disney_plus: ['Disney+', '#113CCF', '']
   };
+  const ALLOW = /crunchyroll|netflix|hulu|amazon|prime video|disney|^max$|hbo|tubi|apple tv|youtube|retrocrush|bilibili tv|adult swim|peacock|hidive|muse asia|ani-one|pluto|roku/i;
+  const DEAD = /funimation|vrv|wakanim|animelab/i;
   const LANG_SHORT = { English: 'EN', Russian: 'RU', Japanese: 'JP', Spanish: 'ES', Portuguese: 'PT', French: 'FR', German: 'DE', Italian: 'IT', Korean: 'KO', Chinese: 'ZH', Arabic: 'AR', Indonesian: 'ID', Thai: 'TH' };
 
   async function shikiRaw(query) {
@@ -58,11 +60,20 @@ const Dub = (() => {
   function streams(x) {
     const out = [], seen = new Set();
     const m = mediaOf(x);
+    const t = (m && m.title) || (x && x.titles) || {};
+    const romaji = t.english || t.romaji || '';
     ((m && m.externalLinks) || []).forEach(l => {
       if (l.type !== 'STREAMING' || l.isDisabled || !l.url) return;
+      // только площадки, доступные за пределами Китая/Кореи, и без закрытых сервисов
+      if (!ALLOW.test(l.site) || DEAD.test(l.site)) return;
+      let host = '';
+      try { host = new URL(l.url).hostname; } catch (e) { return; }
+      if (/(^|\.)bilibili\.com$/.test(host)) return;
+      // у HIDIVE старые ссылки AniList ведут на 404 — ищем страницу заново
+      if (/hidive/i.test(l.site) && typeof Watch !== 'undefined') l = Object.assign({}, l, { url: Watch.ducky('hidive.com', romaji), find: 'hidive.com' });
       const k = (l.site + '|' + (l.language || '')).toLowerCase();
       if (seen.has(k)) return; seen.add(k);
-      out.push({ site: l.site, url: l.url, lang: LANG_SHORT[l.language] || (l.language ? l.language.slice(0, 2).toUpperCase() : ''), color: l.color || '#888', note: l.notes || '' });
+      out.push({ site: l.site, url: l.url, find: l.find || '', lang: LANG_SHORT[l.language] || (l.language ? l.language.slice(0, 2).toUpperCase() : ''), color: l.color || '#888', note: l.notes || '' });
     });
     const mal = (x && x.idMal) || (m && m.idMal);
     const ru = mal && cache[mal];
@@ -74,7 +85,7 @@ const Dub = (() => {
       seen.add(key);
       out.push({ site: k[0], url: l.url, lang: k[2], color: k[1] });
     });
-    return out;
+    return typeof Watch !== 'undefined' ? out.filter(o => !Watch.isDead(o.url)) : out;
   }
 
   function enInfo(m) {
@@ -88,7 +99,7 @@ const Dub = (() => {
     return { has: voices.length > 0, voices: voices.slice(0, 4), lic };
   }
 
-  const chip = (label, url, color, small) => `<a class="dub-chip" href="${esc(url)}" target="_blank" rel="noopener" style="--c:${esc(color || '#888')}"><span class="ws-dot"></span>${esc(label)}${small ? `<small>${esc(small)}</small>` : ''}</a>`;
+  const chip = (label, url, color, small, find) => `<a class="dub-chip" href="${esc(url)}" target="_blank" rel="noopener" ${find ? `data-ws-find="${esc(find)}"` : ''} style="--c:${esc(color || '#888')}"><span class="ws-dot"></span>${esc(label)}${typeof Watch !== 'undefined' && Watch.isOk(url) ? '<i class="ws-ok-mark">✓</i>' : ''}${small ? `<small>${esc(small)}</small>` : ''}</a>`;
 
   function blockHTML(v) {
     if (!v || (!v.aniId && !v.idMal)) return '';
@@ -119,7 +130,7 @@ const Dub = (() => {
     return `<section class="section dub"><div class="section-head"><h2>${T('Озвучка и где смотреть')}</h2></div>
       <div class="dub-card">
         <div class="dub-row"><span class="dub-lang en">EN</span><div class="dub-body"><div class="dub-h"><span>${T('Английская озвучка')}</span>${enTxt}</div>${enMeta}
-          ${enStreams.length ? `<div class="dub-chips">${enStreams.map(s => chip(s.site, s.url, s.color, /dub/i.test(s.note) ? 'DUB' : s.lang)).join('')}</div>` : ''}</div></div>
+          ${enStreams.length ? `<div class="dub-chips">${enStreams.map(s => chip(s.site, s.url, s.color, /dub/i.test(s.note) ? 'DUB' : s.lang, s.find)).join('')}</div>` : ''}</div></div>
         <div class="dub-row"><span class="dub-lang ru">RU</span><div class="dub-body"><div class="dub-h"><span>${T('Русская озвучка')}</span>${ruTxt}</div>
           ${ruDub}${ruSub}
           ${ruStreams.length ? `<div class="dub-meta"><span>${T('Официально')}</span></div><div class="dub-chips">${ruStreams.map(s => chip(s.site, s.url, s.color)).join('')}</div>` : ''}</div></div>
