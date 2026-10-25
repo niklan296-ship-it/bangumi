@@ -1606,3 +1606,32 @@ html.lite .ach-rays { animation: none; }
 [data-skin="manga"] .sw-b, [data-skin="quest"] .sw-b { border-radius: 0; }
 .setting:has(.seg-wrap) { flex-direction: column; align-items: stretch; }
 .setting .seg.seg-wrap { flex-wrap: wrap; align-self: flex-start; }
+
+/* ================= Где смотреть ================= */
+.watch-btn { cursor: pointer; }
+.ws-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0 12px; }
+.ws-tile { position: relative; display: grid; justify-items: center; gap: 4px; padding: 14px 6px 12px; border-radius: 18px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink); text-decoration: none; text-align: center; min-width: 0; transition: transform .15s, background .2s, opacity .2s; }
+.ws-tile:active { transform: scale(.94); }
+.ws-tile b { font-size: 13px; line-height: 1.2; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-tile small { font-size: 11px; color: var(--muted); }
+.ws-ico { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--c, var(--surface-2)); color: #fff;
+  font: 800 16px/1 var(--f-display); letter-spacing: -.02em; box-shadow: 0 8px 18px -10px var(--c, #000), inset 0 1px 0 rgba(255,255,255,.25); }
+.ws-ico .ico { width: 22px; height: 22px; }
+.ws-add { border-style: dashed; background: transparent; }
+.ws-add .ws-ico { background: var(--surface-2); color: var(--accent-ink); box-shadow: none; }
+.ws-tile.off { opacity: .4; }
+.ws-tile.off .ws-ico { filter: grayscale(1); }
+.ws-x { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center;
+  background: var(--surface-3, var(--surface-2)); color: var(--ink); }
+.ws-x .ico { width: 14px; height: 14px; }
+.ws-tile.off .ws-x { opacity: 1; }
+.ws-foot { justify-content: center; }
+.ws-how { margin: 8px 0 12px; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.ws-how b { color: var(--ink); }
+.ws-ok { color: #3DDC97; word-break: break-all; }
+.ws-bad { color: #FF5E5B; }
+.ws-lang { padding: 6px 0 2px; flex-wrap: wrap; gap: 8px; }
+[data-skin="manga"] .ws-tile { border-radius: 0; border: 2px solid currentColor; box-shadow: 3px 3px 0 currentColor; }
+[data-skin="manga"] .ws-ico { border-radius: 0; }
+[data-skin="quest"] .ws-tile, [data-skin="quest"] .ws-ico { border-radius: 0; }

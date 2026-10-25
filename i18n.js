@@ -244,6 +244,16 @@ const EN = {
   'Сезон пролистан!': 'Season done!', 'Здесь всё уже просмотрено': 'You’ve seen everything here', 'В планы:': 'Planned:', 'Ничего нового не добавлено': 'Nothing new added',
   'Листай новый сезон карточками — вправо в планы, влево мимо': 'Swipe through the new season — right to plan, left to skip',
 
+  // Где смотреть
+  'Где смотреть?': 'Where to watch?', 'Добавить': 'Add', 'Настроить': 'Set up', 'свой': 'yours', 'по-русски': 'in Russian', 'по-английски': 'in English', 'Показать': 'Show',
+  'Скрой ненужные сайты и добавь свои — сайт или приложение.': 'Hide sites you don’t use and add your own — a site or an app.',
+  'сайт или приложение': 'site or app', 'Изменить список': 'Edit list', 'Добавить сайт': 'Add a site',
+  'Открой сайт или приложение и найди там любое аниме, например': 'Open the site or app and search for any anime, for example',
+  'Скопируй ссылку на страницу с результатами и вставь сюда.': 'Copy the link of the results page and paste it here.',
+  'Например, AnimeVost': 'E.g. AnimeVost', 'Ссылка поиска': 'Search link', 'Искать по названию': 'Search by title in', 'Русскому': 'Russian', 'Английскому': 'English',
+  'Отмена': 'Cancel', 'Такую ссылку открыть нельзя.': 'That link can’t be opened.', 'Отлично — название подставится сюда:': 'Great — the title will go here:',
+  'Название допишется в конец ссылки.': 'The title will be added to the end of the link.', 'Вставь ссылку поиска': 'Paste a search link', 'Ничего не выбрано': 'Nothing selected',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'

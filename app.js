@@ -485,37 +485,6 @@ async function syncAll(quiet) {
   if (ui.detailStack.length) renderDetailBlocks();
 }
 
-/* ---------- «Смотреть»: открыть тайтл на своём сайте ---------- */
-const enc = encodeURIComponent;
-const siteSearch = host => q => 'https://www.google.com/search?q=' + enc('site:' + host + ' ' + q);
-const WATCH_SITES = {
-  animego: { name: 'AnimeGO', ru: true, url: siteSearch('animego.me') },
-  animeon: { name: 'AnimeOn', ru: true, url: siteSearch('animeon.club') },
-  jutsu: { name: 'Jut.su', ru: true, url: siteSearch('jut.su') },
-  crunchyroll: { name: 'Crunchyroll', ru: false, url: q => 'https://www.crunchyroll.com/search?q=' + enc(q) },
-  shikimori: { name: 'Shikimori', ru: true, url: (q, mal) => mal ? 'https://shikimori.one/animes/' + mal : 'https://shikimori.one/animes?search=' + enc(q) },
-  custom: { name: L('Свой', 'Custom'), ru: LANG !== 'en', url: q => {
-    const tpl = (state.settings.watchTpl || '').trim();
-    if (!/^https?:\/\//i.test(tpl)) return '';
-    return tpl.includes('{q}') ? tpl.replace('{q}', enc(q)) : tpl + enc(q);
-  } }
-};
-const watchSite = () => WATCH_SITES[state.settings.watchSite] ? state.settings.watchSite : (LANG === 'en' ? 'crunchyroll' : 'animego');
-function watchUrl(x) {
-  // x — пункт списка или медиа AniList
-  const site = WATCH_SITES[watchSite()];
-  const t = x.titles || x.title || {};
-  const mal = x.idMal || null;
-  const ru = (x.titles && x.titles.russian) || ruN(mal);
-  const q = site.ru ? (ru || t.romaji || t.english || x.customTitle || '') : (t.english || t.romaji || x.customTitle || '');
-  return q || mal ? site.url(q, mal) : '';
-}
-function watchBtnHTML(x, cls) {
-  const url = x && watchUrl(x);
-  if (!url) return '';
-  return `<a class="btn ${cls || ''} watch-btn" href="${esc(url)}" target="_blank" rel="noopener" data-watch="1">${ICON.play}<span>${T('Смотреть')}</span><small>${esc(WATCH_SITES[watchSite()].name)}</small></a>`;
-}
-
 /* ---------- Продолжения ---------- */
 const relEdges = (m, type) => ((m && m.relations && m.relations.edges) || [])
   .filter(e => e.relationType === type && e.node && e.node.type === 'ANIME' && e.node.format !== 'MUSIC').map(e => e.node);
@@ -1486,8 +1455,8 @@ function renderProfile() {
       <div class="label">${T("Вид")}</div>
       <div class="card group">
         <div class="setting"><div class="txt"><span>${LANG === 'en' ? 'Language' : 'Язык'}</span></div>${seg('set-ui-lang', LANG, [['ru', 'Русский'], ['en', 'English']])}</div>
-        <div class="setting"><div class="txt"><span>${T("Где смотрю")}</span><small>${T("Кнопка «Смотреть» откроет тайтл там")}</small></div>${seg('set-watch', watchSite(), Object.entries(WATCH_SITES).map(([k, x]) => [k, x.name])).replace('class="seg"', 'class="seg seg-wrap"')}
-          ${watchSite() === 'custom' ? `<input class="input watch-tpl" id="watchTpl" type="url" inputmode="url" placeholder="https://site.com/search?q={q}" value="${esc(state.settings.watchTpl || '')}">` : ''}</div>
+        <div class="setting"><div class="txt"><span>${T("Где смотрю")}</span><small>${Watch.summary()}</small></div>
+          <button class="btn small" type="button" data-action="watch-manage">${T("Настроить")}</button></div>
         <div class="setting"><div class="txt"><span>${T("Названия")}</span></div>${seg('set-lang', st.titleLang, [['russian', T('Рус')], ['romaji', T('Ромадзи')], ['english', 'Eng']])}</div>
         <div class="setting"><div class="txt"><span>${T("Быстрый план")}</span><small>${T("Два свайпа вправо от левого края экрана открывают окошко «Быстро в расписание»")}</small></div>
           <label class="switch"><input type="checkbox" id="swEdge" ${st.edgeGesture !== false ? 'checked' : ''} aria-label="${T("Жест быстрого плана")}"><span></span></label></div>
@@ -2473,7 +2442,8 @@ document.addEventListener('click', e => {
     }
     case 'set-lang': state.settings.titleLang = t.dataset.v; save(); renderProfile(); break;
     case 'set-ui-lang': setUiLang(t.dataset.v); break;
-    case 'set-watch': state.settings.watchSite = t.dataset.v; save(); buzz(8); renderProfile(); if (t.dataset.v === 'custom') setTimeout(() => { const i = $('#watchTpl'); if (i && !i.value) i.focus(); }, 60); break;
+    case 'watch-manage': Watch.manage(); break;
+    case 'watch-open': Watch.open(Watch.targetFrom(t)); break;
     case 'set-theme': state.settings.theme = t.dataset.v; applyTheme(); save(); renderProfile(); break;
     case 'refresh': syncAll(false); break;
     case 'export': exportData(); break;
@@ -2490,7 +2460,6 @@ document.addEventListener('keydown', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.matches('#swEp, #swPlan')) { toggleNotify(t.dataset.k, t.checked, t); return; }
-  if (t.id === 'watchTpl') { state.settings.watchTpl = t.value.trim(); save(); toast(T('Сайт сохранён')); return; }
   if (t.id === 'swAutoBk') { state.settings.autoBackup = t.checked; save(); buzz(8); if (t.checked) maybeAutoBackup(true); else toast(T('Автокопия выключена')); return; }
   if (t.id === 'swGlass') { state.settings.glass = t.checked; applyTheme(); save(); buzz(8); return; }
   if (t.id === 'swEdge') { state.settings.edgeGesture = t.checked; save(); buzz(8); toast(t.checked ? T('Жест включён: два свайпа от левого края') : T('Жест выключен')); return; }
@@ -2544,7 +2513,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 15;
+const APP_VERSION = 16;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {
