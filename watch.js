@@ -6,16 +6,26 @@ const Watch = (() => {
   const enc = encodeURIComponent;
   const viaGoogle = host => q => 'https://www.google.com/search?q=' + enc('site:' + host + ' ' + q);
   // ru — каким названием искать: русским (true) или английским/ромадзи
+  // g — группа: en (США, английская озвучка), ru (русская), more (прочее)
   const BUILTIN = [
-    { id: 'crunchyroll', name: 'Crunchyroll', ab: 'CR', c: '#F47521', ru: false, url: q => 'https://www.crunchyroll.com/search?q=' + enc(q) },
-    { id: 'animego', name: 'AnimeGO', ab: 'GO', c: '#7B4DFF', ru: true, url: viaGoogle('animego.me') },
-    { id: 'animeon', name: 'AnimeOn', ab: 'ON', c: '#E8364F', ru: true, url: viaGoogle('animeon.club') },
-    { id: 'jutsu', name: 'Jut.su', ab: 'JS', c: '#4E9A3E', ru: true, url: viaGoogle('jut.su') },
-    { id: 'youtube', name: 'YouTube', ab: '▶', c: '#FF0033', ru: false, url: q => 'https://www.youtube.com/results?search_query=' + enc(q + ' anime') },
-    { id: 'netflix', name: 'Netflix', ab: 'N', c: '#E50914', ru: false, url: q => 'https://www.netflix.com/search?q=' + enc(q) },
-    { id: 'shikimori', name: 'Shikimori', ab: 'SH', c: '#3A3F4B', ru: true, url: (q, mal) => mal ? 'https://shikimori.one/animes/' + mal : 'https://shikimori.one/animes?search=' + enc(q) },
-    { id: 'google', name: 'Google', ab: 'G', c: '#4285F4', ru: LANG !== 'en', url: q => 'https://www.google.com/search?q=' + enc(q + (LANG === 'en' ? ' watch online' : ' смотреть онлайн')) }
+    { id: 'crunchyroll', g: 'en', name: 'Crunchyroll', ab: 'CR', c: '#F47521', ru: false, url: q => 'https://www.crunchyroll.com/search?q=' + enc(q) },
+    { id: 'netflix', g: 'en', name: 'Netflix', ab: 'N', c: '#E50914', ru: false, url: q => 'https://www.netflix.com/search?q=' + enc(q) },
+    { id: 'hulu', g: 'en', name: 'Hulu', ab: 'H', c: '#1CE783', fg: '#04150C', ru: false, url: q => 'https://www.hulu.com/search?q=' + enc(q) },
+    { id: 'prime', g: 'en', name: 'Prime Video', ab: 'PV', c: '#1A98FF', ru: false, url: q => 'https://www.primevideo.com/search?phrase=' + enc(q) },
+    { id: 'hidive', g: 'en', name: 'HIDIVE', ab: 'HI', c: '#00AEEF', ru: false, url: viaGoogle('hidive.com') },
+    { id: 'disney', g: 'en', name: 'Disney+', ab: 'D+', c: '#113CCF', ru: false, url: viaGoogle('disneyplus.com') },
+    { id: 'max', g: 'en', name: 'Max', ab: 'MX', c: '#002BE7', ru: false, url: viaGoogle('max.com') },
+    { id: 'tubi', g: 'en', name: 'Tubi', ab: 'TU', c: '#7408FF', ru: false, url: q => 'https://tubitv.com/search/' + enc(q) },
+    { id: 'appletv', g: 'en', name: 'Apple TV', ab: 'TV', c: '#2B2B2F', ru: false, url: q => 'https://tv.apple.com/search?term=' + enc(q) },
+    { id: 'retrocrush', g: 'en', name: 'RetroCrush', ab: 'RC', c: '#E8421C', ru: false, url: viaGoogle('retrocrush.tv') },
+    { id: 'animego', g: 'ru', name: 'AnimeGO', ab: 'GO', c: '#7B4DFF', ru: true, url: viaGoogle('animego.me') },
+    { id: 'animeon', g: 'ru', name: 'AnimeOn', ab: 'ON', c: '#E8364F', ru: true, url: viaGoogle('animeon.club') },
+    { id: 'jutsu', g: 'ru', name: 'Jut.su', ab: 'JS', c: '#4E9A3E', ru: true, url: viaGoogle('jut.su') },
+    { id: 'shikimori', g: 'ru', name: 'Shikimori', ab: 'SH', c: '#3A3F4B', ru: true, url: (q, mal) => mal ? 'https://shikimori.one/animes/' + mal : 'https://shikimori.one/animes?search=' + enc(q) },
+    { id: 'youtube', g: 'more', name: 'YouTube', ab: '▶', c: '#FF0033', ru: false, url: q => 'https://www.youtube.com/results?search_query=' + enc(q + ' anime') },
+    { id: 'google', g: 'more', name: 'Google', ab: 'G', c: '#4285F4', ru: LANG !== 'en', url: q => 'https://www.google.com/search?q=' + enc(q + (LANG === 'en' ? ' watch online' : ' смотреть онлайн')) }
   ];
+  const GROUPS = [['mine', L('Свои', 'Yours')], ['en', L('США · английская озвучка', 'US · English dub')], ['ru', L('Русская озвучка', 'Russian dub')], ['more', L('Ещё', 'More')]];
   const PALETTE = ['#FF7A45', '#3DDC97', '#5AC8FA', '#B18CFF', '#FF6FAE', '#FFC23D', '#7C9DFF', '#E056FD'];
   let W = null; // { x, mode: 'pick' | 'edit' | 'add' }
 
@@ -32,7 +42,7 @@ const Watch = (() => {
   };
   function sites(all) {
     const st = cfg();
-    const custom = st.watchSites.map((s, k) => ({ id: s.id, name: s.name, ab: abbr(s.name), c: s.c || PALETTE[k % PALETTE.length], ru: s.ru, custom: true, tpl: s.tpl,
+    const custom = st.watchSites.map((s, k) => ({ id: s.id, g: 'mine', name: s.name, ab: abbr(s.name), c: s.c || PALETTE[k % PALETTE.length], ru: s.ru, custom: true, tpl: s.tpl,
       url: q => buildTpl(s.tpl, q) }));
     let list = custom.concat(BUILTIN);
     if (!all) list = list.filter(s => !st.watchHidden[s.id]);
@@ -92,6 +102,11 @@ const Watch = (() => {
     W = { x, mode: 'pick' };
     buzz(8);
     showSheet(html());
+    // подтягиваем точные ссылки на этот тайтл, если их ещё нет
+    const ani = x.anilistId || (!x.titles && x.id);
+    const again = () => { if (W && W.x === x && W.mode === 'pick') rerender(); };
+    if (ani && !(ui.media[ani] || {}).externalLinks) loadDetailMedia(ani).then(again);
+    if (x.idMal) Dub.loadRu(x.idMal).then(again);
   }
   function manage() {
     W = { x: null, mode: 'edit' };
@@ -100,7 +115,7 @@ const Watch = (() => {
   function rerender() { const sh = document.querySelector('#sheetWrap .sheet'); if (sh && W) { sh.classList.add('no-anim'); sh.innerHTML = html(); } }
 
   function tile(s, edit) {
-    const style = `style="--c:${esc(s.c)}"`;
+    const style = `style="--c:${esc(s.c)}${s.fg ? ';--fg:' + s.fg : ''}"`;
     const hidden = cfg().watchHidden[s.id];
     const inner = `<span class="ws-ico">${esc(s.ab)}</span><b>${esc(s.name)}</b><small>${s.custom ? T('свой') : s.ru ? T('по-русски') : T('по-английски')}</small>`;
     if (edit) {
@@ -112,6 +127,13 @@ const Watch = (() => {
     if (!url || !okUrl(url)) return '';
     return `<a class="ws-tile" ${style} href="${esc(url)}" target="_blank" rel="noopener" data-ws-go="${esc(s.id)}">${inner}</a>`;
   }
+  /* Точные ссылки на этот тайтл (AniList + Shikimori) */
+  function officialHTML() {
+    const links = Dub.streams(W.x);
+    if (!links.length) return '';
+    return `<div class="label ws-gl">${T('Точно есть на')}</div><div class="ws-off">${links.map(l =>
+      `<a class="ws-chip" href="${esc(l.url)}" target="_blank" rel="noopener" data-ws-off="1" style="--c:${esc(l.color || '#888')}"><span class="ws-dot"></span>${esc(l.site)}${l.lang ? `<small>${esc(l.lang)}</small>` : ''}</a>`).join('')}</div>`;
+  }
   function html() {
     if (W.mode === 'add') return addHTML();
     const edit = W.mode === 'edit';
@@ -120,8 +142,9 @@ const Watch = (() => {
     return `<div class="grab"></div>
       <h2>${edit ? T('Где смотрю') : T('Где смотреть?')}</h2>
       <p class="hint">${edit ? T('Скрой ненужные сайты и добавь свои — сайт или приложение.') : esc(t)}</p>
-      <div class="ws-grid">${list.map(s => tile(s, edit)).join('')}
-        <button type="button" class="ws-tile ws-add" data-ws="add"><span class="ws-ico">${ICON.plus}</span><b>${T('Добавить')}</b><small>${T('сайт или приложение')}</small></button></div>
+      ${edit ? '' : officialHTML()}
+      ${GROUPS.map(([g, name]) => { const tiles = list.filter(s => s.g === g).map(s => tile(s, edit)).join(''); return tiles ? `<div class="label ws-gl">${name}</div><div class="ws-grid">${tiles}</div>` : ''; }).join('')}
+      <div class="ws-grid"><button type="button" class="ws-tile ws-add" data-ws="add"><span class="ws-ico">${ICON.plus}</span><b>${T('Добавить')}</b><small>${T('сайт или приложение')}</small></button></div>
       <div class="btn-row ws-foot">${edit ? (W.x ? `<button class="btn" type="button" data-ws="done">${T('Готово')}</button>` : '')
         : `<button class="btn small line" type="button" data-ws="edit">${T('Изменить список')}</button>`}</div>`;
   }
@@ -181,6 +204,8 @@ const Watch = (() => {
   }
 
   document.addEventListener('click', e => {
+    const off = e.target.closest('[data-ws-off]');
+    if (off) { buzz(10); setTimeout(() => { if (ui.overlays[ui.overlays.length - 1] === 'sheet') back(); }, 350); return; }
     const go = e.target.closest('[data-ws-go]');
     if (go) {
       cfg().watchLast = go.dataset.wsGo;

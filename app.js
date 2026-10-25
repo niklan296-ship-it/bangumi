@@ -43,7 +43,10 @@ const Q_BY_IDS = `query($ids:[Int]){Page(perPage:50){media(id_in:$ids){${MEDIA_F
 const Q_BY_MAL = `query($ids:[Int]){Page(perPage:50){media(idMal_in:$ids,type:ANIME){${MEDIA_DESC}}}}`;
 const Q_DETAIL = `query($id:Int){Media(id:$id){${MEDIA_DESC} source studios(isMain:true){nodes{name}}
   startDate{year month day} recommendations(perPage:12,sort:RATING_DESC){nodes{mediaRecommendation{${LITE}}}}
-  relations{edges{relationType node{${LITE} type}}}}}`;
+  relations{edges{relationType node{${LITE} type}}}
+  externalLinks{site url type language notes color isDisabled}
+  chars:characters(sort:[ROLE,RELEVANCE,ID],perPage:8){edges{node{name{full}} voiceActors(language:ENGLISH,sort:[RELEVANCE,ID]){name{full}}}}
+  allStudios:studios{edges{isMain node{name isAnimationStudio}}}}}`;
 const Q_REL = `query($ids:[Int]){Page(perPage:50){media(id_in:$ids){id relations{edges{relationType node{${LITE} type}}}}}}`;
 const SHIKI = ['https://shikimori.io', 'https://shikimori.one'];
 
@@ -1591,6 +1594,7 @@ function mountDetail(anim, vtCover) {
       <div id="dScore"></div>
       <div id="dPlan"></div>
       <section class="section" id="dAboutWrap"><div class="section-head"><h2>${T("О тайтле")}</h2></div><div id="dAbout" class="view" style="gap:14px"></div></section>
+      <div id="dDub"></div>
       <div id="dPersonal"></div>
       <div id="dSeq"></div>
       <div id="dRecs"></div>
@@ -1654,6 +1658,11 @@ function renderDetailBlocks(all) {
     (kv.length ? `<dl class="kv">${kv.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>` : '');
   $('#dAboutWrap').hidden = !about.innerHTML.trim();
 
+  $('#dDub').innerHTML = Dub.blockHTML(v);
+  if (v.idMal && !Dub._cache[v.idMal]) {
+    const want = v.idMal;
+    Dub.loadRu(want).then(() => { const c = dvm(); if (c && c.idMal === want && $('#dDub')) $('#dDub').innerHTML = Dub.blockHTML(c); });
+  }
   const rel = relEdges(m, 'PREQUEL').map(x => ({ x, k: T('Предыдущее') })).concat(relEdges(m, 'SEQUEL').map(x => ({ x, k: T('Продолжение') })));
   $('#dSeq').innerHTML = rel.length ? `<section class="section"><div class="section-head"><h2>${T("Сезоны")}</h2></div>
     <div class="rail bleed">${rel.map((r, i) => posterHTML(cardFromMedia(ui.media[r.x.id] || r.x), { i, cls: '', sub: r.k + ' · ' + (r.x.status === 'NOT_YET_RELEASED' ? T('Анонс') : (r.x.seasonYear || '')) })).join('')}</div></section>` : '';
@@ -2513,7 +2522,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 16;
+const APP_VERSION = 17;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {

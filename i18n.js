@@ -254,6 +254,13 @@ const EN = {
   'Отмена': 'Cancel', 'Такую ссылку открыть нельзя.': 'That link can’t be opened.', 'Отлично — название подставится сюда:': 'Great — the title will go here:',
   'Название допишется в конец ссылки.': 'The title will be added to the end of the link.', 'Вставь ссылку поиска': 'Paste a search link', 'Ничего не выбрано': 'Nothing selected',
 
+  // Озвучка
+  'Точно есть на': 'Officially on', 'Есть': 'Yes', 'Не найдена': 'Not found', 'Нет данных': 'No data', 'Студия / лицензия': 'Studio / licence', 'Голоса': 'Voices',
+  'На AniList нет английских голосов — скорее всего, только субтитры.': 'No English voice actors on AniList — probably subtitles only.',
+  'команда': 'team', 'команды': 'teams', 'команд': 'teams', 'Субтитры': 'Subtitles', 'Официально': 'Official',
+  'Озвучка и где смотреть': 'Dubs and where to watch', 'Английская озвучка': 'English dub', 'Русская озвучка': 'Russian dub',
+  'Каталоги зависят от страны. Нажми на команду озвучки — найду, где её смотреть. Данные: AniList и Shikimori.': 'Catalogues depend on your country. Tap a dub team to find where to watch it. Data: AniList and Shikimori.',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'
