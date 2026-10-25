@@ -223,6 +223,27 @@ const EN = {
   'аниме': 'of anime', 'дней подряд': 'day streak', 'Поделиться': 'Share', 'Сохранить картинку': 'Save image', 'Мой год в аниме': 'My year in anime',
   'Картинка сохранена': 'Image saved', 'Не получилось сделать картинку': 'Couldn’t make the image',
 
+  // Смотреть, ачивки, рулетка, сезон свайпами
+  'Смотреть': 'Watch', 'Где смотрю': 'Where I watch', 'Кнопка «Смотреть» откроет тайтл там': 'The Watch button opens the title there', 'Сайт сохранён': 'Site saved',
+  'Первая серия': 'First episode', 'Отметь первую серию': 'Mark your first episode', 'Сотня': 'Century', '100 серий за всё время': '100 episodes in total',
+  'Пятисотка': 'Five hundred', '500 серий за всё время': '500 episodes in total', 'Тысячник': 'Thousand club', '1000 серий за всё время': '1000 episodes in total',
+  'Финал': 'Finale', 'Досмотри первый тайтл': 'Finish your first title', 'Коллекционер': 'Collector', 'Досмотри 10 тайтлов': 'Finish 10 titles',
+  'Легенда списка': 'List legend', 'Досмотри 30 тайтлов': 'Finish 30 titles', 'Марафонец': 'Marathoner', '10 серий за один день': '10 episodes in one day',
+  'Ночной марафон': 'Night marathon', '5 серий после полуночи за одну ночь': '5 episodes after midnight in one night',
+  'Неделя без пропусков': 'Week streak', 'Смотри аниме 7 дней подряд': 'Watch anime 7 days in a row', 'Месяц без пропусков': 'Month streak', 'Смотри аниме 30 дней подряд': 'Watch anime 30 days in a row',
+  'Долгострой': 'Long haul', 'Досмотри тайтл на 100+ серий': 'Finish a title with 100+ episodes', 'Всеядный': 'Omnivore', 'Тайтлы 8 разных жанров': 'Titles from 8 different genres',
+  'В курсе сезона': 'On top of the season', 'Смотри 3 выходящих тайтла одновременно': 'Watch 3 airing titles at once', 'Планировщик': 'Planner', '20 галочек в плане': '20 ticks in your plan',
+  'Критик': 'Critic', 'Оцени 10 тайтлов': 'Rate 10 titles', 'Летописец': 'Chronicler', 'Заметки к 5 тайтлам': 'Notes on 5 titles',
+  'Судьба решила': 'Fate decided', 'Покрути рулетку «Что посмотреть»': 'Spin the “What to watch” wheel', 'Сезонный охотник': 'Season hunter',
+  'Добавь 5 тайтлов, листая сезон': 'Add 5 titles while swiping a season', 'Подводим итоги': 'Recap time', 'Открой «Итоги года»': 'Open your Year in review',
+  'Новая ачивка!': 'New achievement!', 'Ачивки': 'Achievements', 'Получена': 'Unlocked',
+  'Что посмотреть?': 'What to watch?', 'Не можешь выбрать — покрути рулетку': 'Can’t decide? Spin the wheel', 'Добавь хотя бы 2 тайтла в «Смотрю» или «В планах»': 'Add at least 2 titles to “Watching” or “Plan to watch”',
+  'Крути — выберет из того, что ты смотришь и планируешь.': 'Spin it — it picks from what you watch and plan.', 'Крутить': 'Spin', 'Ещё раз': 'Again',
+  'Судьба говорит:': 'Fate says:', 'Начни с первой серии': 'Start from episode 1',
+  'Листать': 'Swipe', 'Мимо': 'Skip', 'Буду смотреть': 'Will watch', 'Вправо — в планы, влево — мимо': 'Right — plan it, left — skip', 'БУДУ': 'YES', 'МИМО': 'NOPE',
+  'Сезон пролистан!': 'Season done!', 'Здесь всё уже просмотрено': 'You’ve seen everything here', 'В планы:': 'Planned:', 'Ничего нового не добавлено': 'Nothing new added',
+  'Листай новый сезон карточками — вправо в планы, влево мимо': 'Swipe through the new season — right to plan, left to skip',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'

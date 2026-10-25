@@ -346,7 +346,7 @@
         <div class="peek-info"><h2>${esc(t)}</h2><div class="peek-sub">${sub}</div>${nextLine}</div>
       </div>
       ${actions}
-      <button class="btn line block" type="button" data-action="peek-open">${ICON.info}${T("Открыть страницу")}</button>`;
+      <div class="peek-actions">${watchBtnHTML(it || m, '')}<button class="btn line" type="button" data-action="peek-open">${ICON.info}${T("Открыть страницу")}</button></div>`;
   }
   function rerenderPeek() {
     const sh = document.querySelector('#sheetWrap .sheet');

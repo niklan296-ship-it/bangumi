@@ -1,10 +1,10 @@
 importScripts('i18n.js', 'core.js');
 
-const VERSION = 14;
+const VERSION = 15;
 const SHELL_CACHE = 'bangumi-shell-v' + VERSION;
 const RUNTIME_CACHE = 'bangumi-runtime-v' + VERSION;
 const SHELL = [
-  './', './index.html', './styles.css', './skins.css', './app.js', './motion.js', './map.js', './share.js', './core.js', './i18n.js', './import.js', './wrap.js',
+  './', './index.html', './styles.css', './skins.css', './app.js', './motion.js', './map.js', './share.js', './core.js', './i18n.js', './import.js', './wrap.js', './fun.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/badge-96.png'
 ];
 

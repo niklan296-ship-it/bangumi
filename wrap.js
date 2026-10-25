@@ -110,6 +110,7 @@ const YearWrap = (() => {
     document.body.appendChild(root);
     document.body.classList.add('locked');
     pushOverlay('wrap');
+    if (typeof Ach !== 'undefined') Ach.bump('wrap');
     requestAnimationFrame(() => { root.classList.add('in'); show(0); });
     buzz(16);
   }
