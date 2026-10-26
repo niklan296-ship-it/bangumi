@@ -90,7 +90,7 @@ AnimeGO, AnimeOn, Jut.su, HIDIVE, Disney+, Max и RetroCrush открывают�
 
 ## Поиск
 
-Поиск прощает неточности: «Kon» находит K-ON!, «kaguya sama» — Kaguya-sama, работают русские названия. Бангуми ищет сразу в AniList (с вариантами написания), Shikimori и MyAnimeList и сортирует по похожести.
+Поиск прощает неточности: «Kon» находит K-ON!, «kaguya sama» — Kaguya-sama, «Магичка» и «JJK» — Магическую битву, «Ванпис» — One Piece. Понимает начало слова («Магич»), текст в неправильной раскладке («Vfubxrf») и транслит. Бангуми ищет сразу в AniList (с вариантами написания), Shikimori и MyAnimeList и сортирует по похожести.
 
 ## Жесты
 
