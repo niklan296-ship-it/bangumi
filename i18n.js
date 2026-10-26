@@ -272,8 +272,6 @@ const EN = {
 
   'Та же история в другой экранизации — можно смотреть вместо части «Сюжета»:': 'The same story in another adaptation — can be watched instead of part of the Story:',
 
-  'Переливы': 'Shimmer', 'Блики на кнопках, сияние на фоне, радужные рамки': 'Glints on buttons, aurora background, rainbow edges',
-
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'
