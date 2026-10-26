@@ -1738,3 +1738,12 @@ html[data-theme="light"] .fr-tag.side, [data-skin="manga"] .fr-tag.side { color:
 [data-skin="manga"] .fr-tag, [data-skin="quest"] .fr-tag { border-radius: 0; }
 @media (prefers-reduced-motion: reduce) { .fr-page.in-right, .fr-page.in-left { animation: none; } }
 .fr-tabs { margin-left: auto; }
+.fr-alt { margin-top: 12px; padding: 12px; border-radius: 16px; background: var(--surface-2); }
+.fr-alt-h { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
+.fr-alt-h .ico { width: 16px; height: 16px; flex: none; margin-top: 1px; }
+.fr-alt-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.fr-alt-i { display: grid; gap: 2px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-align: left; max-width: 100%; }
+.fr-alt-i b { font-size: 13.5px; }
+.fr-alt-i small { font-size: 11.5px; color: var(--muted); }
+.fr-alt-i.cur { border-color: var(--accent); }
+[data-skin="manga"] .fr-alt, [data-skin="manga"] .fr-alt-i, [data-skin="quest"] .fr-alt, [data-skin="quest"] .fr-alt-i { border-radius: 0; }

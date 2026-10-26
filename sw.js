@@ -1,6 +1,6 @@
 importScripts('i18n.js', 'core.js');
 
-const VERSION = 21;
+const VERSION = 22;
 const SHELL_CACHE = 'bangumi-shell-v' + VERSION;
 const RUNTIME_CACHE = 'bangumi-runtime-v' + VERSION;
 const SHELL = [

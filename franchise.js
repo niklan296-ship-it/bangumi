@@ -29,10 +29,16 @@ const Franchise = (() => {
         (d.Page.media || []).forEach(m => {
           if (m.type !== 'ANIME') return;
           nodes[m.id] = m;
+          // открыли отдельную экранизацию без своих сезонов (Berserk 1997) — заходим в историю через её «другую версию»
+          const lone = m.id === startId && !((m.relations && m.relations.edges) || []).some(e => e.relationType === 'PREQUEL' || e.relationType === 'SEQUEL');
           ((m.relations && m.relations.edges) || []).forEach(e => {
             const n = e.node;
             if (!n || n.type !== 'ANIME' || n.format === 'MUSIC' || !FOLLOW[e.relationType]) return;
             edges.push({ from: m.id, to: n.id, t: e.relationType });
+            if (EXTRA[e.relationType] && lone && e.relationType === 'ALTERNATIVE') {
+              if (!nodes[n.id]) frontier.push(n.id);
+              return;
+            }
             if (EXTRA[e.relationType]) {
               if (extraOnly.has(m.id)) return;
               if (!nodes[n.id] && !kind[n.id]) { extraOnly.add(n.id); kind[n.id] = e.relationType; frontier.push(n.id); }
@@ -59,6 +65,11 @@ const Franchise = (() => {
         const parent = edges.find(e => e.from === startId && (e.t === 'PARENT' || e.t === 'PREQUEL' || e.t === 'SEQUEL') && nodes[e.to] && MAIN_FMT[nodes[e.to].format]);
         if (parent) seed = parent.to;
       }
+      const chainOf = id => edges.some(e => (e.from === id || e.to === id) && (e.t === 'PREQUEL' || e.t === 'SEQUEL'));
+      if (!chainOf(startId)) {
+        const alt = edges.find(e => e.from === startId && e.t === 'ALTERNATIVE' && nodes[e.to] && chainOf(e.to));
+        if (alt) { seed = alt.to; extraOnly.add(startId); kind[startId] = 'ALTERNATIVE'; }
+      }
       const main = new Set([seed]);
       let grow = true;
       while (grow) {
@@ -72,6 +83,21 @@ const Franchise = (() => {
       }
       const when = m => { const s = m.startDate || {}; return s.year ? s.year * 10000 + (s.month || 12) * 100 + (s.day || 28) : (m.seasonYear ? m.seasonYear * 10000 + 1228 : 99999999); };
       const sort = arr => arr.sort((a, b) => when(a) - when(b) || a.id - b.id);
+      // Перемонтаж и пересказы, попавшие в цепочку сезонов (например, Berserk: Memorial Edition),
+      // — это не следующая часть истории, а другая версия уже вышедшего. Убираем их из «Сюжета».
+      const REEDIT = /memorial edition|director'?s cut|recap|compilation|soushuuhen|special edition|remaster(ed)?\b|总集/i;
+      [...main].forEach(id => {
+        if (id === seed || main.size < 3) return;
+        const m = nodes[id];
+        const names = [m.title && m.title.romaji, m.title && m.title.english].concat(m.synonyms || []).join(' | ');
+        const alt = edges.find(e => EXTRA[e.t] && ((e.from === id && main.has(e.to)) || (e.to === id && main.has(e.from))));
+        const other = alt && nodes[alt.from === id ? alt.to : alt.from];
+        if (REEDIT.test(names) || (alt && other && when(m) > when(other))) {
+          main.delete(id);
+          extraOnly.add(id);
+          kind[id] = alt ? alt.t : (/recap|soushuuhen|总集/i.test(names) ? 'SUMMARY' : 'ALTERNATIVE');
+        }
+      });
       const res = {
         main: sort(all.filter(m => main.has(m.id))),
         side: sort(all.filter(m => !main.has(m.id) && !extraOnly.has(m.id) && m.format !== 'MUSIC')),
@@ -149,9 +175,18 @@ const Franchise = (() => {
     return `<div class="fr-page in-${open[key + 'dir'] || 'none'}"><div class="fr-sub"><span>${done} / ${r.main.length} ${T('просмотрено')}</span></div>
       ${done && next && next.id !== curId ? `<button type="button" class="fr-next" data-action="open" data-ani="${next.id}"><span>${T('Смотреть дальше:')}</span><b>${esc(mediaTitle(next))}</b>${ICON.next}</button>` : ''}
       ${listHTML(r.main, curId, key, 1)}
+      ${altHTML(r, curId)}
       ${r.side.length ? `<button type="button" class="fr-side-t" data-fr="${key}s" aria-expanded="${!!sideOpen}">${T('Фильмы, OVA и спешлы вне основной линии')} · ${r.side.length}${ICON.next}</button>
         ${sideOpen ? `<div class="fr-side">${listHTML(r.side, curId, key + 'x', 1)}</div>` : ''}` : ''}
       <p class="hint fr-note">${T('Порядок — по дате выхода. Ответвления можно смотреть в любой момент после своего сезона.')}</p></div>`;
+  }
+  /* Другие экранизации той же истории — подсказкой под «Сюжетом» */
+  function altHTML(r, curId) {
+    const alts = r.extra.filter(m => r.kind[m.id] === 'ALTERNATIVE' || r.kind[m.id] === 'COMPILATION' || r.kind[m.id] === 'CONTAINS');
+    if (!alts.length) return '';
+    return `<div class="fr-alt"><div class="fr-alt-h">${ICON.info}<span>${T('Та же история в другой экранизации — можно смотреть вместо части «Сюжета»:')}</span></div>
+      <div class="fr-alt-list">${alts.map(m => `<button type="button" class="fr-alt-i${m.id === curId ? ' cur' : ''}" ${m.id === curId ? 'disabled' : `data-action="open" data-ani="${m.id}"`}>
+        <b>${esc(mediaTitle(m))}</b><small>${esc([FMT_SHORT[m.format] || m.format || '', m.episodes ? m.episodes + T(' эп.') : '', m.seasonYear || ''].filter(Boolean).join(' · '))}</small></button>`).join('')}</div></div>`;
   }
   /* Абсолютно всё по дате выхода: сюжет, ответвления, пересказы, альтернативные версии */
   function allHTML(r, curId, key) {

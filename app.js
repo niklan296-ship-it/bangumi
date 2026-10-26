@@ -2515,7 +2515,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 21;
+const APP_VERSION = 22;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {

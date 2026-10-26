@@ -270,6 +270,8 @@ const EN = {
   'Пересказ / версия': 'Recap / version',
   'Всё, что связано с этой историей, по дате выхода: сезоны, фильмы, OVA, спешлы, пересказы и альтернативные версии. «Доп.» можно пропустить без потери сюжета.': 'Everything connected to this story, by release date: seasons, movies, OVAs, specials, recaps and alternative versions. “Extra” can be skipped without missing the plot.',
 
+  'Та же история в другой экранизации — можно смотреть вместо части «Сюжета»:': 'The same story in another adaptation — can be watched instead of part of the Story:',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'
