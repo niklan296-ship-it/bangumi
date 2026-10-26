@@ -261,6 +261,11 @@ const EN = {
   'Озвучка и где смотреть': 'Dubs and where to watch', 'Английская озвучка': 'English dub', 'Русская озвучка': 'Russian dub',
   'Каталоги зависят от страны. Нажми на команду озвучки — найду, где её смотреть. Данные: AniList и Shikimori.': 'Catalogues depend on your country. Tap a dub team to find where to watch it. Data: AniList and Shikimori.',
 
+  // Порядок просмотра
+  'Порядок просмотра': 'Watch order', 'Собираю все сезоны…': 'Gathering all seasons…', 'Ты здесь': 'You are here', 'ещё': 'more',
+  'Смотреть дальше:': 'Watch next:', 'Фильмы, OVA и спешлы вне основной линии': 'Movies, OVAs and specials outside the main story',
+  'Порядок — по дате выхода. Ответвления можно смотреть в любой момент после своего сезона.': 'Ordered by release date. Side stories can be watched any time after their season.',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'

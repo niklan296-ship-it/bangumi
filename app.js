@@ -1587,10 +1587,10 @@ function mountDetail(anim, vtCover) {
       <div id="dMain"></div>
       <div id="dScore"></div>
       <div id="dPlan"></div>
+      <div id="dSeq"></div>
       <section class="section" id="dAboutWrap"><div class="section-head"><h2>${T("О тайтле")}</h2></div><div id="dAbout" class="view" style="gap:14px"></div></section>
       <div id="dDub"></div>
       <div id="dPersonal"></div>
-      <div id="dSeq"></div>
       <div id="dRecs"></div>
       <div id="dDanger"></div>
     </div>
@@ -1658,9 +1658,7 @@ function renderDetailBlocks(all) {
     const want = v.idMal;
     Dub.loadRu(want).then(() => { const c = dvm(); if (c && c.idMal === want && $('#dDub')) $('#dDub').innerHTML = Dub.blockHTML(c); });
   }
-  const rel = relEdges(m, 'PREQUEL').map(x => ({ x, k: T('Предыдущее') })).concat(relEdges(m, 'SEQUEL').map(x => ({ x, k: T('Продолжение') })));
-  $('#dSeq').innerHTML = rel.length ? `<section class="section"><div class="section-head"><h2>${T("Сезоны")}</h2></div>
-    <div class="rail bleed">${rel.map((r, i) => posterHTML(cardFromMedia(ui.media[r.x.id] || r.x), { i, cls: '', sub: r.k + ' · ' + (r.x.status === 'NOT_YET_RELEASED' ? T('Анонс') : (r.x.seasonYear || '')) })).join('')}</div></section>` : '';
+  Franchise.render($('#dSeq'), v.aniId);
   const recs = ((m.recommendations && m.recommendations.nodes) || []).map(x => x.mediaRecommendation).filter(Boolean);
   $('#dRecs').innerHTML = recs.length ? `<section class="section"><div class="section-head"><h2>${T("Похожее")}</h2></div>
     <div class="rail bleed">${recs.map((r, i) => posterHTML(cardFromMedia(ui.media[r.id] || r), { i, cls: '' })).join('')}</div></section>` : '';
@@ -2517,7 +2515,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 19;
+const APP_VERSION = 20;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {
