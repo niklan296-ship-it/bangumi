@@ -354,6 +354,7 @@ async function load() {
 function applyTheme() {
   applySkin();
   document.documentElement.classList.toggle('glass', state.settings.glass !== false && skin() === 'cinema');
+  document.documentElement.classList.toggle('shine', state.settings.shine !== false && !reduced);
   applyPerf();
   const t = skin() === 'quest' ? 'dark' : state.settings.theme;
   if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
@@ -888,7 +889,7 @@ function heroSlideHTML(s, i) {
     const color = it.color || hueColor(title(it));
     return `<article class="hero-slide" style="--c:${esc(color)}" data-i="${i}">
       <div class="hero-bg">${it.coverXL || it.cover ? `<img src="${esc(it.coverXL || it.cover)}" alt="" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async">` : ''}</div>
-      <div class="hero-glow"></div><div class="hero-shade"></div>
+      <div class="hero-glow"></div><div class="hero-aurora"><i></i><i></i></div><div class="hero-shade"></div>
       <div class="hero-content">
         <div class="hero-kicker">${kicker}</div>
         <h2 class="hero-title">${esc(title(it))}</h2>
@@ -911,7 +912,7 @@ function heroSlideHTML(s, i) {
   ].join('');
   return `<article class="hero-slide" style="--c:${esc((m.coverImage && m.coverImage.color) || hueColor(t))}" data-i="${i}">
     <div class="hero-bg">${mediaCover(m, true) ? `<img src="${esc(mediaCover(m, true))}" alt="" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async">` : ''}</div>
-    <div class="hero-glow"></div><div class="hero-shade"></div>
+    <div class="hero-glow"></div><div class="hero-aurora"><i></i><i></i></div><div class="hero-shade"></div>
     <div class="hero-content">
       <div class="hero-kicker">${T("В тренде")}${rank ? ' · №' + rank : ''}</div>
       <h2 class="hero-title">${esc(t)}</h2>
@@ -1460,6 +1461,8 @@ function renderProfile() {
         <div class="setting"><div class="txt"><span>${T("Мой список")}</span><small>${T("Карта — как ментальная карта в Заметках")}</small></div>${seg('set-listview', st.listView, [['grid', T('Сетка')], ['rows', T('Строки')], ['map', T('Карта')]])}</div>
         <div class="setting"><div class="txt"><span>${T("Стеклянные кнопки")}</span><small>${T("Полупрозрачные кнопки с размытием и бликом")}</small></div>
           <label class="switch"><input type="checkbox" id="swGlass" ${st.glass !== false ? 'checked' : ''} aria-label="${T("Стеклянные кнопки")}"><span></span></label></div>
+        <div class="setting"><div class="txt"><span>${T("Переливы")}</span><small>${T("Блики на кнопках, сияние на фоне, радужные рамки")}</small></div>
+          <label class="switch"><input type="checkbox" id="swShine" ${state.settings.shine !== false ? 'checked' : ''} aria-label="${T("Переливы")}"><span></span></label></div>
         <div class="setting"><div class="txt"><span>${T("Плавность")}</span><small>${T("«Быстро» убирает размытие и тяжёлые эффекты. «Авто» само решает по телефону")}${weakDevice() ? T(' — у тебя включится «Быстро»') : ''}</small></div>${seg('set-perf', st.perf || 'auto', [['auto', T('Авто')], ['beauty', T('Красиво')], ['fast', T('Быстро')]])}</div>
         <div class="setting"><div class="txt"><span>${T("Тема")}</span>${skin() === 'quest' ? T('<small>В «Квесте» всегда тёмная</small>') : ''}</div>${seg('set-theme', st.theme, [['system', T('Авто')], ['dark', T('Тёмная')], ['light', T('Светлая')]])}</div>
       </div>
@@ -2463,6 +2466,7 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.matches('#swEp, #swPlan')) { toggleNotify(t.dataset.k, t.checked, t); return; }
   if (t.id === 'swAutoBk') { state.settings.autoBackup = t.checked; save(); buzz(8); if (t.checked) maybeAutoBackup(true); else toast(T('Автокопия выключена')); return; }
+  if (t.id === 'swShine') { state.settings.shine = t.checked; applyTheme(); save(); buzz(8); return; }
   if (t.id === 'swGlass') { state.settings.glass = t.checked; applyTheme(); save(); buzz(8); return; }
   if (t.id === 'swEdge') { state.settings.edgeGesture = t.checked; save(); buzz(8); toast(t.checked ? T('Жест включён: два свайпа от левого края') : T('Жест выключен')); return; }
   if (t.id === 'qTimeCustom') { quick.time = t.value; renderQuick(); return; }
@@ -2515,7 +2519,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 22;
+const APP_VERSION = 23;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {
