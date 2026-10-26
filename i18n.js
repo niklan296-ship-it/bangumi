@@ -266,6 +266,10 @@ const EN = {
   'Смотреть дальше:': 'Watch next:', 'Фильмы, OVA и спешлы вне основной линии': 'Movies, OVAs and specials outside the main story',
   'Порядок — по дате выхода. Ответвления можно смотреть в любой момент после своего сезона.': 'Ordered by release date. Side stories can be watched any time after their season.',
 
+  'Сюжет': 'Story', 'Всё подряд': 'Everything', 'Пересказ': 'Recap', 'Другая версия': 'Alt version', 'Сборник': 'Compilation', 'Доп.': 'Extra',
+  'Пересказ / версия': 'Recap / version',
+  'Всё, что связано с этой историей, по дате выхода: сезоны, фильмы, OVA, спешлы, пересказы и альтернативные версии. «Доп.» можно пропустить без потери сюжета.': 'Everything connected to this story, by release date: seasons, movies, OVAs, specials, recaps and alternative versions. “Extra” can be skipped without missing the plot.',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'

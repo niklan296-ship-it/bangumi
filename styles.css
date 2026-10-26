@@ -1718,3 +1718,23 @@ html.lite .ach-rays { animation: none; }
 [data-skin="quest"] .fr-body, [data-skin="quest"] .fr-n, [data-skin="quest"] .fr-next, [data-skin="quest"] .fr-cov { border-radius: 0; }
 [data-skin="quest"] .fr-step.cur .fr-body { box-shadow: 0 0 0 3px #FFD23F; }
 @media (prefers-reduced-motion: reduce) { .fr-step.cur .fr-n { animation: none; } }
+
+/* Порядок просмотра: «Сюжет» / «Всё подряд» */
+.fr-head { align-items: center; flex-wrap: wrap; row-gap: 8px; }
+.fr-tabs { flex: none; }
+.fr-tabs button { min-height: 32px; padding: 0 12px; font-size: 12.5px; }
+.fr-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.fr-legend { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.fr-page.in-right { animation: frInR .32s cubic-bezier(.2, .9, .2, 1); }
+.fr-page.in-left { animation: frInL .32s cubic-bezier(.2, .9, .2, 1); }
+@keyframes frInR { from { opacity: 0; transform: translateX(28px); } }
+@keyframes frInL { from { opacity: 0; transform: translateX(-28px); } }
+.fr-tag { justify-self: start; display: inline-block; font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 6px; margin-bottom: 2px; }
+.fr-tag.main { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--accent-ink); }
+.fr-tag.side { background: color-mix(in srgb, #7C9DFF 22%, transparent); color: #9DB4FF; }
+.fr-tag.extra { background: var(--surface-2); color: var(--muted); }
+html[data-theme="light"] .fr-tag.side, [data-skin="manga"] .fr-tag.side { color: #3A5BD9; }
+[data-skin="manga"] .fr-tag, [data-skin="quest"] .fr-tag { border-radius: 0; }
+@media (prefers-reduced-motion: reduce) { .fr-page.in-right, .fr-page.in-left { animation: none; } }
+.fr-tabs { margin-left: auto; }
