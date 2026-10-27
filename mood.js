@@ -127,8 +127,21 @@ const Mood = (() => {
 
   /* ---------- Подбор ---------- */
   const Q_MOOD = `query($g:[String],$t:[String],$f:[MediaFormat],$el:Int,$eg:Int,$sg:FuzzyDateInt,$sl:FuzzyDateInt,$ms:Int,$p:Int,$s:[MediaSort]){
-    Page(page:$p,perPage:40){media(type:ANIME,isAdult:false,genre_in:$g,tag_in:$t,format_in:$f,episodes_lesser:$el,episodes_greater:$eg,
+    Page(page:$p,perPage:30){media(type:ANIME,isAdult:false,genre_in:$g,tag_in:$t,format_in:$f,episodes_lesser:$el,episodes_greater:$eg,
       startDate_greater:$sg,startDate_lesser:$sl,averageScore_greater:$ms,sort:$s){${MEDIA_DESC} tags{name rank isMediaSpoiler}}}}`;
+  const FIELDS = `${MEDIA_DESC} tags{name rank isMediaSpoiler}`;
+  const ARGS = 'type:ANIME,isAdult:false';
+  /* Несколько выборок одним запросом: a0, a1, a2 */
+  async function multi(list) {
+    const vars = {}, defs = [], parts = [];
+    list.forEach((v, i) => {
+      defs.push(`$g${i}:[String],$f${i}:[MediaFormat],$el${i}:Int,$eg${i}:Int,$sg${i}:FuzzyDateInt,$sl${i}:FuzzyDateInt,$ms${i}:Int,$p${i}:Int,$s${i}:[MediaSort]`);
+      parts.push(`a${i}:Page(page:$p${i},perPage:30){media(${ARGS},genre_in:$g${i},format_in:$f${i},episodes_lesser:$el${i},episodes_greater:$eg${i},startDate_greater:$sg${i},startDate_lesser:$sl${i},averageScore_greater:$ms${i},sort:$s${i}){${FIELDS}}}`);
+      ['g', 'f', 'el', 'eg', 'sg', 'sl', 'ms', 'p', 's'].forEach(k => { vars[k + i] = v[k] == null ? null : v[k]; });
+    });
+    const d = await gql(`query(${defs.join(',')}){${parts.join(' ')}}`, vars);
+    return list.map((_, i) => (d['a' + i] && d['a' + i].media) || []);
+  }
   function tasteGenres() {
     const acc = {};
     Object.values(state.items).forEach(it => {
@@ -152,14 +165,20 @@ const Mood = (() => {
       ms: Math.max(w.minScore || 0, w.hidden ? 68 : 64),
       s: w.hidden ? ['SCORE_DESC'] : ['POPULARITY_DESC']
     };
-    const jobs = [];
+    // один запрос с несколькими выборками (AniList считает лимит по запросам), теги — отдельно,
+    // чтобы неизвестный тег не сломал всё
+    const pages = [];
     const page = 1 + Math.floor(Math.random() * (w.popular ? 1 : 2));
-    if (topG.length) jobs.push(gql(Q_MOOD, Object.assign({}, base, { g: topG.slice(0, 2), p: page })));
-    if (topT.length) jobs.push(gql(Q_MOOD, Object.assign({}, base, { t: topT, p: 1 })));
-    if (w.taste || (!topG.length && !topT.length)) jobs.push(gql(Q_MOOD, Object.assign({}, base, { g: topTaste.length ? topTaste.slice(0, 2) : null, p: page, s: ['SCORE_DESC'] })));
-    if (topG.length > 1) jobs.push(gql(Q_MOOD, Object.assign({}, base, { g: [topG[1]], p: 1, s: ['SCORE_DESC'] })));
-    const res = await Promise.all(jobs.map(j => j.then(d => d.Page.media || []).catch(() => null)));
-    if (res.every(r => r === null)) throw new Error('net');
+    if (topG.length) pages.push(Object.assign({}, base, { g: topG.slice(0, 2), p: page }));
+    if (w.taste || (!topG.length && !topT.length)) pages.push(Object.assign({}, base, { g: topTaste.length ? topTaste.slice(0, 2) : null, p: page, s: ['SCORE_DESC'] }));
+    if (topG.length > 1) pages.push(Object.assign({}, base, { g: [topG[1]], p: 1, s: ['SCORE_DESC'] }));
+    const jobs = [];
+    if (pages.length) jobs.push(multi(pages));
+    if (topT.length) jobs.push(gql(Q_MOOD, Object.assign({}, base, { t: topT, p: 1 })).then(d => [d.Page.media || []]).catch(e => { if (e.rate && !pages.length) throw e; return null; }));
+    let res;
+    try { res = (await Promise.all(jobs)).filter(Boolean).flat(); }
+    catch (e) { throw e; }
+    if (!res.length) throw new Error('net');
     const all = new Map();
     res.forEach(list => (list || []).forEach(m => { if (m && !all.has(m.id)) all.set(m.id, m); }));
     const map = byAni();
@@ -254,7 +273,7 @@ const Mood = (() => {
     S.loading = true; S.err = ''; rerender();
     buzz(12);
     try { S.res = await pick(text, S.opts); S.shown = 0; if (typeof Ach !== 'undefined') Ach.bump('mood'); }
-    catch (e) { S.err = T('Нет связи с AniList. Попробуй позже'); S.res = null; }
+    catch (e) { S.err = e && e.rate ? T('AniList просит подождать: слишком много запросов за минуту. Нажми «Подобрать» ещё раз через минуту.') : T('Нет связи с AniList. Попробуй позже') + (e && e.message && e.message !== 'net' && !/fetch/i.test(e.message) ? ' (' + e.message + ')' : ''); S.res = null; }
     S.loading = false;
     rerender();
     const r = $('#moodRes');

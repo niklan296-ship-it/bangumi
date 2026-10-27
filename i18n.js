@@ -280,6 +280,8 @@ const EN = {
   'Понял:': 'Got it:', 'без': 'no', 'Не нашёл ключевых слов — подбираю по твоему списку и рейтингу.': 'No keywords found — picking by your list and ratings.',
   'Больше вариантов нет — попробуй описать иначе.': 'No more options — try describing it differently.', 'Ещё варианты': 'More options',
 
+  'AniList просит подождать: слишком много запросов за минуту. Нажми «Подобрать» ещё раз через минуту.': 'AniList asks to wait: too many requests this minute. Tap “Pick” again in a minute.',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'

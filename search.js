@@ -153,9 +153,9 @@ const SmartSearch = (() => {
     let res = await base(q).catch(e => { if (e && !e.soft) throw e; return []; });
     const top = res[0] ? sim(q, res[0]) : 0;
     if (res.length >= 3 && top >= 45) return res;
-    // мало или не похоже: основы слов, раскладка, транслит
+    // мало или не похоже: другое написание, основы слов, раскладка, транслит
     const cyr = /[а-яё]/i.test(q);
-    const extra = [];
+    const extra = cyr ? [] : variants(q).map(anilist);
     stems(q).forEach(x => extra.push(cyr ? searchRu(x).catch(() => []) : anilist(x)));
     const sw = swapLayout(q);
     if (sw !== q.toLowerCase()) extra.push(/[а-яё]/.test(sw) ? searchRu(sw).catch(() => []) : anilist(sw));
@@ -177,7 +177,7 @@ const SmartSearch = (() => {
       cyr ? Promise.resolve([]) : anilist(q),
       searchRu(q).catch(() => []),
       cyr ? Promise.resolve([]) : jikan(q)
-    ].concat(cyr ? [] : variants(q).map(anilist));
+    ];
     const lists = await Promise.all(jobs);
     const seen = new Map();
     lists.forEach((list, li) => (list || []).forEach((m, r) => {

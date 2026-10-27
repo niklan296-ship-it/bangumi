@@ -35,12 +35,39 @@ const DB = {
   }
 };
 
-async function gql(query, variables) {
-  const r = await fetch(ANILIST, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ query, variables })
-  });
+/* AniList ограничивает число запросов в минуту (иногда всего 30). Очередь не даёт превысить лимит:
+   не больше 3 запросов одновременно и не больше N в минуту; после ответа 429 лимит снижается на 10 минут. */
+const AL = { active: 0, times: [], limit: 80, slowUntil: 0 };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function alSlot() {
+  for (;;) {
+    const now = Date.now();
+    if (AL.slowUntil && now > AL.slowUntil) { AL.limit = 80; AL.slowUntil = 0; }
+    AL.times = AL.times.filter(t => now - t < 60000);
+    if (AL.active < 3 && AL.times.length < AL.limit) { AL.active++; AL.times.push(now); return; }
+    await sleep(AL.times.length >= AL.limit ? Math.max(200, 60000 - (now - AL.times[0]) + 50) : 120);
+  }
+}
+async function gql(query, variables, tries) {
+  tries = tries || 0;
+  await alSlot();
+  let r;
+  try {
+    r = await fetch(ANILIST, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ query, variables })
+    });
+  } finally { AL.active--; }
+  if (r.status === 429) {
+    AL.limit = 26; AL.slowUntil = Date.now() + 10 * 60000;
+    if (tries < 2) {
+      const ra = +r.headers.get('Retry-After') || 0;
+      await sleep(Math.min(20, Math.max(4, ra)) * 1000);
+      return gql(query, variables, tries + 1);
+    }
+    const e = new Error('rate'); e.rate = true; throw e;
+  }
   let j = null;
   try { j = await r.json(); } catch (e) { /* пусто */ }
   if (!r.ok) {
