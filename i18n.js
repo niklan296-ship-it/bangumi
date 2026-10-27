@@ -282,6 +282,8 @@ const EN = {
 
   'AniList просит подождать: слишком много запросов за минуту. Нажми «Подобрать» ещё раз через минуту.': 'AniList asks to wait: too many requests this minute. Tap “Pick” again in a minute.',
 
+  'Не нашёл рабочую страницу — открыл поиск, выбери вручную': 'Couldn’t find a working page — opened search, pick it yourself',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'

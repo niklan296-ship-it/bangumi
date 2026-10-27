@@ -21,7 +21,10 @@ const Watch = (() => {
     { id: 'tubi', g: 'en', name: 'Tubi', ab: 'TU', c: '#7408FF', ru: false, url: q => 'https://tubitv.com/search/' + enc(q) },
     { id: 'appletv', g: 'en', name: 'Apple TV', ab: 'TV', c: '#2B2B2F', ru: false, url: q => 'https://tv.apple.com/search?term=' + enc(q) },
     { id: 'retrocrush', g: 'en', name: 'RetroCrush', ab: 'RC', c: '#E8421C', ru: false, host: 'retrocrush.tv', url: viaFind('retrocrush.tv') },
-    { id: 'animego', g: 'ru', name: 'AnimeGO', ab: 'GO', c: '#7B4DFF', ru: true, host: 'animego.me', path: /^\/anime\//, url: viaFind('animego.me') },
+    { id: 'animego', g: 'ru', name: 'AnimeGO', ab: 'GO', c: '#7B4DFF', ru: true, host: 'animego.me', path: /^\/anime\//,
+      // у AnimeGO часто меняются адреса — ищем по названию и пробуем зеркала
+      hostRe: /(^|\.)animego\.(me|org|one|club|co|name|lol|online|net|pro)$/i, mirrors: ['animego.me', 'animego.org', 'animego.one', 'animego.club', 'animego.co', 'animego.name'],
+      url: q => 'https://duckduckgo.com/?q=' + enc('animego ' + q) },
     { id: 'animeon', g: 'ru', name: 'AnimeOn', ab: 'ON', c: '#E8364F', ru: false, host: 'animeon.club', url: viaFind('animeon.club') },
     { id: 'jutsu', g: 'ru', name: 'Jut.su', ab: 'JS', c: '#4E9A3E', ru: true, host: 'jut.su', path: /^\/[a-z0-9-]+\/?/, url: viaFind('jut.su') },
     { id: 'shikimori', g: 'ru', name: 'Shikimori', ab: 'SH', c: '#3A3F4B', ru: true, url: (q, mal) => mal ? 'https://shikimori.one/animes/' + mal : 'https://shikimori.one/animes?search=' + enc(q) },
@@ -116,11 +119,32 @@ const Watch = (() => {
     });
     return best && bestS >= 25 ? best.url : (items[0] && items[0].url) || null;
   }
-  async function resolve(host, path, q, x) {
-    const key = host + '|' + q;
+  function rankAll(items, x) {
+    const out = [];
+    let rest = items.slice();
+    while (rest.length && out.length < 4) {
+      const u = pickBest(rest, x);
+      if (!u) break;
+      out.push(u);
+      rest = rest.filter(i => i.url !== u);
+    }
+    return out;
+  }
+  /* Страница открывается? (в APK проверяем сами, без браузера) */
+  async function alive(url) {
+    const r = await nhttp('GET', url, 9000);
+    if (!r || !r.status) return false;
+    // защита от ботов (DDoS-Guard, Cloudflare) отвечает 403/503 программе, но в браузере страница откроется
+    if ((r.status === 403 || r.status === 503 || r.status === 429) && /ddos-guard|cloudflare|captcha|challenge|cf-ray/i.test(r.body || '')) return true;
+    if (r.status >= 400) return false;
+    return !/<title>[^<]*(404|500|502|503|not found|не найден|ошибка|error)/i.test(r.body || '');
+  }
+  async function resolve(site, q, x) {
+    const key = site.host + '|' + q;
     resolve.cache = resolve.cache || {};
     if (resolve.cache[key]) return resolve.cache[key];
-    const r = await nhttp('GET', 'https://html.duckduckgo.com/html/?q=' + enc('site:' + host + ' ' + q));
+    const query = site.hostRe ? site.name + ' ' + q : 'site:' + site.host + ' ' + q;
+    const r = await nhttp('GET', 'https://html.duckduckgo.com/html/?q=' + enc(query));
     if (!r || r.status !== 200 || !r.body) return null;
     const doc = new DOMParser().parseFromString(r.body, 'text/html');
     const items = [...doc.querySelectorAll('a.result__a')].map(a => {
@@ -130,22 +154,54 @@ const Watch = (() => {
       if (h.startsWith('//')) h = 'https:' + h;
       return { url: h, t: a.textContent.trim() };
     }).filter(i => {
-      try { const u = new URL(i.url); return (u.hostname === host || u.hostname.endsWith('.' + host)) && (!path || path.test(u.pathname)); } catch (e) { return false; }
+      try {
+        const u = new URL(i.url);
+        const hostOk = site.hostRe ? site.hostRe.test(u.hostname) : (u.hostname === site.host || u.hostname.endsWith('.' + site.host));
+        return hostOk && (!site.path || site.path.test(u.pathname));
+      } catch (e) { return false; }
     });
-    const url = pickBest(items, x);
-    if (url) resolve.cache[key] = url;
-    return url;
+    const ranked = rankAll(items, x);
+    if (!ranked.length) return null;
+    // проверяем, что страница жива; у сайтов с зеркалами пробуем тот же адрес на других доменах
+    const st = state.settings;
+    const good = site.mirrors && st['mirror_' + site.id];
+    for (const url of ranked.slice(0, 2)) {
+      const u = new URL(url);
+      const tries = [url];
+      if (site.mirrors) {
+        const hosts = [good].concat(site.mirrors).filter(h => h && h !== u.hostname);
+        hosts.forEach(h => tries.push(u.protocol + '//' + h + u.pathname + u.search));
+      }
+      // сначала исходный адрес, потом все зеркала разом
+      if (await alive(tries[0])) { resolve.cache[key] = tries[0]; return tries[0]; }
+      if (tries.length > 1) {
+        const ok = await Promise.all(tries.slice(1).map(t => alive(t).then(a => a ? t : null)));
+        const win = ok.find(Boolean);
+        if (win) {
+          if (site.mirrors) { st['mirror_' + site.id] = new URL(win).hostname; save(); }
+          resolve.cache[key] = win;
+          return win;
+        }
+      }
+    }
+    return null;
   }
-  /* Открыть сайт: в APK — сразу страница тайтла, иначе — «мне повезёт» */
-  async function openFound(el, host, path, ru) {
+  /* Открыть сайт: в APK — сразу живая страница тайтла, иначе — поиск */
+  async function openFound(el, site, ru) {
+    if (typeof site === 'string') site = { host: site, name: site };
     const d = !W && ui.detailStack.length ? dvm() : null;
     const x = (W && W.x) || (d && (d.it || d.m));
     if (!x) return;
     const q = queryFor(x, ru);
     el.classList.add('busy');
-    const url = await resolve(host, path, q, x);
+    const url = await resolve(site, q, x);
     el.classList.remove('busy');
-    NATIVE.openUrl(url || ducky(host, q));
+    if (url) NATIVE.openUrl(url);
+    else {
+      // не нашли живую страницу — открываем обычную выдачу, чтобы выбрать самому
+      NATIVE.openUrl('https://duckduckgo.com/?q=' + enc((site.hostRe ? site.name + ' ' : 'site:' + site.host + ' ') + q));
+      toast(T('Не нашёл рабочую страницу — открыл поиск, выбери вручную'), { ms: 5000 });
+    }
     setTimeout(() => { if (ui.overlays[ui.overlays.length - 1] === 'sheet') back(); }, 300);
   }
   /* Проверка точных ссылок (в APK): мёртвые прячем, живые помечаем */
@@ -296,14 +352,14 @@ const Watch = (() => {
 
   document.addEventListener('click', e => {
     const fnd = e.target.closest('[data-ws-find]');
-    if (fnd && canNative()) { e.preventDefault(); buzz(10); openFound(fnd, fnd.dataset.wsFind, null, false); return; }
+    if (fnd && canNative()) { e.preventDefault(); buzz(10); openFound(fnd, fnd.dataset.wsFind, false); return; }
     const off = e.target.closest('[data-ws-off]');
     if (off) { buzz(10); setTimeout(() => { if (ui.overlays[ui.overlays.length - 1] === 'sheet') back(); }, 350); return; }
     const go = e.target.closest('[data-ws-go]');
     if (go) {
       cfg().watchLast = go.dataset.wsGo;
       const site = BUILTIN.find(z => z.id === go.dataset.wsGo);
-      if (site && site.host && canNative()) { e.preventDefault(); save(); buzz(10); openFound(go, site.host, site.path, site.ru); return; }
+      if (site && site.host && canNative()) { e.preventDefault(); save(); buzz(10); openFound(go, site, site.ru); return; }
       save();
       buzz(10);
       // ссылка откроется сама; лист закрываем, чтобы по возвращении было чисто
