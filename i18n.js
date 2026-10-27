@@ -272,6 +272,14 @@ const EN = {
 
   'Та же история в другой экранизации — можно смотреть вместо части «Сюжета»:': 'The same story in another adaptation — can be watched instead of part of the Story:',
 
+  // Подбор по настроению
+  'Подобрать по настроению': 'Pick by mood', 'Опиши вайб — «уютно», «хочу поплакать», «мозголомка»…': 'Describe a vibe — “cozy”, “I want to cry”, “mind-bending”…',
+  'Что хочется почувствовать?': 'What do you want to feel?', 'Опиши своими словами вайб — подберу пару тайтлов.': 'Describe the vibe in your own words — I’ll pick a few titles.',
+  'Например: хочу что-то уютное, без драмы, чтобы отдохнуть после работы': 'E.g. something cozy, no drama, to unwind after work',
+  'Без того, что видел': 'Skip what I’ve seen', 'До 13 серий': 'Up to 13 eps', 'Последние 3 года': 'Last 3 years', 'Подобрать': 'Pick',
+  'Понял:': 'Got it:', 'без': 'no', 'Не нашёл ключевых слов — подбираю по твоему списку и рейтингу.': 'No keywords found — picking by your list and ratings.',
+  'Больше вариантов нет — попробуй описать иначе.': 'No more options — try describing it differently.', 'Ещё варианты': 'More options',
+
   // Статичная разметка index.html и прочее
   'Бангуми': 'Bangumi', 'Бангуми, на главную': 'Bangumi, home', 'Разделы': 'Sections', 'Язык': 'Language',
   'Мой аниме-список, расписание серий и план просмотра': 'My anime list, episode schedule and watch plan'

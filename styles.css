@@ -1747,3 +1747,45 @@ html[data-theme="light"] .fr-tag.side, [data-skin="manga"] .fr-tag.side { color:
 .fr-alt-i small { font-size: 11.5px; color: var(--muted); }
 .fr-alt-i.cur { border-color: var(--accent); }
 [data-skin="manga"] .fr-alt, [data-skin="manga"] .fr-alt-i, [data-skin="quest"] .fr-alt, [data-skin="quest"] .fr-alt-i { border-radius: 0; }
+
+/* ================= Подбор по настроению ================= */
+.mood-entry { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 12px 14px; border-radius: var(--r-lg, 20px); text-align: left; color: var(--ink);
+  border: 1px solid color-mix(in srgb, #B18CFF 40%, var(--line)); background: radial-gradient(130% 180% at 0% 0%, color-mix(in srgb, #B18CFF 26%, transparent), transparent 60%), radial-gradient(120% 160% at 100% 100%, color-mix(in srgb, #FF7A45 18%, transparent), transparent 60%), var(--surface); }
+.mood-entry > span:nth-child(2) { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.mood-entry b { font: 700 15px/1.2 var(--f-display); }
+.mood-entry small { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.mood-entry > .ico { width: 20px; height: 20px; color: var(--muted); flex: none; }
+.mood-entry-ico { font-size: 26px; line-height: 1; }
+.mood-entry:active { transform: scale(.98); }
+.mood-text { width: 100%; margin-top: 10px; min-height: 84px; resize: none; font-size: 15px; }
+.mood-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.mood-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 13.5px; font-weight: 600; transition: background .2s, border-color .2s, transform .15s; }
+.mood-chip:active { transform: scale(.94); }
+.mood-chip.on { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); border-color: var(--accent); }
+.mood-opts { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 14px; }
+.mood-opt { padding: 6px 10px; border-radius: 10px; border: 0; background: var(--surface-2); color: var(--muted); font-size: 12.5px; font-weight: 650; }
+.mood-opt[aria-pressed="true"] { background: color-mix(in srgb, #3DDC97 22%, var(--surface-2)); color: var(--ink); }
+.mood-opt[aria-pressed="true"]::before { content: '✓ '; color: #3DDC97; }
+.mood-go { min-height: 52px; font-size: 16px; }
+.mood-err { color: #FF5E5B; margin-top: 12px; }
+.mood-got { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 16px 0 10px; font-size: 12.5px; color: var(--muted); }
+.mood-got i { font-style: normal; padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent-ink); font-weight: 650; }
+.mood-got i.no { background: color-mix(in srgb, #FF5E5B 16%, transparent); color: #FF8A88; }
+.mood-list { display: grid; gap: 12px; }
+.mood-card { display: flex; gap: 12px; padding: 10px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+.mood-cov { position: relative; flex: none; width: 92px; aspect-ratio: 2 / 3; border-radius: 12px; overflow: hidden; border: 0; padding: 0; background: var(--c); align-self: flex-start; }
+.mood-cov img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mood-score { position: absolute; left: 6px; bottom: 6px; padding: 2px 6px; border-radius: 7px; background: rgba(10,10,16,.72); color: #FFC23D; font-size: 11px; font-weight: 800; }
+.mood-info { flex: 1; min-width: 0; display: grid; gap: 4px; align-content: start; }
+.mood-title { border: 0; background: none; padding: 0; color: var(--ink); text-align: left; font: 700 15.5px/1.25 var(--f-display); }
+.mood-info small { font-size: 12px; color: var(--muted); }
+.mood-why { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.mood-why i { font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--surface-2); color: var(--ink); }
+.mood-info p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.4; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mood-act { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.mood-act .btn.small { min-height: 34px; padding: 0 10px; font-size: 13px; }
+.mood-act .btn.small svg { width: 16px; height: 16px; }
+.mood-in { align-self: center; font-size: 12px; font-weight: 700; color: var(--accent-ink); }
+#moodRes > .btn.line { margin-top: 12px; }
+[data-skin="manga"] :is(.mood-entry, .mood-card, .mood-chip, .mood-cov) { border-radius: 0; border: 2px solid currentColor; }
+[data-skin="quest"] :is(.mood-entry, .mood-card, .mood-chip, .mood-cov, .mood-opt) { border-radius: 0; }

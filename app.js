@@ -1222,6 +1222,8 @@ function renderSearch() {
         <input id="q" type="search" placeholder="${T("Фрирен, Ван Пис, Chainsaw Man…")}" autocomplete="off" enterkeyhint="search" aria-label="${T("Поиск аниме")}">
         <button class="clear" type="button" data-action="clear-search" aria-label="${T("Очистить")}" hidden>${ICON.x}</button>
       </div>
+      <button type="button" class="mood-entry" data-action="mood-open"><span class="mood-entry-ico" aria-hidden="true">✨</span>
+        <span><b>${T("Подобрать по настроению")}</b><small>${T("Опиши вайб — «уютно», «хочу поплакать», «мозголомка»…")}</small></span>${ICON.next}</button>
       <div class="genres bleed" id="genres" style="padding-inline:max(16px, env(safe-area-inset-left, 0px))"></div>
       <div id="searchBody" class="view"></div>`;
     el.dataset.ready = '1';
@@ -2434,6 +2436,7 @@ document.addEventListener('click', e => {
     case 'import-list': Import.open(); break;
     case 'year-wrap': YearWrap.open(); break;
     case 'roulette': Roulette.open(); break;
+    case 'mood-open': Mood.open(); break;
     case 'swipe-open': SeasonSwipe.open(); break;
     case 'swipe-banner-x': { SeasonSwipe.hideBanner(); const b = t.closest('.sw-banner'); if (b && !reduced) { b.classList.add('out'); setTimeout(() => renderHome(['swipe']), 260); } else renderHome(['swipe']); break; }
     case 'seq-hide': {
@@ -2515,7 +2518,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ================= Обновления ================= */
-const APP_VERSION = 24;
+const APP_VERSION = 25;
 const bootAt = Date.now();
 let launchedWithShare = false;
 function setupUpdates() {
